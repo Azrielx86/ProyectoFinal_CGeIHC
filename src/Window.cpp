@@ -96,4 +96,9 @@ void Window::bindCallbacks()
 	glfwSetKeyCallback(window, Window::handleKeyboard);
 }
 
+/**
+ * 
+ * @param key 
+ * @param callback 
+ */
 void Window::createCallback(int key, const std::function<void()> &callback) { this->callbacks[key] = callback; }

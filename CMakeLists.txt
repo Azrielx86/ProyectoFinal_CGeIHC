@@ -45,6 +45,10 @@ endif ()
 add_executable(ProyectoFinal_CGeIHC
         src/main.cpp
         src/Window.cpp
+        src/Shader.cpp
+        src/Shader.cpp
+        src/BasicPrimitives.cpp
+        src/BasicMesh.cpp
 )
 
 #message(STATUS "Copiando archivos de shader")
