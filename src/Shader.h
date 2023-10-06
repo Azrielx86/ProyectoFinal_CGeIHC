@@ -20,6 +20,13 @@
 class Shader
 {
   public:
+	enum ShaderTypes
+	{
+		SKYBOX_SHADER,
+		LIGHT_SHADER,
+		MODEL_TEX_SHADER
+	};
+
 	Shader();
 	virtual ~Shader();
 	void loadShader(const char *vertex, const char *frag);

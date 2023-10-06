@@ -22,10 +22,7 @@ class Window
 	bool shouldClose() { return glfwWindowShouldClose(window); }
 	void swapBuffers() { return glfwSwapBuffers(window); }
 	static void handleKeyboard(GLFWwindow *window, int key, int code, int action, int mode);
-
-	// Creación de los callbacks (Para no usar tantos if)
-	// fuente: https://gamedev.stackexchange.com/questions/150157/how-to-improve-my-input-handling-in-glfw
-	using Callback = std::function<void()>;
+	
 	void createCallback(int key, const std::function<void()> &callback);
 	void bindCallbacks();
 
