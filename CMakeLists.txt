@@ -49,6 +49,8 @@ add_executable(ProyectoFinal_CGeIHC
         src/Shader.cpp
         src/BasicPrimitives.cpp
         src/BasicMesh.cpp
+        src/Mesh.cpp
+        src/Model.cpp
 )
 
 #message(STATUS "Copiando archivos de shader")

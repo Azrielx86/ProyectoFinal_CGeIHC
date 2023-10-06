@@ -73,6 +73,7 @@ bool Window::Init()
 
 	// Cuando ya se tengan elementos 3D habilitar esto
 	//	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
 
 	return true;
 }

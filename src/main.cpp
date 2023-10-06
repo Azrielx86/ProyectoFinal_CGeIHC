@@ -6,11 +6,13 @@ Window mainWindow;
 BasicPrimitives primitives;
 
 void cbakFromMain() { std::cout << "Llamo esto desde un callback :D\n"; }
+void scndCmakMain() { std::cout << "Otro callback desde el main!\n"; }
 
 int main(int argc, char **argv)
 {
 	mainWindow = Window(1280, 720, "Proyecto :P");
 	mainWindow.createCallback(GLFW_KEY_W, cbakFromMain);
+	mainWindow.createCallback(GLFW_KEY_R, scndCmakMain);
 
 	if (!mainWindow.Init())
 	{
@@ -20,14 +22,14 @@ int main(int argc, char **argv)
 
 	// Prueba de primitivas
 	primitives.CreatePrimitives();
-	
+
 	while (!mainWindow.shouldClose())
 	{
 		glfwPollEvents();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		primitives.getPrimitive(BasicPrimitives::Primitives::SINGLE_TRIANGLE)->RenderMesh();
-		
+
 		mainWindow.swapBuffers();
 	}
 
