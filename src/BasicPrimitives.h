@@ -19,6 +19,7 @@ class BasicPrimitives
 	BasicPrimitives();
 	void CreatePrimitives();
 	BasicMesh *getPrimitive(BasicPrimitives::Primitives p);
+	virtual ~BasicPrimitives();
 
   private:
 	void CreateSingleTriangle();
