@@ -1,8 +1,15 @@
 cmake_minimum_required(VERSION 3.26)
 project(ProyectoFinal_CGeIHC)
-
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+
+if (NOT MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+    if (DEBUG)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
+    elseif (RELEASE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+    endif ()
+endif ()
 
 # Requires GLEW, OpenGL and GLFW Packages on Linux
 # On Arch Linux: pacman -S glew glfw
