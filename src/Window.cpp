@@ -62,7 +62,7 @@ bool Window::Init()
 		glfwSetWindowShouldClose(this->window, GL_TRUE);
 	};
 
-	this->createCallback(GLFW_KEY_ESCAPE, exit);
+//	this->createCallback(GLFW_KEY_ESCAPE, exit);
 
 	bindCallbacks();
 

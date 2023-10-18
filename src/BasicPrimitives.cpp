@@ -33,3 +33,9 @@ BasicMesh *BasicPrimitives::getPrimitive(BasicPrimitives::Primitives p)
 {
 	return this->meshMap[p];
 }
+
+BasicPrimitives::~BasicPrimitives()
+{
+	for (const auto &item : meshMap)
+		delete item.second;
+}

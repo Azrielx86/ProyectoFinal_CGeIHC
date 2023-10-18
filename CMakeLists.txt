@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 3.26)
 project(ProyectoFinal_CGeIHC)
-
 set(CMAKE_CXX_STANDARD 17)
+
+if (NOT MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+    if (DEBUG)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
+    elseif (RELEASE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+    endif ()
+endif ()
 
 # Requires GLEW, OpenGL and GLFW Packages on Linux
 # On Arch Linux: pacman -S glew glfw
@@ -31,17 +39,6 @@ if (assimp_FOUND)
     message(STATUS "Assimp Found")
 endif ()
 
-#if (NOT UNIX)
-#    include_directories(C:/dev/vcpkg/packages/glfw3_x86-windows/include/GLFW)
-#    include_directories(C:/dev/vcpkg/packages/glew_x86-windows/include/GL)
-#    include_directories(C:/dev/vcpkg/packages/glm_x86-windows/include/glm)
-#    include_directories(C:/dev/vcpkg/packages/assimp_x86-windows/include)
-#else ()
-#    include_directories(/usr/include/GLFW)
-#    include_directories(/usr/include/GL)
-#    include_directories(/usr/include/glm)
-#endif ()
-
 add_executable(ProyectoFinal_CGeIHC
         src/main.cpp
         src/Window.cpp
@@ -51,10 +48,12 @@ add_executable(ProyectoFinal_CGeIHC
         src/BasicMesh.cpp
         src/Mesh.cpp
         src/Model.cpp
+        src/Input.cpp
+        src/Camera.cpp
 )
 
-#message(STATUS "Copiando archivos de shader")
-#file(COPY shaders DESTINATION ${CMAKE_BINARY_DIR})
+message(STATUS "Copiando archivos de shader")
+file(COPY shaders DESTINATION ${CMAKE_BINARY_DIR})
 #message(STATUS "Copiando archivos de modelos")
 #file(COPY Models DESTINATION ${CMAKE_BINARY_DIR})
 #message(STATUS "Copiando archivos de texturas")
