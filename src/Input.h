@@ -13,7 +13,7 @@ class Input
 	typedef void (*keyCallback)();
 
   public:
-	Input(GLFWwindow *win);
+	explicit Input();
 	void AddCallback(int key, keyCallback callback);
 	static void handleKeyboard(GLFWwindow *window, int key, int code, int action, int mode);
 	Input *getPointer() { return this; }

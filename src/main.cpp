@@ -2,6 +2,7 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Window.h"
+#include "Input.h"
 #include <iostream>
 
 Window mainWindow;
@@ -23,8 +24,12 @@ void InitShaders()
 int main()
 {
 	mainWindow = Window(1280, 720, "Proyecto :P");
-	mainWindow.createCallback(GLFW_KEY_W, cbakFromMain);
-	mainWindow.createCallback(GLFW_KEY_R, scndCmakMain);
+	
+	auto input = Input();
+	
+	
+//	mainWindow.createCallback(GLFW_KEY_W, cbakFromMain);
+//	mainWindow.createCallback(GLFW_KEY_R, scndCmakMain);
 
 	if (!mainWindow.Init())
 	{

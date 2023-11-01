@@ -9,6 +9,7 @@
 #include <GLFW/glfw3.h>
 #include <functional>
 #include <iostream>
+#include "Input.h"
 
 class Window
 {
@@ -21,10 +22,12 @@ class Window
 	bool Init();
 	bool shouldClose() { return glfwWindowShouldClose(window); }
 	void swapBuffers() { return glfwSwapBuffers(window); }
-	static void handleKeyboard(GLFWwindow *window, int key, int code, int action, int mode);
+	void setInputPointer(Input* input) { glfwSetWindowUserPointer(window, input); }
 	
-	void createCallback(int key, const std::function<void()> &callback);
-	void bindCallbacks();
+//	static void handleKeyboard(GLFWwindow *window, int key, int code, int action, int mode);
+//	
+//	void createCallback(int key, const std::function<void()> &callback);
+//	void bindCallbacks();
 
   private:
 	GLFWwindow *window;

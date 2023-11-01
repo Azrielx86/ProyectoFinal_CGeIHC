@@ -3,7 +3,7 @@
 //
 
 #include "Input.h"
-Input::Input(GLFWwindow *win) : window(win)
+Input::Input()
 {
 	for (auto &key : keys)
 		key = false;

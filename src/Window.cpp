@@ -64,7 +64,7 @@ bool Window::Init()
 
 //	this->createCallback(GLFW_KEY_ESCAPE, exit);
 
-	bindCallbacks();
+//	bindCallbacks();
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -83,23 +83,23 @@ Window::~Window()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 }
-
-void Window::handleKeyboard(GLFWwindow *window, int key, int code, int action, int mode)
-{
-	auto mw = static_cast<Window *>(glfwGetWindowUserPointer(window));
-	if (action == GLFW_PRESS || action == GLFW_REPEAT)
-		if (mw->callbacks.count(key) != 0)
-			mw->callbacks.at(key)();
-}
-
-void Window::bindCallbacks()
-{
-	glfwSetKeyCallback(window, Window::handleKeyboard);
-}
-
-/**
- * 
- * @param key 
- * @param callback 
- */
-void Window::createCallback(int key, const std::function<void()> &callback) { this->callbacks[key] = callback; }
+//
+//void Window::handleKeyboard(GLFWwindow *window, int key, int code, int action, int mode)
+//{
+//	auto mw = static_cast<Window *>(glfwGetWindowUserPointer(window));
+//	if (action == GLFW_PRESS || action == GLFW_REPEAT)
+//		if (mw->callbacks.count(key) != 0)
+//			mw->callbacks.at(key)();
+//}
+//
+//void Window::bindCallbacks()
+//{
+//	glfwSetKeyCallback(window, Window::handleKeyboard);
+//}
+//
+///**
+// * 
+// * @param key 
+// * @param callback 
+// */
+//void Window::createCallback(int key, const std::function<void()> &callback) { this->callbacks[key] = callback; }
