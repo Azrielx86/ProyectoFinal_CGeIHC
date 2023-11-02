@@ -29,7 +29,7 @@ Input &Input::createKeymap(int keymap)
 	return *this;
 }
 
-void Input::handleKey(int key, int code, int action, int mode)
+void Input::handleKey(int key, [[maybe_unused]] int code, int action, [[maybe_unused]] int mode)
 {
 	if (key == GLFW_KEY_UNKNOWN)
 		return;
@@ -43,9 +43,10 @@ void Input::handleKey(int key, int code, int action, int mode)
 				k.callback();
 	}
 }
+
 Input &Input::addCallback(int keymap, int key, const std::function<void()> &callback, bool repeat)
 {
-	currentKeymap->at(key).callback = callback;
-	currentKeymap->at(key).repeat = repeat;
+	keymaps[keymap].at(key).callback = callback;
+	keymaps[keymap].at(key).repeat = repeat;
 	return *this;
 }
