@@ -1,8 +1,8 @@
 #include "BasicPrimitives.h"
 #include "Camera.h"
-#include "Input.h"
 #include "Shader.h"
 #include "Window.h"
+#include "input/KeyboardInput.h"
 
 #include <iostream>
 
@@ -19,7 +19,7 @@ enum Keymaps
 
 void InitKeymaps()
 {
-	Input *input = Input::GetInstance();
+	KeyboardInput *input = KeyboardInput::GetInstance();
 	input->createKeymap(CAMERA_PINBALL);
 
 	input->addCallback(CAMERA_PINBALL,

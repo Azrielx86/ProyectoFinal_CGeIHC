@@ -2,18 +2,18 @@
 // Created by edgar on 10/6/2023.
 //
 
-#include "Input.h"
+#include "KeyboardInput.h"
 
-Input *Input::instance = nullptr;
+KeyboardInput *KeyboardInput::instance = nullptr;
 
-Input *Input::GetInstance()
+KeyboardInput *KeyboardInput::GetInstance()
 {
 	if (instance == nullptr)
-		instance = new Input();
+		instance = new KeyboardInput();
 	return instance;
 }
 
-Input &Input::createKeymap(int keymap)
+KeyboardInput &KeyboardInput::createKeymap(int keymap)
 {
 	auto keys = std::vector<Key>(1024);
 	for (auto &key : keys)
@@ -29,7 +29,7 @@ Input &Input::createKeymap(int keymap)
 	return *this;
 }
 
-void Input::handleKey(int key, [[maybe_unused]] int code, int action, [[maybe_unused]] int mode)
+void KeyboardInput::handleKey(int key, [[maybe_unused]] int code, int action, [[maybe_unused]] int mode)
 {
 	if (key == GLFW_KEY_UNKNOWN)
 		return;
@@ -44,7 +44,7 @@ void Input::handleKey(int key, [[maybe_unused]] int code, int action, [[maybe_un
 	}
 }
 
-Input &Input::addCallback(int keymap, int key, const std::function<void()> &callback, bool repeat)
+KeyboardInput &KeyboardInput::addCallback(int keymap, int key, const std::function<void()> &callback, bool repeat)
 {
 	keymaps[keymap].at(key).callback = callback;
 	keymaps[keymap].at(key).repeat = repeat;

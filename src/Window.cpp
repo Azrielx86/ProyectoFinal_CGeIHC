@@ -4,7 +4,7 @@
 
 #include "Window.h"
 
-Window::Window()
+Window::Window() // NOLINT(*-pro-type-member-init)
 {
 	width = 1280;
 	height = 720;
@@ -13,7 +13,7 @@ Window::Window()
 	//		key = false;
 }
 
-Window::Window(GLuint windowWidth, GLuint windowHeight, const char *windowTitle)
+Window::Window(GLuint windowWidth, GLuint windowHeight, const char *windowTitle) // NOLINT(*-pro-type-member-init)
 {
 	width = windowWidth;
 	height = windowHeight;
@@ -57,13 +57,6 @@ bool Window::Init()
 		return false;
 	}
 
-	std::function<void()> exit = [this]() -> void
-	{
-		glfwSetWindowShouldClose(this->window, GL_TRUE);
-	};
-
-	//	this->createCallback(GLFW_KEY_ESCAPE, exit);
-
 	bindCallbacks();
 
 	glEnable(GL_DEPTH_TEST);
@@ -88,8 +81,9 @@ void Window::bindCallbacks()
 {
 	glfwSetKeyCallback(window, Window::handleKeyboard);
 }
-void Window::handleKeyboard(GLFWwindow *window, int key, int code, int action, int mode)
+
+void Window::handleKeyboard([[maybe_unused]] GLFWwindow *window, int key, int code, int action, int mode)
 {
-	auto input = Input::GetInstance();
+	auto input = KeyboardInput::GetInstance();
 	input->handleKey(key, code, action, mode);
 }
