@@ -3,19 +3,49 @@
 //
 
 #include "Input.h"
-Input::Input()
+
+Input *Input::instance = nullptr;
+
+Input *Input::GetInstance()
 {
-	for (auto &key : keys)
-		key = false;
+	if (instance == nullptr)
+		instance = new Input();
+	return instance;
 }
 
-void Input::AddCallback(int key, Input::keyCallback callback) { this->keyCallbacks[key] = callback; }
-
-void Input::handleKeyboard(GLFWwindow *window, int key, int code, int action, int mode)
+Input &Input::createKeymap(int keymap)
 {
-//	auto input = static_cast<Input *>(glfwGetWindowUserPointer(window));
-//	if (action == GLFW_PRESS)
-//		keys[key] = true;
-//	else if (action == GLFW_RELEASE)
-//		keys[key] = false;
+	auto keys = std::vector<Key>(1024);
+	for (auto &key : keys)
+	{
+		key.action = GLFW_RELEASE;
+		key.repeat = false;
+		key.callback = nullptr;
+	}
+
+	this->keymaps.insert(std::make_pair(keymap, keys));
+	if (currentKeymap == nullptr)
+		currentKeymap = &keymaps[keymap];
+	return *this;
+}
+
+void Input::handleKey(int key, int code, int action, int mode)
+{
+	if (key == GLFW_KEY_UNKNOWN)
+		return;
+
+	currentKeymap->at(key).action = action;
+
+	for (const auto &k : *currentKeymap)
+	{
+		if (k.action == GLFW_PRESS || (k.action == GLFW_REPEAT && k.repeat))
+			if (k.callback != nullptr)
+				k.callback();
+	}
+}
+Input &Input::addCallback(int keymap, int key, const std::function<void()> &callback, bool repeat)
+{
+	currentKeymap->at(key).callback = callback;
+	currentKeymap->at(key).repeat = repeat;
+	return *this;
 }

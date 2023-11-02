@@ -5,11 +5,13 @@
 #ifndef PROYECTOFINAL_CGEIHC_WINDOW_H
 #define PROYECTOFINAL_CGEIHC_WINDOW_H
 
+// Mantener antes que input
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+// ========================
+#include "Input.h"
 #include <functional>
 #include <iostream>
-#include "Input.h"
 
 class Window
 {
@@ -22,12 +24,12 @@ class Window
 	bool Init();
 	bool shouldClose() { return glfwWindowShouldClose(window); }
 	void swapBuffers() { return glfwSwapBuffers(window); }
-	void setInputPointer(Input* input) { glfwSetWindowUserPointer(window, input); }
-	
-//	static void handleKeyboard(GLFWwindow *window, int key, int code, int action, int mode);
-//	
-//	void createCallback(int key, const std::function<void()> &callback);
-//	void bindCallbacks();
+
+	static void handleKeyboard(GLFWwindow *window, int key, int code, int action, int mode);
+	//
+	//	void createCallback(int key, const std::function<void()> &callback);
+	void bindCallbacks();
+	GLFWwindow *getWindowPointer() { return window; }
 
   private:
 	GLFWwindow *window;
@@ -36,8 +38,10 @@ class Window
 	int bufferWidth;
 	int bufferHeight;
 	const char *title;
-//	bool keys[1024];
-	std::unordered_map<int, std::function<void()>> callbacks;
+	//	static Input input;
+
+	//	bool keys[1024];
+	//	std::unordered_map<int, std::function<void()>> callbacks;
 };
 
 #endif // PROYECTOFINAL_CGEIHC_WINDOW_H
