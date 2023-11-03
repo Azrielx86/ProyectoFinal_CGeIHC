@@ -7,7 +7,7 @@
 
 enum Keymaps
 {
-	CAMERA_PINBALL,
+	FREE_CAMERA,
 	CAMERA_AVATAR
 };
 
