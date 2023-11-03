@@ -32,8 +32,25 @@ void Camera::update()
 	front.y = sin(glm::radians(pitch));
 	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 	front = glm::normalize(front);
-
 	right = glm::normalize(glm::cross(front, worldUp));
 	up = glm::normalize(glm::cross(right, front));
+}
+
+void Camera::mouseControl(Input::MouseInput& mouseInput)
+{
+	float xChange = mouseInput.getXChange() * turnSpeed;
+	float yChange = mouseInput.getYChange() * turnSpeed;
+
+	yaw += xChange;
+	pitch += yChange;
+
+#ifdef DEBUG
+	std::cout << "Camera updated! [Yaw: " << yaw << " | Pitch : " << pitch << "]\r";
+#endif
+
+	if (pitch > 89.0f) pitch = 89.0f;
+	if (pitch < -89.0f) pitch = -89.0f;
+
+	update();
 }
 } // namespace Camera

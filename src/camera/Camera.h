@@ -8,6 +8,11 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "../input/MouseInput.h"
+
+#ifdef DEBUG
+#include <iostream>
+#endif
 
 namespace Camera
 {
@@ -23,13 +28,13 @@ class Camera
 	 * glfwPollEvents();
 	 * camera.keyControl(mainWindow.getsKeys(), deltaTime);
 	 * camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
-	 * 
+	 *
 	 * Objetivo:
 	 * Solo una función Update
 	 */
-	
-	void keyControl(bool *keys, GLfloat deltaTime);
-	void mouseControl(GLfloat xChange, GLfloat yChange);
+
+	//	void keyControl(bool *keys, GLfloat deltaTime);
+	void mouseControl(Input::MouseInput& mouseInput);
 
 	glm::vec3 getCameraPosition();
 	glm::vec3 getCameraDirection();

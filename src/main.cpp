@@ -2,41 +2,44 @@
 #include "Shader.h"
 #include "Window.h"
 #include "camera/Camera.h"
+#include "camera/CameraCollection.h"
 #include "input/KeyboardInput.h"
 #include "model/BasicPrimitives.h"
 #include <iostream>
 
 Window mainWindow;
 BasicPrimitives primitives;
+Camera::CameraCollection cameras;
+Camera::Camera *activeCamera;
 
 std::unordered_map<int, Shader *> shaders;
 
 void InitKeymaps()
 {
 	Input::KeyboardInput::GetInstance()
-	    .createKeymap(Global::Keymaps::CAMERA_PINBALL)
+	    .createKeymap(Keymaps::CAMERA_PINBALL)
 	    .addCallback(
-	        Global::Keymaps::CAMERA_PINBALL, GLFW_KEY_ESCAPE,
+	        Keymaps::CAMERA_PINBALL, GLFW_KEY_ESCAPE,
 	        []() -> void
 	        {
 		        glfwSetWindowShouldClose(mainWindow.getWindowPointer(), GL_TRUE);
 	        })
 	    .addCallback(
-	        Global::Keymaps::CAMERA_PINBALL, GLFW_KEY_9,
+	        Keymaps::CAMERA_PINBALL, GLFW_KEY_9,
 	        []() -> void
 	        {
 		        std::cout << "9 presionado!\n";
 	        },
 	        true)
 	    .addCallback(
-	        Global::Keymaps::CAMERA_PINBALL, GLFW_KEY_0,
+	        Keymaps::CAMERA_PINBALL, GLFW_KEY_0,
 	        []() -> void
 	        {
 		        std::cout << "0 presionado!\n";
 	        },
 	        true)
 	    .addCallback(
-	        Global::Keymaps::CAMERA_PINBALL, GLFW_KEY_T,
+	        Keymaps::CAMERA_PINBALL, GLFW_KEY_T,
 	        []() -> void
 	        {
 		        std::cout << "Mouse disabled!";
@@ -44,22 +47,20 @@ void InitKeymaps()
 	        });
 
 	Input::MouseInput::GetInstance()
-	    .createKeymap(Global::Keymaps::CAMERA_PINBALL)
-	    .addClickCallback(Global::Keymaps::CAMERA_PINBALL,
-	                      GLFW_MOUSE_BUTTON_LEFT,
-	                      []() -> void
-	                      {
-		                      std::cout << "Click izquierdo desde el exterior!\n\n";
-	                      })
-	    .addMoveCallback(Global::Keymaps::CAMERA_PINBALL,
-	                     [](float) -> void
-	                     {
-		                     std::cout << "Mouse move: ("
-		                               << Input::MouseInput::GetInstance().getXChange()
-		                               << ", "
-		                               << Input::MouseInput::GetInstance().getYChange()
-		                               << ")\r";
-	                     });
+	    .createKeymap(Keymaps::CAMERA_PINBALL)
+	    .addClickCallback(
+	        Keymaps::CAMERA_PINBALL,
+	        GLFW_MOUSE_BUTTON_LEFT,
+	        []() -> void
+	        {
+		        std::cout << "Click izquierdo presionado\n\n";
+	        })
+	    .addMoveCallback(
+	        Keymaps::CAMERA_PINBALL,
+	        [](float) -> void
+	        {
+		        activeCamera->mouseControl(Input::MouseInput::GetInstance());
+	        });
 }
 
 void InitShaders()
@@ -67,6 +68,12 @@ void InitShaders()
 	auto shader = new Shader();
 	shader->loadShader("shaders/shader.vert", "shaders/shader.frag");
 	shaders[Shader::ShaderTypes::MODEL_TEX_SHADER] = shader;
+}
+
+void InitCameras()
+{
+	cameras.addCamera(Camera::Camera(glm::vec3(0.0f, 2.0f, 7.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 1.0f));
+	activeCamera = cameras.getAcviveCamera();
 }
 
 int main()
@@ -85,7 +92,7 @@ int main()
 	// Inicializar los componentes del programa
 	InitShaders();
 	InitKeymaps();
-	//	camera = Camera(glm::vec3(0.0f, 2.0f, 7.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 1.0f);
+	InitCameras();
 
 	// Prueba de primitivas
 	primitives.CreatePrimitives();

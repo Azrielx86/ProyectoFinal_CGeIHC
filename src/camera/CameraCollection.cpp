@@ -6,4 +6,12 @@
 
 namespace Camera
 {
-} // namespace camera
+Camera *CameraCollection::getAcviveCamera() const { return acviveCamera; }
+CameraCollection &CameraCollection::addCamera(const Camera &camera)
+{
+	cameras.push_back(camera);
+	if (acviveCamera == nullptr)
+		acviveCamera = &cameras.front();
+	return *this;
+}
+} // namespace Camera
