@@ -35,6 +35,7 @@ class KeyboardInput
 		int action;
 		std::function<void()> callback;
 		bool repeat;
+		bool pressed;
 	} Key;
 
 	// Necesary for the singleton.
@@ -72,6 +73,8 @@ class KeyboardInput
 	 * @param mode unused.
 	 */
 	void handleKey(int key, [[maybe_unused]] int code, int action, [[maybe_unused]] int mode);
+	
+	std::vector<Key> *getCurrentKeymap();
 
   private:
 	std::unordered_map<int, std::vector<Key>> keymaps;

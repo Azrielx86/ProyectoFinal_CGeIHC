@@ -14,6 +14,9 @@ Camera::Camera *activeCamera;
 
 std::unordered_map<int, Shader *> shaders;
 
+float deltaTime = 0.0f;
+float lastTime = 0.0f;
+const float limitFPS = 1.0f / 60.0f;
 void InitKeymaps()
 {
 	Input::KeyboardInput::GetInstance()
@@ -24,20 +27,6 @@ void InitKeymaps()
 	        {
 		        glfwSetWindowShouldClose(mainWindow.getWindowPointer(), GL_TRUE);
 	        })
-	    .addCallback(
-	        Keymaps::CAMERA_PINBALL, GLFW_KEY_9,
-	        []() -> void
-	        {
-		        std::cout << "9 presionado!\n";
-	        },
-	        true)
-	    .addCallback(
-	        Keymaps::CAMERA_PINBALL, GLFW_KEY_0,
-	        []() -> void
-	        {
-		        std::cout << "0 presionado!\n";
-	        },
-	        true)
 	    .addCallback(
 	        Keymaps::CAMERA_PINBALL, GLFW_KEY_T,
 	        []() -> void
@@ -72,7 +61,7 @@ void InitShaders()
 
 void InitCameras()
 {
-	cameras.addCamera(Camera::Camera(glm::vec3(0.0f, 2.0f, 7.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 1.0f));
+	cameras.addCamera(Camera::Camera(glm::vec3(0.0f, 2.0f, 7.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.5f, 0.5f));
 	activeCamera = cameras.getAcviveCamera();
 }
 
@@ -99,13 +88,17 @@ int main()
 
 	while (!mainWindow.shouldClose())
 	{
+		auto now = (float) glfwGetTime();
+		deltaTime = now - lastTime;
+		deltaTime += (now - lastTime) / limitFPS;
+		lastTime = now;
+
 		glfwPollEvents();
+		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
+		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		shaders[Shader::ShaderTypes::MODEL_TEX_SHADER]->useProgram();
-
 		primitives.getPrimitive(BasicPrimitives::Primitives::SINGLE_TRIANGLE)->RenderMesh();
-
 		mainWindow.swapBuffers();
 	}
 

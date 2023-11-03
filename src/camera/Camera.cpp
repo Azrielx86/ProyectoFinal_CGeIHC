@@ -36,21 +36,36 @@ void Camera::update()
 	up = glm::normalize(glm::cross(right, front));
 }
 
-void Camera::mouseControl(Input::MouseInput& mouseInput)
+void Camera::mouseControl(Input::MouseInput &mouse)
 {
-	float xChange = mouseInput.getXChange() * turnSpeed;
-	float yChange = mouseInput.getYChange() * turnSpeed;
+	float xChange = mouse.getXChange() * turnSpeed;
+	float yChange = mouse.getYChange() * turnSpeed;
 
 	yaw += xChange;
 	pitch += yChange;
-
-#ifdef DEBUG
-	std::cout << "Camera updated! [Yaw: " << yaw << " | Pitch : " << pitch << "]\r";
-#endif
 
 	if (pitch > 89.0f) pitch = 89.0f;
 	if (pitch < -89.0f) pitch = -89.0f;
 
 	update();
+}
+
+void Camera::keyControl(Input::KeyboardInput &keyboard, GLfloat deltaTime)
+{
+	float velocity = moveSpeed * deltaTime;
+
+	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_W).pressed)
+		position += front * velocity;
+	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_S).pressed)
+		position -= front * velocity;
+	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_A).pressed)
+		position += right * velocity;
+	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_D).pressed)
+		position -= right * velocity;
+
+	std::cout << "New Position ("
+	          << this->position.x << ", "
+	          << this->position.y << ", "
+	          << this->position.z << ")\r";
 }
 } // namespace Camera

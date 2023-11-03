@@ -8,6 +8,8 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+//
+#include "../input/KeyboardInput.h"
 #include "../input/MouseInput.h"
 
 #ifdef DEBUG
@@ -33,8 +35,8 @@ class Camera
 	 * Solo una función Update
 	 */
 
-	//	void keyControl(bool *keys, GLfloat deltaTime);
-	void mouseControl(Input::MouseInput& mouseInput);
+	void keyControl(Input::KeyboardInput &keyboard, GLfloat deltaTime);
+	void mouseControl(Input::MouseInput &mouse);
 
 	glm::vec3 getCameraPosition();
 	glm::vec3 getCameraDirection();
