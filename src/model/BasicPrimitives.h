@@ -13,7 +13,8 @@ class BasicPrimitives
   public:
 	enum Primitives
 	{
-		SINGLE_TRIANGLE
+		SINGLE_TRIANGLE,
+		FLOOR
 	};
 
 	BasicPrimitives();

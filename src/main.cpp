@@ -1,11 +1,23 @@
+#include <cmath>
+#include <cstdio>
+#include <iostream>
+#include <vector>
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "GlobalConstants.h"
 #include "Shader.h"
+#include "Utils/ModelMatrix.h"
 #include "Window.h"
 #include "camera/Camera.h"
 #include "camera/CameraCollection.h"
 #include "input/KeyboardInput.h"
 #include "model/BasicPrimitives.h"
-#include <iostream>
 
 Window mainWindow;
 BasicPrimitives primitives;
@@ -17,6 +29,12 @@ std::unordered_map<int, Shader *> shaders;
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
 const float limitFPS = 1.0f / 60.0f;
+
+// Constantes para uniforms
+GLuint uProjection = 0, uModel = 0, uView = 0, uEyePosition = 0,
+       uniformSpecularIntensity = 0, uniformShininess = 0, uniformTextureOffset = 0;
+GLuint uColor = 0;
+
 void InitKeymaps()
 {
 	Input::KeyboardInput::GetInstance()
@@ -33,6 +51,7 @@ void InitKeymaps()
 	        {
 		        std::cout << "Mouse disabled!";
 		        Input::MouseInput::GetInstance().toggleMouseEnabled();
+		        mainWindow.toggleMouse();
 	        });
 
 	Input::MouseInput::GetInstance()
@@ -69,9 +88,6 @@ int main()
 {
 	mainWindow = Window(1280, 720, "Proyecto :P");
 
-	//	mainWindow.createCallback(GLFW_KEY_W, cbakFromMain);
-	//	mainWindow.createCallback(GLFW_KEY_R, scndCmakMain);
-
 	if (!mainWindow.Init())
 	{
 		std::cerr << "No se pudo iniciar la ventana\n";
@@ -83,8 +99,15 @@ int main()
 	InitKeymaps();
 	InitCameras();
 
+	// Matriz para transformaciones
+	Utils::ModelMatrix handler(glm::mat4(1.0f));
+
 	// Prueba de primitivas
 	primitives.CreatePrimitives();
+
+	glm::mat4 projection = glm::perspective(45.0f, (GLfloat) mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
+	glm::mat4 model(1.0f);
+	glm::vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
 
 	while (!mainWindow.shouldClose())
 	{
@@ -95,10 +118,31 @@ int main()
 
 		glfwPollEvents();
 		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
-		
+
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shaders[Shader::ShaderTypes::MODEL_TEX_SHADER]->useProgram();
-		primitives.getPrimitive(BasicPrimitives::Primitives::SINGLE_TRIANGLE)->RenderMesh();
+		uModel = shaders[Shader::ShaderTypes::MODEL_TEX_SHADER]->getUniformModel();
+		uProjection = shaders[Shader::ShaderTypes::MODEL_TEX_SHADER]->getUniformProjection();
+		uView = shaders[Shader::ShaderTypes::MODEL_TEX_SHADER]->getUniformView();
+		uEyePosition = shaders[Shader::ShaderTypes::MODEL_TEX_SHADER]->getUniformEyePosition();
+		uColor = shaders[Shader::ShaderTypes::MODEL_TEX_SHADER]->getUniformColor();
+
+		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv((GLint) uView, 1, GL_FALSE, glm::value_ptr(activeCamera->calculateViewMatrix()));
+		auto camPos = activeCamera->getCameraPosition();
+		glUniform3f((GLint) uEyePosition, camPos.x, camPos.y, camPos.z);
+
+		// Renderizar primer primitiva
+		color = {1.0f, 1.0f, 1.0f, 1.0f};
+		model = handler
+		            .setMatrix(glm::mat4(1.0f))
+		            .scale(2.0f)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
+		primitives.getPrimitive(BasicPrimitives::Primitives::FLOOR)->RenderMesh();
+
 		mainWindow.swapBuffers();
 	}
 

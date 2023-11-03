@@ -57,6 +57,8 @@ add_executable(ProyectoFinal_CGeIHC
         src/GlobalConstants.h
         src/camera/CameraCollection.cpp
         src/camera/CameraCollection.h
+        src/Utils/ModelMatrix.cpp
+        src/Utils/ModelMatrix.h
 )
 
 message(STATUS "Copiando archivos de shader")

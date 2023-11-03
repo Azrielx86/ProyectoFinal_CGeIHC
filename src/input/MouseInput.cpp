@@ -9,8 +9,15 @@ MouseInput &MouseInput::GetInstance()
 		instance = new MouseInput();
 	return *instance;
 }
-void MouseInput::toggleMouseEnabled() { mouseEnabled = !mouseEnabled; }
+void MouseInput::toggleMouseEnabled()
+{
+	lastxPos = 0;
+	lastyPos = 0;
+	mouseEnabled = !mouseEnabled;
+}
+
 bool MouseInput::isMouseEnabled() const { return mouseEnabled; }
+
 void MouseInput::handleClick(int button, int action, [[maybe_unused]] int mode) // NOLINT(*-convert-member-functions-to-static)
 {
 	if (currentKeymap == nullptr) return;

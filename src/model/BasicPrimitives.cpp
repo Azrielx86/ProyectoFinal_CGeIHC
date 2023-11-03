@@ -23,11 +23,27 @@ void BasicPrimitives::CreateSingleTriangle()
 	unsigned int idx[] = {
 		1, 2, 3
 	};
+
+	unsigned int floorIndices[] = {
+		0, 2, 1,
+		1, 2, 3
+	};
+	
+	GLfloat floorVertices[] = {
+		-10.0f, 0.0f, -10.0f,	0.0f, 0.0f,		0.0f, -1.0f, 0.0f,
+		10.0f, 0.0f, -10.0f,	10.0f, 0.0f,	0.0f, -1.0f, 0.0f,
+		-10.0f, 0.0f, 10.0f,	0.0f, 10.0f,	0.0f, -1.0f, 0.0f,
+		10.0f, 0.0f, 10.0f,		10.0f, 10.0f,	0.0f, -1.0f, 0.0f
+	};
 	// clang-format on
 
 	auto mesh = new BasicMesh();
 	mesh->CreateMesh(vertices, idx, 24, 3);
-	this->meshMap[Primitives::SINGLE_TRIANGLE] = mesh;
+	meshMap[Primitives::SINGLE_TRIANGLE] = mesh;
+
+	auto floor = new BasicMesh();
+	floor->CreateMesh(floorVertices, floorIndices, 32, 6);
+	meshMap[Primitives::FLOOR] = floor;
 }
 BasicMesh *BasicPrimitives::getPrimitive(BasicPrimitives::Primitives p)
 {

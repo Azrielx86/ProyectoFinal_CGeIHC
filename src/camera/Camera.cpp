@@ -59,13 +59,8 @@ void Camera::keyControl(Input::KeyboardInput &keyboard, GLfloat deltaTime)
 	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_S).pressed)
 		position -= front * velocity;
 	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_A).pressed)
-		position += right * velocity;
-	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_D).pressed)
 		position -= right * velocity;
-
-	std::cout << "New Position ("
-	          << this->position.x << ", "
-	          << this->position.y << ", "
-	          << this->position.z << ")\r";
+	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_D).pressed)
+		position += right * velocity;
 }
 } // namespace Camera

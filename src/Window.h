@@ -26,6 +26,7 @@ class Window
 	bool shouldClose() { return glfwWindowShouldClose(window); }
 	void swapBuffers() { return glfwSwapBuffers(window); }
 	void bindCallbacks();
+	void toggleMouse();
 	GLFWwindow *getWindowPointer() { return window; }
 	static void handleKeyboard([[maybe_unused]] GLFWwindow *window, int key, int code, int action, int mode);
 	static void handleMousePos(GLFWwindow *window, double xPos, double yPos);
