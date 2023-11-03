@@ -80,10 +80,21 @@ Window::~Window()
 void Window::bindCallbacks()
 {
 	glfwSetKeyCallback(window, Window::handleKeyboard);
+	glfwSetCursorPosCallback(window, Window::handleMousePos);
+	glfwSetMouseButtonCallback(window, Window::handleMouseClick);
 }
 
 void Window::handleKeyboard([[maybe_unused]] GLFWwindow *window, int key, int code, int action, int mode)
 {
-	auto input = KeyboardInput::GetInstance();
-	input->handleKey(key, code, action, mode);
+	Input::KeyboardInput::GetInstance().handleKey(key, code, action, mode);
+}
+
+void Window::handleMousePos([[maybe_unused]] GLFWwindow *window, double xPos, double yPos)
+{
+	Input::MouseInput::GetInstance().handlePosition((float) xPos, (float) yPos);
+}
+
+void Window::handleMouseClick([[maybe_unused]] GLFWwindow *window, int button, int action, int mode)
+{
+	Input::MouseInput::GetInstance().handleClick(button, action, mode);
 }

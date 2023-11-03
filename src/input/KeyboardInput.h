@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+namespace Input
+{
 /**
  * Input class, manages a global input system by a singleton instance.
  * It can use different keymaps.
@@ -34,24 +36,24 @@ class KeyboardInput
 		std::function<void()> callback;
 		bool repeat;
 	} Key;
-	
+
 	// Necesary for the singleton.
 	KeyboardInput(KeyboardInput &) = delete;
 	void operator=(const KeyboardInput &) = delete;
-	
+
 	/**
 	 * Returns the Input manager instance, if it doesn' exists, creates a new one.
 	 * @return Input manager global instance.
 	 */
-	static KeyboardInput *GetInstance();
-	
+	static KeyboardInput &GetInstance();
+
 	/**
 	 * Creates a new keymap
 	 * @param keymap keymap code [Recomended manage it by an enum]
 	 * @return Input current instance.
 	 */
 	KeyboardInput &createKeymap(int keymap);
-	
+
 	/**
 	 * Creates a callback for a key on a keymap.
 	 * @param keymap Keymap code.
@@ -61,7 +63,7 @@ class KeyboardInput
 	 * @return Input current instance.
 	 */
 	KeyboardInput &addCallback(int keymap, int key, const std::function<void()> &callback, bool repeat = false);
-	
+
 	/**
 	 * Handles the key events for GLFW.
 	 * @param key GLFW Key.
@@ -75,4 +77,5 @@ class KeyboardInput
 	std::unordered_map<int, std::vector<Key>> keymaps;
 	std::vector<Key> *currentKeymap = nullptr;
 };
+} // namespace Input
 #endif // PROYECTOFINAL_CGEIHC_KEYBOARDINPUT_H

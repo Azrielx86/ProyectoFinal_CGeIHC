@@ -10,6 +10,7 @@
 #include <GLFW/glfw3.h>
 // ========================
 #include "input/KeyboardInput.h"
+#include "input/MouseInput.h"
 #include <functional>
 #include <iostream>
 
@@ -24,12 +25,11 @@ class Window
 	bool Init();
 	bool shouldClose() { return glfwWindowShouldClose(window); }
 	void swapBuffers() { return glfwSwapBuffers(window); }
-
-	static void handleKeyboard([[maybe_unused]] GLFWwindow *window, int key, int code, int action, int mode);
-	//
-	//	void createCallback(int key, const std::function<void()> &callback);
 	void bindCallbacks();
 	GLFWwindow *getWindowPointer() { return window; }
+	static void handleKeyboard([[maybe_unused]] GLFWwindow *window, int key, int code, int action, int mode);
+	static void handleMousePos(GLFWwindow *window, double xPos, double yPos);
+	static void handleMouseClick(GLFWwindow* window, int button, int action, int mode);
 
   private:
 	GLFWwindow *window;
@@ -38,10 +38,6 @@ class Window
 	int bufferWidth;
 	int bufferHeight;
 	const char *title;
-	//	static Input input;
-
-	//	bool keys[1024];
-	//	std::unordered_map<int, std::function<void()>> callbacks;
 };
 
 #endif // PROYECTOFINAL_CGEIHC_WINDOW_H

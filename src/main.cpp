@@ -1,9 +1,9 @@
-#include "BasicPrimitives.h"
 #include "Camera.h"
+#include "GlobalConstants.h"
 #include "Shader.h"
 #include "Window.h"
 #include "input/KeyboardInput.h"
-
+#include "model/BasicPrimitives.h"
 #include <iostream>
 
 Window mainWindow;
@@ -11,32 +11,25 @@ BasicPrimitives primitives;
 
 std::unordered_map<int, Shader *> shaders;
 
-enum Keymaps
-{
-	CAMERA_PINBALL,
-	CAMERA_AVATAR
-};
-
 void InitKeymaps()
 {
-	KeyboardInput *input = KeyboardInput::GetInstance();
-	input->createKeymap(CAMERA_PINBALL);
-
-	input->addCallback(CAMERA_PINBALL,
-	                   GLFW_KEY_ESCAPE,
-	                   []() -> void
-	                   {
-		                   glfwSetWindowShouldClose(mainWindow.getWindowPointer(), GL_TRUE);
-	                   })
+	Input::KeyboardInput::GetInstance()
+	    .createKeymap(Global::Keymaps::CAMERA_PINBALL)
+	    .addCallback(Global::Keymaps::CAMERA_PINBALL,
+	                 GLFW_KEY_ESCAPE,
+	                 []() -> void
+	                 {
+		                 glfwSetWindowShouldClose(mainWindow.getWindowPointer(), GL_TRUE);
+	                 })
 	    .addCallback(
-	        CAMERA_PINBALL, GLFW_KEY_9,
+	        Global::Keymaps::CAMERA_PINBALL, GLFW_KEY_9,
 	        []() -> void
 	        {
 		        std::cout << "9 presionado!\n";
 	        },
 	        true)
 	    .addCallback(
-	        CAMERA_PINBALL, GLFW_KEY_0,
+	        Global::Keymaps::CAMERA_PINBALL, GLFW_KEY_0,
 	        []() -> void
 	        {
 		        std::cout << "0 presionado!\n";

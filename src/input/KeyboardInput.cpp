@@ -3,14 +3,15 @@
 //
 
 #include "KeyboardInput.h"
-
+namespace Input
+{
 KeyboardInput *KeyboardInput::instance = nullptr;
 
-KeyboardInput *KeyboardInput::GetInstance()
+KeyboardInput &KeyboardInput::GetInstance()
 {
 	if (instance == nullptr)
 		instance = new KeyboardInput();
-	return instance;
+	return *instance;
 }
 
 KeyboardInput &KeyboardInput::createKeymap(int keymap)
@@ -50,3 +51,4 @@ KeyboardInput &KeyboardInput::addCallback(int keymap, int key, const std::functi
 	keymaps[keymap].at(key).repeat = repeat;
 	return *this;
 }
+} // namespace Input
