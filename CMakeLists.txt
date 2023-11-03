@@ -49,12 +49,14 @@ add_executable(ProyectoFinal_CGeIHC
         src/model/BasicMesh.cpp
         src/model/Mesh.cpp
         src/model/Model.cpp
-        src/Camera.cpp
+        src/camera/Camera.cpp
         src/input/KeyboardInput.cpp
         src/input/KeyboardInput.h
         src/input/MouseInput.cpp
         src/input/MouseInput.h
         src/GlobalConstants.h
+        src/camera/CameraCollection.cpp
+        src/camera/CameraCollection.h
 )
 
 message(STATUS "Copiando archivos de shader")

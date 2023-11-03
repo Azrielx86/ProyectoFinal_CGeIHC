@@ -3,6 +3,8 @@
 //
 
 #include "Camera.h"
+namespace Camera
+{
 
 Camera::Camera() {}
 
@@ -34,3 +36,4 @@ void Camera::update()
 	right = glm::normalize(glm::cross(front, worldUp));
 	up = glm::normalize(glm::cross(right, front));
 }
+} // namespace Camera

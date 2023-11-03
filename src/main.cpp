@@ -1,7 +1,7 @@
-#include "Camera.h"
 #include "GlobalConstants.h"
 #include "Shader.h"
 #include "Window.h"
+#include "camera/Camera.h"
 #include "input/KeyboardInput.h"
 #include "model/BasicPrimitives.h"
 #include <iostream>
@@ -15,12 +15,12 @@ void InitKeymaps()
 {
 	Input::KeyboardInput::GetInstance()
 	    .createKeymap(Global::Keymaps::CAMERA_PINBALL)
-	    .addCallback(Global::Keymaps::CAMERA_PINBALL,
-	                 GLFW_KEY_ESCAPE,
-	                 []() -> void
-	                 {
-		                 glfwSetWindowShouldClose(mainWindow.getWindowPointer(), GL_TRUE);
-	                 })
+	    .addCallback(
+	        Global::Keymaps::CAMERA_PINBALL, GLFW_KEY_ESCAPE,
+	        []() -> void
+	        {
+		        glfwSetWindowShouldClose(mainWindow.getWindowPointer(), GL_TRUE);
+	        })
 	    .addCallback(
 	        Global::Keymaps::CAMERA_PINBALL, GLFW_KEY_9,
 	        []() -> void
@@ -34,7 +34,32 @@ void InitKeymaps()
 	        {
 		        std::cout << "0 presionado!\n";
 	        },
-	        true);
+	        true)
+	    .addCallback(
+	        Global::Keymaps::CAMERA_PINBALL, GLFW_KEY_T,
+	        []() -> void
+	        {
+		        std::cout << "Mouse disabled!";
+		        Input::MouseInput::GetInstance().toggleMouseEnabled();
+	        });
+
+	Input::MouseInput::GetInstance()
+	    .createKeymap(Global::Keymaps::CAMERA_PINBALL)
+	    .addClickCallback(Global::Keymaps::CAMERA_PINBALL,
+	                      GLFW_MOUSE_BUTTON_LEFT,
+	                      []() -> void
+	                      {
+		                      std::cout << "Click izquierdo desde el exterior!\n\n";
+	                      })
+	    .addMoveCallback(Global::Keymaps::CAMERA_PINBALL,
+	                     [](float) -> void
+	                     {
+		                     std::cout << "Mouse move: ("
+		                               << Input::MouseInput::GetInstance().getXChange()
+		                               << ", "
+		                               << Input::MouseInput::GetInstance().getYChange()
+		                               << ")\r";
+	                     });
 }
 
 void InitShaders()
