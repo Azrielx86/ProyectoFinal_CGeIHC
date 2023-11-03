@@ -12,3 +12,4 @@ TabWidth: '4'
 UseTab: ForIndentation
 SpaceAfterTemplateKeyword: 'true'
 ColumnLimit: 0
+AllowShortIfStatementsOnASingleLine: true

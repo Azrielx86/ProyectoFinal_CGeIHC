@@ -4,10 +4,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 if (NOT MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
-    if (DEBUG)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
-    elseif (RELEASE)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        message(WARNING "Compilando la versión debug.")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -DDEBUG")
+    elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DRELEASE")
     endif ()
 endif ()
 
@@ -44,13 +45,20 @@ add_executable(ProyectoFinal_CGeIHC
         src/Window.cpp
         src/Shader.cpp
         src/Shader.cpp
-        src/BasicPrimitives.cpp
-        src/BasicMesh.cpp
-        src/Mesh.cpp
-        src/Model.cpp
-        src/Camera.cpp
+        src/model/BasicPrimitives.cpp
+        src/model/BasicMesh.cpp
+        src/model/Mesh.cpp
+        src/model/Model.cpp
+        src/camera/Camera.cpp
         src/input/KeyboardInput.cpp
         src/input/KeyboardInput.h
+        src/input/MouseInput.cpp
+        src/input/MouseInput.h
+        src/GlobalConstants.h
+        src/camera/CameraCollection.cpp
+        src/camera/CameraCollection.h
+        src/Utils/ModelMatrix.cpp
+        src/Utils/ModelMatrix.h
 )
 
 message(STATUS "Copiando archivos de shader")

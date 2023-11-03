@@ -3,6 +3,8 @@
 //
 
 #include "Camera.h"
+namespace Camera
+{
 
 Camera::Camera() {}
 
@@ -30,7 +32,35 @@ void Camera::update()
 	front.y = sin(glm::radians(pitch));
 	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 	front = glm::normalize(front);
-
 	right = glm::normalize(glm::cross(front, worldUp));
 	up = glm::normalize(glm::cross(right, front));
 }
+
+void Camera::mouseControl(Input::MouseInput &mouse)
+{
+	float xChange = mouse.getXChange() * turnSpeed;
+	float yChange = mouse.getYChange() * turnSpeed;
+
+	yaw += xChange;
+	pitch += yChange;
+
+	if (pitch > 89.0f) pitch = 89.0f;
+	if (pitch < -89.0f) pitch = -89.0f;
+
+	update();
+}
+
+void Camera::keyControl(Input::KeyboardInput &keyboard, GLfloat deltaTime)
+{
+	float velocity = moveSpeed * deltaTime;
+
+	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_W).pressed)
+		position += front * velocity;
+	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_S).pressed)
+		position -= front * velocity;
+	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_A).pressed)
+		position -= right * velocity;
+	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_D).pressed)
+		position += right * velocity;
+}
+} // namespace Camera

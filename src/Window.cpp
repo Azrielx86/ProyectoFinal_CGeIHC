@@ -65,7 +65,7 @@ bool Window::Init()
 	glfwSetWindowUserPointer(window, this);
 
 	// Cuando ya se tengan elementos 3D habilitar esto
-	//	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
 
 	return true;
@@ -80,10 +80,28 @@ Window::~Window()
 void Window::bindCallbacks()
 {
 	glfwSetKeyCallback(window, Window::handleKeyboard);
+	glfwSetCursorPosCallback(window, Window::handleMousePos);
+	glfwSetMouseButtonCallback(window, Window::handleMouseClick);
 }
 
 void Window::handleKeyboard([[maybe_unused]] GLFWwindow *window, int key, int code, int action, int mode)
 {
-	auto input = KeyboardInput::GetInstance();
-	input->handleKey(key, code, action, mode);
+	Input::KeyboardInput::GetInstance().handleKey(key, code, action, mode);
+}
+
+void Window::handleMousePos([[maybe_unused]] GLFWwindow *window, double xPos, double yPos)
+{
+	Input::MouseInput::GetInstance().handlePosition((float) xPos, (float) yPos);
+}
+
+void Window::handleMouseClick([[maybe_unused]] GLFWwindow *window, int button, int action, int mode)
+{
+	Input::MouseInput::GetInstance().handleClick(button, action, mode);
+}
+void Window::toggleMouse()
+{
+	if (Input::MouseInput::GetInstance().isMouseEnabled())
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	else
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
