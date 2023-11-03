@@ -40,6 +40,11 @@ if (assimp_FOUND)
     message(STATUS "Assimp Found")
 endif ()
 
+find_package(OpenAL CONFIG REQUIRED)
+if (OpenAL_FOUND)
+    message(STATUS "OpenAL Found")
+endif ()
+
 add_executable(ProyectoFinal_CGeIHC
         src/main.cpp
         src/Window.cpp
@@ -59,6 +64,10 @@ add_executable(ProyectoFinal_CGeIHC
         src/camera/CameraCollection.h
         src/Utils/ModelMatrix.cpp
         src/Utils/ModelMatrix.h
+        src/Audio/AudioController.cpp
+        src/Audio/AudioController.h
+        src/Audio/AudioDevice.cpp
+        src/Audio/AudioDevice.h
 )
 
 message(STATUS "Copiando archivos de shader")
@@ -74,4 +83,5 @@ else ()
     target_link_libraries(ProyectoFinal_CGeIHC PRIVATE GLEW::GLEW)
     target_link_libraries(ProyectoFinal_CGeIHC PRIVATE glfw)
     target_link_libraries(ProyectoFinal_CGeIHC PRIVATE assimp::assimp)
+    target_link_libraries(ProyectoFinal_CGeIHC PRIVATE OpenAL::OpenAL)
 endif ()

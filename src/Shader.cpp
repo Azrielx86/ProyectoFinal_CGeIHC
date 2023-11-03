@@ -39,6 +39,7 @@ std::string Shader::readFile(const char *path)
 		std::string message = "File does not exists: ";
 		message += std::string(path);
 		std::cerr << message;
+		return stream;
 	}
 
 	std::string line;

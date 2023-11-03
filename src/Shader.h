@@ -24,7 +24,8 @@ class Shader
 	{
 		SKYBOX_SHADER,
 		LIGHT_SHADER,
-		MODEL_TEX_SHADER
+		MODEL_TEX_SHADER,
+		BASE_SHADER
 	};
 
 	Shader();

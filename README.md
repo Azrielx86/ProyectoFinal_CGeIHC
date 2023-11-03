@@ -40,10 +40,10 @@ Compilación
 # Roadmap
 ## Fase 1 - Base del programa
 - [x] Manejo de ventanas
-- [ ] Entrada de teclado y mouse
-- [ ] Ventana de proyección
-- [ ] Cámara (multi instancias)
-- [ ] Shaders mínimos
+- [x] Entrada de teclado y mouse
+- [x] Ventana de proyección
+- [x] Cámara (multi instancias)
+- [x] Shaders mínimos
 
 ## Fase 2 - Modelos
 - [ ] Carga de modelos por `Assimp`
