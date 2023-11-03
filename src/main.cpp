@@ -2,16 +2,47 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Window.h"
+#include "input/KeyboardInput.h"
+
 #include <iostream>
 
 Window mainWindow;
 BasicPrimitives primitives;
-Camera camera;
-
-void cbakFromMain() { std::cout << "Llamo esto desde un callback :D\n"; }
-void scndCmakMain() { std::cout << "Otro callback desde el main!\n"; }
 
 std::unordered_map<int, Shader *> shaders;
+
+enum Keymaps
+{
+	CAMERA_PINBALL,
+	CAMERA_AVATAR
+};
+
+void InitKeymaps()
+{
+	KeyboardInput *input = KeyboardInput::GetInstance();
+	input->createKeymap(CAMERA_PINBALL);
+
+	input->addCallback(CAMERA_PINBALL,
+	                   GLFW_KEY_ESCAPE,
+	                   []() -> void
+	                   {
+		                   glfwSetWindowShouldClose(mainWindow.getWindowPointer(), GL_TRUE);
+	                   })
+	    .addCallback(
+	        CAMERA_PINBALL, GLFW_KEY_9,
+	        []() -> void
+	        {
+		        std::cout << "9 presionado!\n";
+	        },
+	        true)
+	    .addCallback(
+	        CAMERA_PINBALL, GLFW_KEY_0,
+	        []() -> void
+	        {
+		        std::cout << "0 presionado!\n";
+	        },
+	        true);
+}
 
 void InitShaders()
 {
@@ -23,8 +54,9 @@ void InitShaders()
 int main()
 {
 	mainWindow = Window(1280, 720, "Proyecto :P");
-	mainWindow.createCallback(GLFW_KEY_W, cbakFromMain);
-	mainWindow.createCallback(GLFW_KEY_R, scndCmakMain);
+
+	//	mainWindow.createCallback(GLFW_KEY_W, cbakFromMain);
+	//	mainWindow.createCallback(GLFW_KEY_R, scndCmakMain);
 
 	if (!mainWindow.Init())
 	{
@@ -34,7 +66,8 @@ int main()
 
 	// Inicializar los componentes del programa
 	InitShaders();
-	camera = Camera(glm::vec3(0.0f, 2.0f, 7.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 1.0f);
+	InitKeymaps();
+	//	camera = Camera(glm::vec3(0.0f, 2.0f, 7.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 1.0f);
 
 	// Prueba de primitivas
 	primitives.CreatePrimitives();
