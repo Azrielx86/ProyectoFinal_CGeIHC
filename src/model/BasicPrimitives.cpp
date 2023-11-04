@@ -3,7 +3,8 @@
 //
 
 #include "BasicPrimitives.h"
-
+namespace Model
+{
 BasicPrimitives::BasicPrimitives() {}
 
 void BasicPrimitives::CreatePrimitives()
@@ -55,3 +56,4 @@ BasicPrimitives::~BasicPrimitives()
 	for (const auto &item : meshMap)
 		delete item.second;
 }
+} // namespace Model

@@ -1,3 +1,8 @@
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
+#pragma ide diagnostic ignored "OCUnusedMacroInspection"
+#define STB_IMAGE_IMPLEMENTATION
+
 #include <cmath>
 #include <iostream>
 
@@ -8,6 +13,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Audio/AudioDevice.h"
 #include "GlobalConstants.h"
 #include "Shader.h"
 #include "Utils/ModelMatrix.h"
@@ -16,12 +22,22 @@
 #include "camera/CameraCollection.h"
 #include "input/KeyboardInput.h"
 #include "model/BasicPrimitives.h"
-#include "Audio/AudioDevice.h"
+#include "model/Model.h"
+#include "model/ModelCollection.h"
 
 Window mainWindow;
-BasicPrimitives primitives;
+Model::BasicPrimitives primitives;
 Camera::CameraCollection cameras;
 Camera::Camera *activeCamera;
+Model::ModelCollection models;
+
+enum MODELS
+{
+	MAQUINA_PINBALL,
+	FLIPPER,
+	CANICA,
+	AVATAR
+};
 
 std::unordered_map<int, Shader *> shaders;
 
@@ -75,7 +91,7 @@ void InitShaders()
 	auto shader = new Shader();
 	shader->loadShader("shaders/shader.vert", "shaders/shader.frag");
 	shaders[Shader::ShaderTypes::BASE_SHADER] = shader;
-	
+
 	auto lightShader = new Shader();
 	lightShader->loadShader("shaders/shader_light.vert", "shaders/shader_light.frag");
 	shaders[Shader::ShaderTypes::LIGHT_SHADER] = lightShader;
@@ -85,6 +101,15 @@ void InitCameras()
 {
 	cameras.addCamera(Camera::Camera(glm::vec3(0.0f, 2.0f, 7.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.5f, 0.5f));
 	activeCamera = cameras.getAcviveCamera();
+}
+
+void InitModels()
+{
+	models
+	    .addModel(MODELS::MAQUINA_PINBALL, "assets/Models/MaquinaPinball.obj")
+	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
+	    .addModel(MODELS::CANICA, "assets/Models/canica.obj");
+	models.loadModels();
 }
 
 int main()
@@ -101,7 +126,8 @@ int main()
 	InitShaders();
 	InitKeymaps();
 	InitCameras();
-	
+	InitModels();
+
 	Audio::AudioDevice::GetInstance();
 
 	// Matriz para transformaciones
@@ -113,6 +139,8 @@ int main()
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat) mainWindow.getBufferWidth() / (GLfloat) mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 	glm::mat4 model(1.0f);
 	glm::vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
+
+	auto maquinaPinball = models.getModel(MODELS::MAQUINA_PINBALL);
 
 	while (!mainWindow.shouldClose())
 	{
@@ -126,12 +154,12 @@ int main()
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		shaders[Shader::ShaderTypes::BASE_SHADER]->useProgram();
-		uModel = shaders[Shader::ShaderTypes::BASE_SHADER]->getUniformModel();
-		uProjection = shaders[Shader::ShaderTypes::BASE_SHADER]->getUniformProjection();
-		uView = shaders[Shader::ShaderTypes::BASE_SHADER]->getUniformView();
-		uEyePosition = shaders[Shader::ShaderTypes::BASE_SHADER]->getUniformEyePosition();
-		uColor = shaders[Shader::ShaderTypes::BASE_SHADER]->getUniformColor();
+		shaders[Shader::ShaderTypes::LIGHT_SHADER]->useProgram();
+		uModel = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformModel();
+		uProjection = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformProjection();
+		uView = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformView();
+		uEyePosition = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformEyePosition();
+		uColor = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformColor();
 
 		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv((GLint) uView, 1, GL_FALSE, glm::value_ptr(activeCamera->calculateViewMatrix()));
@@ -146,12 +174,20 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
-		primitives.getPrimitive(BasicPrimitives::Primitives::FLOOR)->RenderMesh();
+		primitives.getPrimitive(Model::BasicPrimitives::FLOOR)->RenderMesh();
+
+		model = handler
+		            .setMatrix(glm::mat4(1.0f))
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
+		maquinaPinball->render();
 
 		mainWindow.swapBuffers();
 	}
 
 	Audio::AudioDevice::Terminate();
-	
+
 	return 0;
 }
+#pragma clang diagnostic pop

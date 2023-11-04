@@ -3,6 +3,8 @@
 //
 
 #include "BasicMesh.h"
+namespace Model
+{
 BasicMesh::BasicMesh()
 {
 	VAO = 0;
@@ -76,3 +78,4 @@ BasicMesh::~BasicMesh()
 {
 	ClearMesh();
 }
+} // namespace Model

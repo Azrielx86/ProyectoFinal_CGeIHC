@@ -14,7 +14,12 @@ Estas herramientas son para Windows (y opcionalmente Linux).
 
 Instalación de paquetes de vcpkg (opcionalmente se pueden instalar las versiones x86)
 
-    vcpkg install assimp:x64-windows glew:x64-windows glfw3:x64-windows glm:x64-windows
+    vcpkg install assimp:x64-windows glew:x64-windows glfw3:x64-windows glm:x64-windows openal-soft:x64-windows
+    vcpkg integrate install
+
+Para las versiones x86
+
+    vcpkg install assimp:x86-windows glew:x86-windows glfw3:x86-windows glm:x86-windows openal-soft:x86-windows
     vcpkg integrate install
 
 vcpkg también se puede integrar a Visual Studio para utilizarlo con MSVC.
@@ -63,3 +68,6 @@ Compilación
 ## Fase 5 - Animación
 - [ ] Animación de los elementos en el tablero
 - [ ] Animación del avatar
+
+## Fase 6 - Audio
+- [ ] Integración de OpenAL

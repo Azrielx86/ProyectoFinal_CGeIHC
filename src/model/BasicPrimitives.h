@@ -7,6 +7,8 @@
 
 #include "BasicMesh.h"
 #include <unordered_map>
+namespace Model
+{
 
 class BasicPrimitives
 {
@@ -26,5 +28,5 @@ class BasicPrimitives
 	void CreateSingleTriangle();
 	std::unordered_map<int, BasicMesh *> meshMap;
 };
-
+} // namespace Model
 #endif // PROYECTOFINAL_CGEIHC_BASICPRIMITIVES_H

@@ -45,6 +45,13 @@ if (OpenAL_FOUND)
     message(STATUS "OpenAL Found")
 endif ()
 
+find_package(Stb REQUIRED)
+if (Stb_FOUND)
+    message(STATUS "STB Found at ${Stb_INCLUDE_DIR}")
+endif ()
+
+include_directories(${Stb_INCLUDE_DIR})
+
 add_executable(ProyectoFinal_CGeIHC
         src/main.cpp
         src/Window.cpp
@@ -68,20 +75,24 @@ add_executable(ProyectoFinal_CGeIHC
         src/Audio/AudioController.h
         src/Audio/AudioDevice.cpp
         src/Audio/AudioDevice.h
+        src/model/ModelCollection.cpp
+        src/model/ModelCollection.h
+        src/model/Texture.cpp
+        src/model/Texture.h
+        src/Utils/PathUtils.cpp
+        src/Utils/PathUtils.h
 )
 
 message(STATUS "Copiando archivos de shader")
 file(COPY shaders DESTINATION ${CMAKE_BINARY_DIR})
-#message(STATUS "Copiando archivos de modelos")
-#file(COPY Models DESTINATION ${CMAKE_BINARY_DIR})
-#message(STATUS "Copiando archivos de texturas")
-#file(COPY Textures DESTINATION ${CMAKE_BINARY_DIR})
+message(STATUS "Copiando archivos de modelos")
+file(COPY assets/Models DESTINATION ${CMAKE_BINARY_DIR}/assets)
+message(STATUS "Copiando archivos de texturas")
+file(COPY assets/Textures DESTINATION ${CMAKE_BINARY_DIR}/assets)
 
-if (UNIX)
-    target_link_libraries(ProyectoFinal_CGeIHC glfw OpenGL::GL GLEW assimp::assimp)
-else ()
-    target_link_libraries(ProyectoFinal_CGeIHC PRIVATE GLEW::GLEW)
-    target_link_libraries(ProyectoFinal_CGeIHC PRIVATE glfw)
-    target_link_libraries(ProyectoFinal_CGeIHC PRIVATE assimp::assimp)
-    target_link_libraries(ProyectoFinal_CGeIHC PRIVATE OpenAL::OpenAL)
-endif ()
+target_include_directories(ProyectoFinal_CGeIHC PRIVATE ${Stb_INCLUDE_DIR})
+target_link_libraries(ProyectoFinal_CGeIHC PRIVATE GLEW::GLEW)
+target_link_libraries(ProyectoFinal_CGeIHC PRIVATE glfw)
+target_link_libraries(ProyectoFinal_CGeIHC PRIVATE assimp::assimp)
+target_link_libraries(ProyectoFinal_CGeIHC PRIVATE OpenAL::OpenAL)
+#target_link_libraries(ProyectoFinal_CGeIHC PRIVATE OpenMP)
