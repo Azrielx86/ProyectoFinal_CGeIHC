@@ -11,6 +11,8 @@
 #include <iostream>
 #include <type_traits>
 #include <vector>
+namespace Lights
+{
 
 /**
  * Contiene una colección de luces, con métodos para encender/apagar el arreglo.
@@ -25,16 +27,18 @@
 template <typename T>
 class LightCollection
 {
-	static_assert(std::is_same<Light, T>::value || std::is_same<PointLight, T>::value || std::is_same<SpotLight, T>::value, "Must be Light-like type");
+	//	static_assert(std::is_same<Light, T>::value || std::is_same<PointLight, T>::value || std::is_same<SpotLight, T>::value, "Must be Light-like type");
+	static_assert(std::is_base_of<Light, T>::value, "T must be Light-like type.");
 	using LightPair = std::pair<T, bool>;
 
   public:
+	LightCollection() = default;
 	/**
 	 * Constructor del arreglo, construye los pares T - bool
 	 * y los agrega a un nuevo vector
 	 * @param inLightVector Vector de luces (Light, PointLight o SpotLight)
 	 */
-	explicit LightCollection(const std::vector<T> &inLightVector)
+	LightCollection(const std::vector<T> &inLightVector)
 	{
 		for (const auto &light : inLightVector)
 			lightsVector.push_back(std::make_pair(std::ref(light), true));
@@ -114,7 +118,8 @@ class LightCollection
 template <typename T>
 class LightCollectionBuilder
 {
-	static_assert(std::is_same<Light, T>::value || std::is_same<PointLight, T>::value || std::is_same<SpotLight, T>::value, "Must be Light-like type");
+	//	static_assert(std::is_same<Light, T>::value || std::is_same<PointLight, T>::value || std::is_same<SpotLight, T>::value, "Must be Light-like type");
+	static_assert(std::is_base_of<Light, T>::value, "T must be Light-like type.");
 
   public:
 	/**
@@ -170,7 +175,7 @@ class LightCollectionBuilder
 	 * Construye la colección de luces.
 	 * @return Nueva colección de luces.
 	 */
-	LightCollection<T> build()
+	[[nodiscard]] LightCollection<T> build()
 	{
 		auto collection = LightCollection<T>(this->lightVector);
 		collection.updateArray();
@@ -183,4 +188,5 @@ class LightCollectionBuilder
 	std::vector<T> lightVector;
 };
 
+} // namespace Lights
 #endif // PRACTICA07_LIGHTCOLLECTION_H

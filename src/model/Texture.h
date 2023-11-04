@@ -4,9 +4,9 @@
 
 #ifndef PROYECTOFINAL_CGEIHC_TEXTURE_H
 #define PROYECTOFINAL_CGEIHC_TEXTURE_H
+#include "../GlobalConstants.h"
 #include <GL/glew.h>
 #include <iostream>
-#include <stb_image.h>
 #include <string>
 
 namespace Model
@@ -16,9 +16,9 @@ class Texture
 {
   public:
 	Texture();
-	Texture(const char *path);
+	explicit Texture(const char *path);
 	~Texture();
-	bool LoadTexture();
+	bool LoadTexture(bool alpha = false);
 	void UseTexture() const;
 	void ClearTexture();
 

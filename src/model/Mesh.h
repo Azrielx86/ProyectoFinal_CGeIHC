@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#define ARR_SIZE(array, count) (array[0] / count)
+#define ARR_SIZE(array, count) (sizeof (array[0]) * count)
 
 namespace Model
 {
