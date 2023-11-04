@@ -17,7 +17,7 @@ Model::Model(const std::string &path)
 void Model::loadModel()
 {
 	Assimp::Importer importer;
-	const aiScene *scene = importer.ReadFile(modelPath, aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene *scene = importer.ReadFile(modelPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
@@ -29,18 +29,20 @@ void Model::loadModel()
 	loadMaterials(scene);
 	std::cout << "Modelo cargado: " << modelPath << "\n";
 }
+
 void Model::loadNode(aiNode *node, const aiScene *scene)
 {
-	for (uint i = 0; i < node->mNumMeshes; ++i)
+	for (uint i = 0; i < node->mNumMeshes; i++)
 		loadMesh(scene->mMeshes[node->mMeshes[i]], scene);
-	for (uint i = 0; i < node->mNumChildren; ++i)
+	for (uint i = 0; i < node->mNumChildren; i++)
 		loadNode(node->mChildren[i], scene);
 }
-void Model::loadMesh(aiMesh *mesh, const aiScene *scene)
+
+void Model::loadMesh(aiMesh *mesh, [[maybe_unused]] const aiScene *scene)
 {
 	std::vector<GLfloat> vertices;
 	std::vector<uint> indices;
-	for (uint i = 0; i < mesh->mNumVertices; ++i)
+	for (uint i = 0; i < mesh->mNumVertices; i++)
 	{
 		vertices.insert(vertices.end(), {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z});
 		if (mesh->mTextureCoords[0])
@@ -65,7 +67,7 @@ void Model::loadMesh(aiMesh *mesh, const aiScene *scene)
 void Model::loadMaterials(const aiScene *scene)
 {
 	textureList.resize(scene->mNumMaterials);
-	for (uint i = 0; i < scene->mNumMaterials; ++i)
+	for (uint i = 0; i < scene->mNumMaterials; i++)
 	{
 		aiMaterial *material = scene->mMaterials[i];
 		textureList[i] = nullptr;
@@ -79,7 +81,7 @@ void Model::loadMaterials(const aiScene *scene)
 				textureList[i] = new Texture(searchPath.c_str());
 				if (fs::exists(searchPath))
 				{
-					if (!textureList[i]->LoadTexture())
+					if (!textureList[i]->LoadTexture(true))
 					{
 						std::cerr << "Failed to load texture: " << file;
 						delete textureList[i];
@@ -93,7 +95,7 @@ void Model::loadMaterials(const aiScene *scene)
 		{
 			auto texturePath = Utils::PathUtils::getTexturesPath() + "/plain.png";
 			textureList[i] = new Texture(texturePath.c_str());
-			textureList[i]->LoadTexture();
+			textureList[i]->LoadTexture(true);
 		}
 	}
 }
@@ -102,7 +104,7 @@ void Model::render()
 	for (uint i = 0; i < meshList.size(); i++)
 	{
 		uint matIdx = meshesToTexturize[i];
-		if (matIdx >= textureList.size() && textureList[matIdx])
+		if (matIdx < textureList.size() && textureList[matIdx])
 			textureList[matIdx]->UseTexture();
 		meshList[i]->render();
 	}

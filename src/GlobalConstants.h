@@ -5,6 +5,11 @@
 #ifndef PROYECTOFINAL_CGEIHC_GLOBALCONSTANTS_H
 #define PROYECTOFINAL_CGEIHC_GLOBALCONSTANTS_H
 
+#include "stb_image.h"
+
+const int MAX_POINT_LIGHTS = 3;
+const int MAX_SPOT_LIGHTS = 5;
+
 enum Keymaps
 {
 	FREE_CAMERA,

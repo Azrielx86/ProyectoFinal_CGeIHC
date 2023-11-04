@@ -32,6 +32,9 @@ void Mesh::createMesh(GLfloat *vtx, uint *idx, uint vtxCount, uint idxCount)
 	// Normals
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vtx[0]) * 8, (void *) (sizeof(vtx[0]) * 5));
 	glEnableVertexAttribArray(2);
+	
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
 }

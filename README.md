@@ -51,18 +51,18 @@ Compilación
 - [x] Shaders mínimos
 
 ## Fase 2 - Modelos
-- [ ] Carga de modelos por `Assimp`
-- [ ] Optimizado de la carga de modelos
+- [x] Carga de modelos por `Assimp`
+- [x] Optimizado de la carga de modelos
 - [ ] Sistema de jerarquías y transformaciones
 
 ## Fase 3 - Shading y texturizado
-- [ ] Sistema de carga / búsqueda de texturas
-- [ ] Pre-Sistema de shaders (para skybox e iluminación)
-- [ ] Texturizado de los elementos en pantalla
+- [x] Sistema de carga / búsqueda de texturas
+- [x] Pre-Sistema de shaders (para skybox e iluminación)
+- [x] Texturizado de los elementos en pantalla
 
 ## Fase 4 - Iluminación
-- [ ] Skyboxes
-- [ ] Sistema de iluminación (Colecciones de luces)
+- [x] Skyboxes
+- [x] Sistema de iluminación (Colecciones de luces)
 - [ ] (De ser necesario) light baking
 
 ## Fase 5 - Animación

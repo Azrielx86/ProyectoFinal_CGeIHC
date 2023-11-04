@@ -15,13 +15,20 @@
 
 #include "Audio/AudioDevice.h"
 #include "GlobalConstants.h"
+#include "Lights/DirectionalLight.h"
+#include "Lights/Light.h"
+#include "Lights/LightCollection.h"
+#include "Lights/PointLight.h"
+#include "Lights/SpotLight.h"
 #include "Shader.h"
+#include "Skybox.h"
 #include "Utils/ModelMatrix.h"
 #include "Window.h"
 #include "camera/Camera.h"
 #include "camera/CameraCollection.h"
 #include "input/KeyboardInput.h"
 #include "model/BasicPrimitives.h"
+#include "model/Material.h"
 #include "model/Model.h"
 #include "model/ModelCollection.h"
 
@@ -30,6 +37,11 @@ Model::BasicPrimitives primitives;
 Camera::CameraCollection cameras;
 Camera::Camera *activeCamera;
 Model::ModelCollection models;
+Lights::LightCollection<Lights::DirectionalLight> directionalLights;
+Skybox skybox;
+
+Model::Material Material_brillante;
+Model::Material Material_opaco;
 
 enum MODELS
 {
@@ -44,11 +56,6 @@ std::unordered_map<int, Shader *> shaders;
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
 const float limitFPS = 1.0f / 60.0f;
-
-// Constantes para uniforms
-GLuint uProjection = 0, uModel = 0, uView = 0, uEyePosition = 0,
-       uniformSpecularIntensity = 0, uniformShininess = 0, uniformTextureOffset = 0;
-GLuint uColor = 0;
 
 void InitKeymaps()
 {
@@ -107,14 +114,24 @@ void InitModels()
 {
 	models
 	    .addModel(MODELS::MAQUINA_PINBALL, "assets/Models/MaquinaPinball.obj")
-	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
-	    .addModel(MODELS::CANICA, "assets/Models/canica.obj");
+	    //	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
+	    //	    .addModel(MODELS::CANICA, "assets/Models/canica.obj");
+	    ;
 	models.loadModels();
+}
+
+void InitLights()
+{
+	Lights::LightCollectionBuilder<Lights::DirectionalLight> directionalLightsBuilder(2);
+	directionalLights = directionalLightsBuilder
+	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f, 0.5f, 0.3f, 0.0f, 0.05, -1.0f))
+	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f, 0.5f, 0.3f, 0.0f, 0.05, -1.0f))
+	                        .build();
 }
 
 int main()
 {
-	mainWindow = Window(1280, 720, "Proyecto :P");
+	mainWindow = Window(1280, 720, "Proyecto Final \"Maquina de pinball\" - Semestre 2024-1");
 
 	if (!mainWindow.Init())
 	{
@@ -127,19 +144,35 @@ int main()
 	InitKeymaps();
 	InitCameras();
 	InitModels();
+	InitLights();
+
+	std::vector<std::string> skyboxFaces;
+
+	skyboxFaces.push_back("assets/Textures/Skybox/sp2_rt.png");
+	skyboxFaces.push_back("assets/Textures/Skybox/sp2_lf.png");
+	skyboxFaces.push_back("assets/Textures/Skybox/sp2_dn.png");
+	skyboxFaces.push_back("assets/Textures/Skybox/sp2_up.png");
+	skyboxFaces.push_back("assets/Textures/Skybox/sp2_bk.png");
+	skyboxFaces.push_back("assets/Textures/Skybox/sp2_ft.png");
+
+	skybox = Skybox(skyboxFaces);
 
 	Audio::AudioDevice::GetInstance();
 
-	// Matriz para transformaciones
-	Utils::ModelMatrix handler(glm::mat4(1.0f));
+	Material_brillante = Model::Material(4.0f, 256);
+	Material_opaco = Model::Material(0.3f, 4);
 
-	// Prueba de primitivas
-	primitives.CreatePrimitives();
-
+	// Constantes para uniforms
+	GLuint uProjection = 0, uModel = 0, uView = 0, uEyePosition = 0,
+	       uniformSpecularIntensity = 0, uniformShininess = 0, uTexOffset = 0, uColor = 0;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat) mainWindow.getBufferWidth() / (GLfloat) mainWindow.getBufferHeight(), 0.1f, 1000.0f);
-	glm::mat4 model(1.0f);
-	glm::vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
 
+	Utils::ModelMatrix handler(glm::mat4(1.0f));
+	glm::mat4 model(1.0f);
+	glm::vec3 color(1.0f, 1.0f, 1.0f);
+	glm::vec2 toffset = glm::vec2(0.0f, 0.0f);
+
+	// modelos
 	auto maquinaPinball = models.getModel(MODELS::MAQUINA_PINBALL);
 
 	while (!mainWindow.shouldClose())
@@ -152,37 +185,46 @@ int main()
 		glfwPollEvents();
 		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
 
+		// Configuración del shader
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		skybox.DrawSkybox(activeCamera->calculateViewMatrix(), projection);
 		shaders[Shader::ShaderTypes::LIGHT_SHADER]->useProgram();
 		uModel = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformModel();
 		uProjection = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformProjection();
 		uView = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformView();
 		uEyePosition = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformEyePosition();
 		uColor = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformColor();
+		uTexOffset = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformTextureOffset();
+		uniformSpecularIntensity = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformSpecularIntensity();
+		uniformShininess = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformShininess();
 
+		// Camara
 		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv((GLint) uView, 1, GL_FALSE, glm::value_ptr(activeCamera->calculateViewMatrix()));
 		auto camPos = activeCamera->getCameraPosition();
 		glUniform3f((GLint) uEyePosition, camPos.x, camPos.y, camPos.z);
 
-		// Renderizar primer primitiva
-		color = {1.0f, 1.0f, 1.0f, 1.0f};
-		model = handler
-		            .setMatrix(glm::mat4(1.0f))
-		            .scale(2.0f)
-		            .getMatrix();
-		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
-		primitives.getPrimitive(Model::BasicPrimitives::FLOOR)->RenderMesh();
+		// Iluminacion
+		shaders[Shader::ShaderTypes::LIGHT_SHADER]->SetDirectionalLight(&directionalLights[0]);
+		shaders[Shader::ShaderTypes::LIGHT_SHADER]->SetSpotLights(nullptr, 0);
+		shaders[Shader::ShaderTypes::LIGHT_SHADER]->SetPointLights(nullptr, 0);
+		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
 
-		model = handler
-		            .setMatrix(glm::mat4(1.0f))
+		toffset = {0.0f, 0.0f};
+		color = {1.0f, 1.0f, 1.0f};
+
+		glUniform2fv(uTexOffset, 1, glm::value_ptr(toffset));
+		glUniform3fv(uColor, 1, glm::value_ptr(color));
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(0.0, -1.0, 0.0)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 		maquinaPinball->render();
 
+		glUseProgram(0);
 		mainWindow.swapBuffers();
 	}
 

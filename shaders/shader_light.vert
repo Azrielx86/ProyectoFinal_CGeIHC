@@ -1,164 +1,30 @@
 #version 330
 
-in vec4 vCol;
-in vec2 TexCoord;
-in vec3 Normal;
-in vec3 FragPos;
-in vec4 vColor;
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec2 tex;
+layout (location = 2) in vec3 norm;
 
-out vec4 color;
+out vec4 vCol;
+out vec2 TexCoord;
+out vec3 Normal;
+out vec3 FragPos;
+out vec4 vColor;
 
-const int MAX_POINT_LIGHTS = 3;
-const int MAX_SPOT_LIGHTS = 3;
-
-struct Light
-{
-    vec3 color;
-    float ambientIntensity;
-    float diffuseIntensity;
-};
-
-struct DirectionalLight
-{
-    Light base;
-    vec3 direction;
-};
-
-struct PointLight
-{
-    Light base;
-    vec3 position;
-    float constant;
-    float linear;
-    float exponent;
-};
-
-
-struct SpotLight
-{
-    PointLight base;
-    vec3 direction;
-    float edge;
-};
-
-struct Material
-{
-    float specularIntensity;
-    float shininess;
-};
-
-uniform int pointLightCount;
-uniform int spotLightCount;
-
-uniform DirectionalLight directionalLight;
-uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
-
-uniform sampler2D theTexture;
-uniform Material material;
-
-uniform vec3 eyePosition;
-
-vec4 CalcLightByDirection(Light light, vec3 direction)
-{
-    vec4 ambientcolor = vec4(light.color, 1.0f) * light.ambientIntensity;
-    //producto punto: coseno del ángulo entre los dos vectores y normalizar para que sus módulos sean 1
-    float diffuseFactor = max(dot(normalize(Normal), normalize(direction)), 0.0f);
-    vec4 diffusecolor = vec4(light.color * light.diffuseIntensity * diffuseFactor, 1.0f);
-
-    vec4 specularcolor = vec4(0, 0, 0, 0);
-
-    if(diffuseFactor > 0.0f)
-    {//si hay diffuse color entonces existe specular color; dependemos de la posición de la cámara
-        vec3 fragToEye = normalize(eyePosition - FragPos);
-        vec3 reflectedVertex = normalize(reflect(direction, normalize(Normal)));
-
-        float specularFactor = dot(fragToEye, reflectedVertex);
-        if(specularFactor > 0.0f)
-        {
-            specularFactor = pow(specularFactor, material.shininess);
-            specularcolor = vec4(light.color * material.specularIntensity * specularFactor, 1.0f);
-        }
-    }
-
-    return (ambientcolor + diffusecolor + specularcolor);
-}
-
-vec4 CalcDirectionalLight()
-{
-    return CalcLightByDirection(directionalLight.base, directionalLight.direction);
-}
-
-//nuevo
-vec4 CalcPointLight(PointLight pLight)
-{
-    vec3 direction = FragPos - pLight.position;
-    float distance = length(direction);
-    direction = normalize(direction);
-
-    vec4 color = CalcLightByDirection(pLight.base, direction);
-    float attenuation = pLight.exponent * distance * distance +
-    pLight.linear * distance +
-    pLight.constant;
-
-    return (color / attenuation);
-}
-
-
-
-
-vec4 CalcSpotLight(SpotLight sLight)
-{
-    vec3 rayDirection = normalize(FragPos - sLight.base.position);
-    float slFactor = dot(rayDirection, sLight.direction);
-
-    if(slFactor > sLight.edge)
-    {
-        vec4 color = CalcPointLight(sLight.base);
-
-        return color * (1.0f - (1.0f - slFactor)*(1.0f/(1.0f - sLight.edge)));
-
-    } else {
-        return vec4(0, 0, 0, 0);
-    }
-}
-
-
-
-
-
-
-
-
-
-
-vec4 CalcPointLights()
-{
-    vec4 totalcolor = vec4(0, 0, 0, 0);
-    for(int i = 0; i < pointLightCount; i++)
-    {
-        totalcolor += CalcPointLight(pointLights[i]);
-    }
-
-    return totalcolor;
-}
-
-vec4 CalcSpotLights()
-{
-    vec4 totalcolor = vec4(0, 0, 0, 0);
-    for(int i = 0; i < spotLightCount; i++)
-    {
-        totalcolor += CalcSpotLight(spotLights[i]);
-    }
-
-    return totalcolor;
-}
+uniform mat4 model;
+uniform mat4 projection;
+uniform mat4 view;
+uniform vec3 color;
+uniform vec2 toffset;
 
 
 void main()
 {
-    vec4 finalcolor = CalcDirectionalLight();
-    finalcolor += CalcPointLights();
-    finalcolor += CalcSpotLights();
-    color = texture(theTexture, TexCoord)*vColor*finalcolor;
+	gl_Position = projection * view * model * vec4(pos, 1.0);
+	vCol = vec4(0.0, 1.0, 0.0, 1.0f);
+	vColor=vec4(color,1.0f);
+	TexCoord = tex+toffset;
+	//para tomar las Transformaciones geométricas y la transpuesta es para que las escalas se inviertan en caso de escalas no uniformes en las normales
+	Normal = mat3(transpose(inverse(model))) * norm;
+	
+	FragPos = (model * vec4(pos, 1.0)).xyz; //para obtener un vec3 sólo posición con respecto al origen en orden xyz: Swizzling 
 }

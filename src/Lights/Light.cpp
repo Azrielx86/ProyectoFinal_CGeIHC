@@ -1,5 +1,6 @@
 #include "Light.h"
-
+namespace Lights
+{
 Light::Light()
 {
 	color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -17,3 +18,4 @@ Light::Light(GLfloat red, GLfloat green, GLfloat blue, GLfloat aIntensity, GLflo
 Light::~Light()
 {
 }
+} // namespace Lights

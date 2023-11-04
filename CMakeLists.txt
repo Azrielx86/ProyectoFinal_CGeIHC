@@ -81,6 +81,22 @@ add_executable(ProyectoFinal_CGeIHC
         src/model/Texture.h
         src/Utils/PathUtils.cpp
         src/Utils/PathUtils.h
+        src/Lights/Light.cpp
+        src/Lights/Light.h
+        src/Lights/LightCollection.cpp
+        src/Lights/LightCollection.h
+        src/Lights/DirectionalLight.cpp
+        src/Lights/DirectionalLight.h
+        src/Lights/PointLight.cpp
+        src/Lights/PointLight.h
+        src/Lights/SpotLight.cpp
+        src/Lights/SpotLight.h
+        src/Lights/PointLight.cpp
+        src/Lights/PointLight.h
+        src/model/Material.cpp
+        src/model/Material.h
+        src/Skybox.h
+        src/Skybox.cpp
 )
 
 message(STATUS "Copiando archivos de shader")

@@ -19,7 +19,6 @@
 #include <string>
 #include <vector>
 
-using uint = unsigned int;
 namespace fs = std::filesystem;
 
 namespace Model
@@ -35,7 +34,7 @@ class Model
 
   private:
 	void loadNode(aiNode *node, const aiScene *scene);
-	void loadMesh(aiMesh *mesh, const aiScene *scene);
+	void loadMesh(aiMesh *mesh, [[maybe_unused]] const aiScene *scene);
 	void loadMaterials(const aiScene *scene);
 
 	std::vector<Mesh *> meshList;
