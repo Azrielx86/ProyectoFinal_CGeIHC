@@ -67,7 +67,7 @@ void Shader::compileShader()
 	GLint result;
 	GLchar eLog[1024] = {0};
 	glLinkProgram(shaderProgramId);
-	glGetShaderiv(shaderProgramId, GL_COMPILE_STATUS, &result);
+	glGetProgramiv(shaderProgramId, GL_LINK_STATUS, &result);
 	if (!result)
 	{
 		glGetProgramInfoLog(shaderProgramId, sizeof(eLog), nullptr, eLog);
@@ -76,7 +76,7 @@ void Shader::compileShader()
 	}
 
 	glValidateProgram(shaderProgramId);
-	glGetShaderiv(shaderProgramId, GL_VALIDATE_STATUS, &result);
+	glGetProgramiv(shaderProgramId, GL_VALIDATE_STATUS, &result);
 	if (!result)
 	{
 		glGetProgramInfoLog(shaderProgramId, sizeof(eLog), nullptr, eLog);

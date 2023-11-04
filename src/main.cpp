@@ -114,9 +114,9 @@ void InitModels()
 {
 	models
 	    .addModel(MODELS::MAQUINA_PINBALL, "assets/Models/MaquinaPinball.obj")
-	    //	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
-	    //	    .addModel(MODELS::CANICA, "assets/Models/canica.obj");
-	    ;
+	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
+	    .addModel(MODELS::CANICA, "assets/Models/canica.obj");
+	;
 	models.loadModels();
 }
 
