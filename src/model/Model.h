@@ -6,9 +6,12 @@
 #define PROYECTOFINAL_CGEIHC_MODEL_H
 
 #include "Mesh.h"
+#include "Texture.h"
+#include "../Utils/PathUtils.h"
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -16,15 +19,30 @@
 #include <string>
 #include <vector>
 
+using uint = unsigned int;
+namespace fs = std::filesystem;
+
+namespace Model
+{
 class Model
 {
   public:
-	Model(char *path) {}
+	explicit Model(const std::string &path);
+	~Model();
+	void loadModel();
+	void render();
+	void clear();
 
   private:
-	std::vector<Mesh> Meshes;
-	std::string directory;
-	void loadModel(std::string path);
+	void loadNode(aiNode *node, const aiScene *scene);
+	void loadMesh(aiMesh *mesh, const aiScene *scene);
+	void loadMaterials(const aiScene *scene);
+
+	std::vector<Mesh *> meshList;
+	std::vector<uint> meshesToTexturize;
+	std::vector<Texture *> textureList;
+	std::string modelPath;
 };
 
+} // namespace Model
 #endif // PROYECTOFINAL_CGEIHC_MODEL_H

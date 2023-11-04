@@ -6,6 +6,8 @@
 #define PROYECTOFINAL_CGEIHC_BASICMESH_H
 
 #include <GL/glew.h>
+namespace Model
+{
 
 class BasicMesh
 {
@@ -20,5 +22,5 @@ class BasicMesh
 	GLuint VAO, VBO, IBO;
 	GLsizei indexCount;
 };
-
+} // namespace Model
 #endif // PROYECTOFINAL_CGEIHC_BASICMESH_H

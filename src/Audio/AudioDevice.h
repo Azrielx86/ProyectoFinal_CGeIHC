@@ -28,7 +28,7 @@ class AudioDevice
 	static AudioDevice *instance;
 	ALCdevice *device;
 	ALCcontext *context;
-	bool initialized = false;
+	[[maybe_unused]] bool initialized = false;
 	const ALCchar *deviceName;
 };
 

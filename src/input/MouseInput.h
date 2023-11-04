@@ -64,8 +64,6 @@ class MouseInput
   private:
 	bool mouseEnabled = true;
 	bool firstMove = true;
-	float mousexPos = 0;
-	float mouseyPos = 0;
 	float lastxPos = 0;
 	float lastyPos = 0;
 	float xChange = 0;

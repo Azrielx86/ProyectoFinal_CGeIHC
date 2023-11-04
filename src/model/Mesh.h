@@ -5,34 +5,31 @@
 #ifndef PROYECTOFINAL_CGEIHC_MESH_H
 #define PROYECTOFINAL_CGEIHC_MESH_H
 
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
 
+#define ARR_SIZE(array, count) (array[0] / count)
+
+namespace Model
+{
+using uint = unsigned int;
+
 class Mesh
 {
   public:
-	struct Vertex
-	{
-		glm::vec3 Position;
-		glm::vec3 Normal;
-		glm::vec2 TexCoords;
-	};
+	Mesh() = default;
+	~Mesh();
+	void createMesh(GLfloat *vtx, uint *idx, uint vtxCount, uint idxCount);
+	void render();
+	void clear();
 
-	struct Texture
-	{
-		unsigned int id;
-		std::string type;
-	};
-
-	std::vector<Mesh::Vertex> vertices;
-	std::vector<unsigned int> indices;
-	std::vector<Mesh::Texture> textures;
-	
-//	void Draw();
+	//	void Draw();
   private:
-	unsigned int VAO, VBO, EBO;
-	void setupMesh();
+	uint VAO, VBO, IBO;
+	GLsizei idxCount;
 };
 
+} // namespace Model
 #endif // PROYECTOFINAL_CGEIHC_MESH_H
