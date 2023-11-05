@@ -25,8 +25,8 @@ void ModelCollection::loadModels()
 		              pair.second->loadModel();
 	              });
 #else
-        for(auto& model : models)
-		    model.second->loadModel();
+	for (auto &model : models)
+		model.second->loadModel();
 #endif
 }
 
@@ -35,5 +35,10 @@ Model *ModelCollection::getModel(int modelId)
 	if (models.find(modelId) == models.end())
 		return nullptr;
 	return models.at(modelId);
+}
+
+Model &ModelCollection::operator[](int index)
+{
+	return *models.at(index);
 }
 } // namespace Model
