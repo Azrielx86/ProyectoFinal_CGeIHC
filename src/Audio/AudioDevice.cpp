@@ -28,7 +28,8 @@ AudioDevice::AudioDevice()
 	deviceName = nullptr;
 	deviceName = alcGetString(device, ALC_ALL_DEVICES_SPECIFIER);
 
-	std::cout << "Audio device created succesfully!. "
+	std::cout << "[ " << typeid(AudioDevice).name()
+	          << " ] Audio device created succesfully!. "
 	          << "Using: " << deviceName << "\n";
 }
 
@@ -57,6 +58,6 @@ AudioDevice::~AudioDevice()
 void AudioDevice::Terminate()
 {
 	delete instance;
-	std::cout << "Audio device closed.\n";
+	std::cout << "[AudioDevice] Audio device closed.\n";
 }
 } // namespace Audio

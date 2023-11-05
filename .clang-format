@@ -13,3 +13,4 @@ UseTab: ForIndentation
 SpaceAfterTemplateKeyword: 'true'
 ColumnLimit: 0
 AllowShortIfStatementsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true

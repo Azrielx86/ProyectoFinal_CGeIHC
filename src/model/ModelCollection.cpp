@@ -15,6 +15,8 @@ ModelCollection &ModelCollection::addModel(int modelId, const std::string &model
 
 void ModelCollection::loadModels()
 {
+#ifdef PARALLEL_LOADING
+#warning "Parallel loading have issues."
 	std::for_each(std::execution::par,
 	              std::begin(models),
 	              std::end(models),
@@ -22,6 +24,10 @@ void ModelCollection::loadModels()
 	              {
 		              pair.second->loadModel();
 	              });
+#else
+        for(auto& model : models)
+		    model.second->loadModel();
+#endif
 }
 
 Model *ModelCollection::getModel(int modelId)

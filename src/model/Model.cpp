@@ -81,11 +81,15 @@ void Model::loadMaterials(const aiScene *scene)
 				textureList[i] = new Texture(searchPath.c_str());
 				if (fs::exists(searchPath))
 				{
-					if (!textureList[i]->LoadTexture(true))
+					auto type = Utils::ImageUtils::GetPngChannel(searchPath);
+					if (type != Utils::ImageUtils::CHANNEL_TYPE::ERROR)
 					{
-						std::cerr << "Failed to load texture: " << file;
-						delete textureList[i];
-						textureList[i] = nullptr;
+						if (!textureList[i]->LoadTexture(type == Utils::ImageUtils::CHANNEL_TYPE::RGBA))
+						{
+							std::cerr << "Failed to load texture: " << file;
+							delete textureList[i];
+							textureList[i] = nullptr;
+						}
 					}
 				}
 			}

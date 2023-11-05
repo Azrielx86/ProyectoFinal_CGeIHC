@@ -8,6 +8,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "../Utils/PathUtils.h"
+#include "../Utils/ImageUtils.h"
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
