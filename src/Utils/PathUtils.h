@@ -7,7 +7,7 @@
 
 #include <string>
 
-#define MODELS_PATH "asssets/Models"
+#define MODELS_PATH "assets/Models"
 #define TEXTURES_PATH "assets/Textures"
 
 namespace Utils

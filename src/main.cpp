@@ -43,50 +43,53 @@ Skybox skybox;
 Model::Material Material_brillante;
 Model::Material Material_opaco;
 
-enum MODELS
-{
-	MAQUINA_PINBALL,
-	FLIPPER,
-	CANICA,
-	AVATAR
-};
-
 std::unordered_map<int, Shader *> shaders;
 
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
 const float limitFPS = 1.0f / 60.0f;
 
+AMB_LIGHTS ambLight = AMB_LIGHTS::DAY;
+
 void InitKeymaps()
 {
 	Input::KeyboardInput::GetInstance()
-	    .createKeymap(Keymaps::FREE_CAMERA)
+	    .createKeymap(KEYMAPS::FREE_CAMERA)
 	    .addCallback(
-	        Keymaps::FREE_CAMERA, GLFW_KEY_ESCAPE,
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_ESCAPE,
 	        []() -> void
 	        {
 		        glfwSetWindowShouldClose(mainWindow.getWindowPointer(), GL_TRUE);
 	        })
 	    .addCallback(
-	        Keymaps::FREE_CAMERA, GLFW_KEY_T,
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_T,
 	        []() -> void
 	        {
 		        std::cout << "Mouse disabled!";
 		        Input::MouseInput::GetInstance().toggleMouseEnabled();
 		        mainWindow.toggleMouse();
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_L,
+	        []() -> void
+	        {
+		        if (ambLight == AMB_LIGHTS::DAY)
+			        ambLight = AMB_LIGHTS::NIGHT;
+		        else
+			        ambLight = AMB_LIGHTS::DAY;
 	        });
 
 	Input::MouseInput::GetInstance()
-	    .createKeymap(Keymaps::FREE_CAMERA)
+	    .createKeymap(KEYMAPS::FREE_CAMERA)
 	    .addClickCallback(
-	        Keymaps::FREE_CAMERA,
+	        KEYMAPS::FREE_CAMERA,
 	        GLFW_MOUSE_BUTTON_LEFT,
 	        []() -> void
 	        {
 		        std::cout << "Click izquierdo presionado\n\n";
 	        })
 	    .addMoveCallback(
-	        Keymaps::FREE_CAMERA,
+	        KEYMAPS::FREE_CAMERA,
 	        [](float) -> void
 	        {
 		        activeCamera->mouseControl(Input::MouseInput::GetInstance());
@@ -106,7 +109,7 @@ void InitShaders()
 
 void InitCameras()
 {
-	cameras.addCamera(Camera::Camera(glm::vec3(0.0f, 2.0f, 7.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.5f, 0.5f));
+	cameras.addCamera(Camera::Camera(glm::vec3(0.0f, 60.0f, 20.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.5f, 0.5f));
 	activeCamera = cameras.getAcviveCamera();
 }
 
@@ -114,9 +117,9 @@ void InitModels()
 {
 	models
 	    .addModel(MODELS::MAQUINA_PINBALL, "assets/Models/MaquinaPinball.obj")
-	    //	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
-	    //	    .addModel(MODELS::CANICA, "assets/Models/canica.obj");
-	    ;
+	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
+	    .addModel(MODELS::CANICA, "assets/Models/canica.obj")
+	    .addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"));
 	models.loadModels();
 }
 
@@ -124,8 +127,12 @@ void InitLights()
 {
 	Lights::LightCollectionBuilder<Lights::DirectionalLight> directionalLightsBuilder(2);
 	directionalLights = directionalLightsBuilder
-	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f, 0.5f, 0.3f, 0.0f, 0.05, -1.0f))
-	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f, 0.5f, 0.3f, 0.0f, 0.05, -1.0f))
+	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
+	                                                           0.8f, 0.3f,
+	                                                           0.0f, 0.0f, -1.0f))
+	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
+	                                                           0.3f, 0.3f,
+	                                                           0.0f, 0.0f, -1.0f))
 	                        .build();
 }
 
@@ -148,12 +155,12 @@ int main()
 
 	std::vector<std::string> skyboxFaces;
 
-	skyboxFaces.push_back("assets/Textures/Skybox/sp2_rt.png");
-	skyboxFaces.push_back("assets/Textures/Skybox/sp2_lf.png");
-	skyboxFaces.push_back("assets/Textures/Skybox/sp2_dn.png");
-	skyboxFaces.push_back("assets/Textures/Skybox/sp2_up.png");
-	skyboxFaces.push_back("assets/Textures/Skybox/sp2_bk.png");
-	skyboxFaces.push_back("assets/Textures/Skybox/sp2_ft.png");
+	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_rt.png");
+	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_lf.png");
+	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_dn.png");
+	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_up.png");
+	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_bk.png");
+	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_ft.png");
 
 	skybox = Skybox(skyboxFaces);
 
@@ -174,6 +181,7 @@ int main()
 
 	// modelos
 	auto maquinaPinball = models.getModel(MODELS::MAQUINA_PINBALL);
+	auto flipper = models.getModel(MODELS::FLIPPER);
 
 	while (!mainWindow.shouldClose())
 	{
@@ -206,7 +214,7 @@ int main()
 		glUniform3f((GLint) uEyePosition, camPos.x, camPos.y, camPos.z);
 
 		// Iluminacion
-		shaders[Shader::ShaderTypes::LIGHT_SHADER]->SetDirectionalLight(&directionalLights[0]);
+		shaders[Shader::ShaderTypes::LIGHT_SHADER]->SetDirectionalLight(&directionalLights[ambLight]);
 		shaders[Shader::ShaderTypes::LIGHT_SHADER]->SetSpotLights(nullptr, 0);
 		shaders[Shader::ShaderTypes::LIGHT_SHADER]->SetPointLights(nullptr, 0);
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
@@ -223,6 +231,21 @@ int main()
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 		maquinaPinball->render();
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(-58, 49, 10)
+		            .rotateZ(6)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		flipper->render();
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(-58, 49, -19)
+		            .rotateY(180)
+		            .rotateZ(-6)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		flipper->render();
 
 		glUseProgram(0);
 		mainWindow.swapBuffers();
