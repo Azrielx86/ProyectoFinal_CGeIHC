@@ -3,6 +3,7 @@ project(ProyectoFinal_CGeIHC)
 set(CMAKE_CXX_STANDARD 17)
 
 if (NOT MSVC)
+    message(STATUS "Usando Clang u otro compilador.")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         message(WARNING "Compilando la versión debug.")
@@ -10,6 +11,8 @@ if (NOT MSVC)
     elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DRELEASE")
     endif ()
+else()
+    message(STATUS "Usando MSVC en Visual Studio.")
 endif ()
 
 # Requires GLEW, OpenGL and GLFW Packages on Linux
@@ -51,6 +54,14 @@ if (Stb_FOUND)
 endif ()
 
 include_directories(${Stb_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/Animation)
+include_directories(${CMAKE_SOURCE_DIR}/Audio)
+include_directories(${CMAKE_SOURCE_DIR}/camera)
+include_directories(${CMAKE_SOURCE_DIR}/Exceptions)
+include_directories(${CMAKE_SOURCE_DIR}/input)
+include_directories(${CMAKE_SOURCE_DIR}/Lights)
+include_directories(${CMAKE_SOURCE_DIR}/model)
+include_directories(${CMAKE_SOURCE_DIR}/Utils)
 
 add_executable(ProyectoFinal_CGeIHC
         src/main.cpp

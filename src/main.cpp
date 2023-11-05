@@ -86,8 +86,15 @@ void InitKeymaps()
 	        GLFW_MOUSE_BUTTON_LEFT,
 	        []() -> void
 	        {
-		        std::cout << "Click izquierdo presionado\n\n";
+		        std::cout << "Click izquierdo presionado\n";
 	        })
+	    .addClickCallback(
+			KEYMAPS::FREE_CAMERA,
+			GLFW_MOUSE_BUTTON_RIGHT,
+			[]() -> void
+			{
+		        std::cout << "Click derecho presionado\n";
+			})
 	    .addMoveCallback(
 	        KEYMAPS::FREE_CAMERA,
 	        [](float) -> void
