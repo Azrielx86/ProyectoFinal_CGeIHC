@@ -13,14 +13,21 @@ namespace Camera
 class CameraCollection
 {
   public:
-	explicit CameraCollection() = default;
-	CameraCollection& addCamera(const Camera& camera);
+	explicit CameraCollection()
+	{
+		cameraIndex = 0;
+		activeCamera = nullptr;
+	};
+	CameraCollection &addCamera(Camera *camera);
+	Camera *switchCamera();
 	[[nodiscard]] Camera *getAcviveCamera() const;
+
   private:
-	std::vector<Camera> cameras;
-	Camera* acviveCamera;
+	std::vector<Camera *> cameras;
+	Camera *activeCamera{};
+	int cameraIndex;
 };
 
-} // namespace camera
+} // namespace Camera
 
 #endif // PROYECTOFINAL_CGEIHC_CAMERACOLLECTION_H

@@ -58,6 +58,12 @@ void InitKeymaps()
 		        glfwSetWindowShouldClose(mainWindow.getWindowPointer(), GL_TRUE);
 	        })
 	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_C,
+	        []() -> void
+	        {
+		        activeCamera = cameras.switchCamera();
+	        })
+	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_T,
 	        []() -> void
 	        {
@@ -112,7 +118,12 @@ void InitShaders()
 
 void InitCameras()
 {
-	cameras.addCamera(Camera::Camera(glm::vec3(0.0f, 60.0f, 20.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.5f, 0.5f));
+	cameras.addCamera(new Camera::Camera(glm::vec3(0.0f, 60.0f, 20.0f),
+	                                     glm::vec3(0.0f, 1.0f, 0.0f),
+	                                     -60.0f, 0.0f, 0.5f, 0.5f));
+	cameras.addCamera(new Camera::Camera(glm::vec3(-134.618, 124.889, 4.39917),
+	                                     glm::vec3(0.0f, 1.0f, 0.0f),
+	                                     0.0f, -30.0f, 0.5f, 0.5f, true));
 	activeCamera = cameras.getAcviveCamera();
 }
 
@@ -122,8 +133,8 @@ void InitModels()
 	    .addModel(MODELS::MAQUINA_PINBALL, "assets/Models/MaquinaPinball.obj")
 	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
 	    .addModel(MODELS::CANICA, "assets/Models/canica.obj")
-	    .addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"));
-	models.loadModels();
+	    .addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
+	    .loadModels();
 }
 
 void InitLights()
@@ -132,11 +143,22 @@ void InitLights()
 	directionalLights = directionalLightsBuilder
 	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
 	                                                           0.8f, 0.3f,
-	                                                           0.0f, 0.0f, -1.0f))
+	                                                           0.0f, -1.0f, 0.0f))
 	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
 	                                                           0.3f, 0.3f,
 	                                                           0.0f, 0.0f, -1.0f))
 	                        .build();
+
+	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(3);
+	pointLights = pointLightsBuilder
+	                  .addLight(Lights::PointLight(1.0f, 0.0f, 1.0f,
+	                                               0.8f, 0.3f,
+	                                               0.0f, 0.0f, 0.0f,
+	                                               1.0f, 0.01f, 0.001f))
+	                  .build();
+	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(3);
+	spotLights = spotLightBuilder
+	                 .build();
 }
 
 int main()
@@ -211,7 +233,7 @@ int main()
 		uTexOffset = shaderLight->getUniformTextureOffset();
 		uSpecularIntensity = shaderLight->getUniformSpecularIntensity();
 		uShininess = shaderLight->getUniformShininess();
-		
+
 		// Camara
 		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv((GLint) uView, 1, GL_FALSE, glm::value_ptr(activeCamera->calculateViewMatrix()));
@@ -221,7 +243,7 @@ int main()
 		// Iluminacion
 		shaderLight->SetDirectionalLight(&directionalLights[ambLight]);
 		shaderLight->SetSpotLights(nullptr, 0);
-		shaderLight->SetPointLights(nullptr, 0);
+		shaderLight->SetPointLights(pointLights.getLightArray(), pointLights.getCurrentCount());
 		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);
 
 		toffset = {0.0f, 0.0f};

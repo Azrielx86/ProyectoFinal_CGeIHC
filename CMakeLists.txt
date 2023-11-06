@@ -110,6 +110,8 @@ add_executable(ProyectoFinal_CGeIHC
         src/Skybox.cpp
         src/Utils/ImageUtils.cpp
         src/Utils/ImageUtils.h
+        src/Utils/Logger.cpp
+        src/Utils/Logger.h
 )
 
 message(STATUS "Copiando archivos de shader")

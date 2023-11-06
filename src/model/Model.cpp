@@ -10,7 +10,7 @@ Model::Model(const std::string &path)
 {
 	modelPath = path;
 	if (!fs::exists(path))
-		std::cerr << "[Model - Warning] El modelo "
+		std::cerr << "[ " << typeid(Model).name() << " ] El modelo "
 		          << path << " no existe. \n";
 }
 
@@ -27,10 +27,10 @@ void Model::loadModel()
 
 	loadNode(scene->mRootNode, scene);
 	loadMaterials(scene);
-	std::cout << "Modelo cargado: " << modelPath << "\n";
+	std::cout << "[ " << typeid(Model).name() << " ] Modelo cargado " << modelPath << "\n";
 }
 
-void Model::loadNode(aiNode *node, const aiScene *scene)
+void Model::loadNode(aiNode *node, const aiScene *scene) // NOLINT(*-no-recursion)
 {
 	for (uint i = 0; i < node->mNumMeshes; i++)
 		loadMesh(scene->mMeshes[node->mMeshes[i]], scene);
