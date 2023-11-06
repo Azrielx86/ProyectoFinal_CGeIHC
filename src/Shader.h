@@ -29,7 +29,6 @@ class Shader
 	{
 		SKYBOX_SHADER,
 		LIGHT_SHADER,
-		MODEL_TEX_SHADER,
 		BASE_SHADER
 	};
 
@@ -37,17 +36,17 @@ class Shader
 	virtual ~Shader();
 	void loadShader(const char *vertex, const char *frag);
 
-	GLuint getUniformPointLightCount() const;
-	GLuint getUniformSpotLightCount() const;
-	GLuint getShaderProgramId() const;
-	GLuint getUniformProjection() const;
-	GLuint getUniformModel() const;
-	GLuint getUniformColor() const;
-	GLuint getUniformView() const;
-	GLuint getUniformEyePosition() const;
-	GLuint getUniformSpecularIntensity() const;
-	GLuint getUniformShininess() const;
-	GLuint getUniformTextureOffset() const;
+	[[nodiscard]] GLuint getUniformPointLightCount() const;
+	[[nodiscard]] GLuint getUniformSpotLightCount() const;
+	[[nodiscard]] GLuint getShaderProgramId() const;
+	[[nodiscard]] GLuint getUniformProjection() const;
+	[[nodiscard]] GLuint getUniformModel() const;
+	[[nodiscard]] GLuint getUniformColor() const;
+	[[nodiscard]] GLuint getUniformView() const;
+	[[nodiscard]] GLuint getUniformEyePosition() const;
+	[[nodiscard]] GLuint getUniformSpecularIntensity() const;
+	[[nodiscard]] GLuint getUniformShininess() const;
+	[[nodiscard]] GLuint getUniformTextureOffset() const;
 
 	void SetDirectionalLight(Lights::DirectionalLight *dLight);
 	void SetPointLights(Lights::PointLight *pLight, unsigned int lightCount);
@@ -95,8 +94,8 @@ class Shader
 		GLuint uniformEdge;
 	} uniformSpotLight[MAX_SPOT_LIGHTS];
 
-	int pointLightCount = 0;
-	int spotLightCount = 0;
+	[[maybe_unused]] int pointLightCount = 0;
+	[[maybe_unused]] int spotLightCount = 0;
 	GLuint shaderProgramId, uniformProjection, uniformModel, uniformColor, uniformView, uniformEyePosition,
 	    uniformSpecularIntensity, uniformShininess, uniformTextureOffset;
 	const char *vertexCode;

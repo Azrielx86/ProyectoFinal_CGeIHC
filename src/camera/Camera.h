@@ -22,7 +22,7 @@ class Camera
 {
   public:
 	Camera();
-	Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed);
+	Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed, bool locked = false);
 
 	/*
 	 * Manera del lab en el bucle principal;
@@ -49,11 +49,18 @@ class Camera
 	glm::vec3 right;
 	glm::vec3 worldUp;
 
+  public:
+	GLfloat getYaw() const;
+	GLfloat getPitch() const;
+
+  private:
 	GLfloat yaw;
 	GLfloat pitch;
 
 	GLfloat moveSpeed;
 	GLfloat turnSpeed;
+	
+	bool locked;
 
 	void update();
 };

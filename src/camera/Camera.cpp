@@ -8,7 +8,7 @@ namespace Camera
 
 Camera::Camera() {}
 
-Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed)
+Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed, bool locked)
 {
 	position = startPosition;
 	worldUp = startUp;
@@ -18,6 +18,8 @@ Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLf
 
 	moveSpeed = startMoveSpeed;
 	turnSpeed = startTurnSpeed;
+
+	this->locked = locked;
 
 	update();
 }
@@ -38,6 +40,7 @@ void Camera::update()
 
 void Camera::mouseControl(Input::MouseInput &mouse)
 {
+	if (locked) return;
 	float xChange = mouse.getXChange() * turnSpeed;
 	float yChange = mouse.getYChange() * turnSpeed;
 
@@ -52,6 +55,7 @@ void Camera::mouseControl(Input::MouseInput &mouse)
 
 void Camera::keyControl(Input::KeyboardInput &keyboard, GLfloat deltaTime)
 {
+	if (locked) return;
 	float velocity = moveSpeed * deltaTime;
 
 	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_W).pressed)
@@ -62,5 +66,13 @@ void Camera::keyControl(Input::KeyboardInput &keyboard, GLfloat deltaTime)
 		position -= right * velocity;
 	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_D).pressed)
 		position += right * velocity;
+}
+GLfloat Camera::getYaw() const
+{
+	return yaw;
+}
+GLfloat Camera::getPitch() const
+{
+	return pitch;
 }
 } // namespace Camera

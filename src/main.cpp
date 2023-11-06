@@ -9,18 +9,13 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Audio/AudioDevice.h"
 #include "GlobalConstants.h"
 #include "Lights/DirectionalLight.h"
-#include "Lights/Light.h"
 #include "Lights/LightCollection.h"
-#include "Lights/PointLight.h"
-#include "Lights/SpotLight.h"
-#include "Shader.h"
 #include "Skybox.h"
 #include "Utils/ModelMatrix.h"
 #include "Window.h"
@@ -33,11 +28,12 @@
 #include "model/ModelCollection.h"
 
 Window mainWindow;
-Model::BasicPrimitives primitives;
 Camera::CameraCollection cameras;
 Camera::Camera *activeCamera;
 Model::ModelCollection models;
 Lights::LightCollection<Lights::DirectionalLight> directionalLights;
+Lights::LightCollection<Lights::PointLight> pointLights;
+Lights::LightCollection<Lights::SpotLight> spotLights;
 Skybox skybox;
 
 Model::Material Material_brillante;
@@ -60,6 +56,12 @@ void InitKeymaps()
 	        []() -> void
 	        {
 		        glfwSetWindowShouldClose(mainWindow.getWindowPointer(), GL_TRUE);
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_C,
+	        []() -> void
+	        {
+		        activeCamera = cameras.switchCamera();
 	        })
 	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_T,
@@ -89,12 +91,12 @@ void InitKeymaps()
 		        std::cout << "Click izquierdo presionado\n";
 	        })
 	    .addClickCallback(
-			KEYMAPS::FREE_CAMERA,
-			GLFW_MOUSE_BUTTON_RIGHT,
-			[]() -> void
-			{
+	        KEYMAPS::FREE_CAMERA,
+	        GLFW_MOUSE_BUTTON_RIGHT,
+	        []() -> void
+	        {
 		        std::cout << "Click derecho presionado\n";
-			})
+	        })
 	    .addMoveCallback(
 	        KEYMAPS::FREE_CAMERA,
 	        [](float) -> void
@@ -116,7 +118,12 @@ void InitShaders()
 
 void InitCameras()
 {
-	cameras.addCamera(Camera::Camera(glm::vec3(0.0f, 60.0f, 20.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.5f, 0.5f));
+	cameras.addCamera(new Camera::Camera(glm::vec3(0.0f, 60.0f, 20.0f),
+	                                     glm::vec3(0.0f, 1.0f, 0.0f),
+	                                     -60.0f, 0.0f, 0.5f, 0.5f));
+	cameras.addCamera(new Camera::Camera(glm::vec3(-134.618, 124.889, 4.39917),
+	                                     glm::vec3(0.0f, 1.0f, 0.0f),
+	                                     0.0f, -30.0f, 0.5f, 0.5f, true));
 	activeCamera = cameras.getAcviveCamera();
 }
 
@@ -126,8 +133,8 @@ void InitModels()
 	    .addModel(MODELS::MAQUINA_PINBALL, "assets/Models/MaquinaPinball.obj")
 	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
 	    .addModel(MODELS::CANICA, "assets/Models/canica.obj")
-	    .addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"));
-	models.loadModels();
+	    .addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
+	    .loadModels();
 }
 
 void InitLights()
@@ -136,11 +143,22 @@ void InitLights()
 	directionalLights = directionalLightsBuilder
 	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
 	                                                           0.8f, 0.3f,
-	                                                           0.0f, 0.0f, -1.0f))
+	                                                           0.0f, -1.0f, 0.0f))
 	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
 	                                                           0.3f, 0.3f,
 	                                                           0.0f, 0.0f, -1.0f))
 	                        .build();
+
+	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(3);
+	pointLights = pointLightsBuilder
+	                  .addLight(Lights::PointLight(1.0f, 0.0f, 1.0f,
+	                                               0.8f, 0.3f,
+	                                               0.0f, 0.0f, 0.0f,
+	                                               1.0f, 0.01f, 0.001f))
+	                  .build();
+	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(3);
+	spotLights = spotLightBuilder
+	                 .build();
 }
 
 int main()
@@ -177,8 +195,7 @@ int main()
 	Material_opaco = Model::Material(0.3f, 4);
 
 	// Constantes para uniforms
-	GLuint uProjection = 0, uModel = 0, uView = 0, uEyePosition = 0,
-	       uniformSpecularIntensity = 0, uniformShininess = 0, uTexOffset = 0, uColor = 0;
+	GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess, uTexOffset, uColor;
 	glm::mat4 projection = glm::perspective(45.0f, (GLfloat) mainWindow.getBufferWidth() / (GLfloat) mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 
 	Utils::ModelMatrix handler(glm::mat4(1.0f));
@@ -187,8 +204,11 @@ int main()
 	glm::vec2 toffset = glm::vec2(0.0f, 0.0f);
 
 	// modelos
-	auto maquinaPinball = models.getModel(MODELS::MAQUINA_PINBALL);
-	auto flipper = models.getModel(MODELS::FLIPPER);
+	auto maquinaPinball = models[MODELS::MAQUINA_PINBALL];
+	auto flipper = models[MODELS::FLIPPER];
+
+	// Shaders
+	auto shaderLight = shaders[Shader::ShaderTypes::LIGHT_SHADER];
 
 	while (!mainWindow.shouldClose())
 	{
@@ -204,15 +224,15 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		skybox.DrawSkybox(activeCamera->calculateViewMatrix(), projection);
-		shaders[Shader::ShaderTypes::LIGHT_SHADER]->useProgram();
-		uModel = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformModel();
-		uProjection = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformProjection();
-		uView = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformView();
-		uEyePosition = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformEyePosition();
-		uColor = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformColor();
-		uTexOffset = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformTextureOffset();
-		uniformSpecularIntensity = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformSpecularIntensity();
-		uniformShininess = shaders[Shader::ShaderTypes::LIGHT_SHADER]->getUniformShininess();
+		shaderLight->useProgram();
+		uModel = shaderLight->getUniformModel();
+		uProjection = shaderLight->getUniformProjection();
+		uView = shaderLight->getUniformView();
+		uEyePosition = shaderLight->getUniformEyePosition();
+		uColor = shaderLight->getUniformColor();
+		uTexOffset = shaderLight->getUniformTextureOffset();
+		uSpecularIntensity = shaderLight->getUniformSpecularIntensity();
+		uShininess = shaderLight->getUniformShininess();
 
 		// Camara
 		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(projection));
@@ -221,30 +241,30 @@ int main()
 		glUniform3f((GLint) uEyePosition, camPos.x, camPos.y, camPos.z);
 
 		// Iluminacion
-		shaders[Shader::ShaderTypes::LIGHT_SHADER]->SetDirectionalLight(&directionalLights[ambLight]);
-		shaders[Shader::ShaderTypes::LIGHT_SHADER]->SetSpotLights(nullptr, 0);
-		shaders[Shader::ShaderTypes::LIGHT_SHADER]->SetPointLights(nullptr, 0);
-		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		shaderLight->SetDirectionalLight(&directionalLights[ambLight]);
+		shaderLight->SetSpotLights(nullptr, 0);
+		shaderLight->SetPointLights(pointLights.getLightArray(), pointLights.getCurrentCount());
+		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);
 
 		toffset = {0.0f, 0.0f};
 		color = {1.0f, 1.0f, 1.0f};
 
-		glUniform2fv(uTexOffset, 1, glm::value_ptr(toffset));
-		glUniform3fv(uColor, 1, glm::value_ptr(color));
+		glUniform2fv((GLint) uTexOffset, 1, glm::value_ptr(toffset));
+		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(0.0, -1.0, 0.0)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
-		maquinaPinball->render();
+		maquinaPinball.render();
 
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(-58, 49, 10)
 		            .rotateZ(6)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		flipper->render();
+		flipper.render();
 
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(-58, 49, -19)
@@ -252,7 +272,7 @@ int main()
 		            .rotateZ(-6)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		flipper->render();
+		flipper.render();
 
 		glUseProgram(0);
 		mainWindow.swapBuffers();
