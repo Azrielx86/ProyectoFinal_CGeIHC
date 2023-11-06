@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 3.26)
 project(ProyectoFinal_CGeIHC)
 set(CMAKE_CXX_STANDARD 17)
 
-if (NOT MSVC)
-    message(STATUS "Usando Clang u otro compilador.")
+if (MSVC)
+    message(STATUS "Usando MSVC en Visual Studio")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    message(STATUS "Usando Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         message(WARNING "Compilando la versión debug.")
@@ -11,17 +13,8 @@ if (NOT MSVC)
     elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DRELEASE")
     endif ()
-else()
-    message(STATUS "Usando MSVC en Visual Studio.")
 endif ()
 
-# Requires GLEW, OpenGL and GLFW Packages on Linux
-# On Arch Linux: pacman -S glew glfw
-
-# Or Windows require install packages with vcpkg with the following command:
-# ./vcpkg install glfw3:x64-windows glfw3:x86-windows glew:x64-windows glew:x86-windows glm:x64-windows glm:x86-windows
-
-# FIND PACKAGES FOR OpenGL, GLFW and GLEW
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 if (OpenGL_FOUND)
@@ -38,6 +31,11 @@ if (glfw3_FOUND)
     message(STATUS "GLFW Found")
 endif ()
 
+find_package(glm CONFIG REQUIRED)
+if (glm_FOUND)
+    message(STATUS "glm Found")
+endif ()
+
 find_package(assimp CONFIG REQUIRED)
 if (assimp_FOUND)
     message(STATUS "Assimp Found")
@@ -50,7 +48,12 @@ endif ()
 
 find_package(Stb REQUIRED)
 if (Stb_FOUND)
-    message(STATUS "STB Found at ${Stb_INCLUDE_DIR}")
+    message(STATUS "STB Found")
+endif ()
+
+find_package(nlohmann_json CONFIG REQUIRED)
+if (nlohmann_json_FOUND)
+    message(STATUS "nlohmann_json Found")
 endif ()
 
 include_directories(${Stb_INCLUDE_DIR})
@@ -126,4 +129,5 @@ target_link_libraries(ProyectoFinal_CGeIHC PRIVATE GLEW::GLEW)
 target_link_libraries(ProyectoFinal_CGeIHC PRIVATE glfw)
 target_link_libraries(ProyectoFinal_CGeIHC PRIVATE assimp::assimp)
 target_link_libraries(ProyectoFinal_CGeIHC PRIVATE OpenAL::OpenAL)
-#target_link_libraries(ProyectoFinal_CGeIHC PRIVATE OpenMP)
+target_link_libraries(ProyectoFinal_CGeIHC PRIVATE glm::glm)
+target_link_libraries(ProyectoFinal_CGeIHC PRIVATE nlohmann_json::nlohmann_json)
