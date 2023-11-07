@@ -9,7 +9,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
-#include <gl/glew.h>
+#include <GL/glew.h>
 #include <iostream>
 #include <sstream>
 #include <string>

@@ -6,7 +6,7 @@
 #define PROYECTOFINAL_CGEIHC_AUDIODEVICE_H
 
 #include <AL/al.h>
-#include <Al/alc.h>
+#include <AL/alc.h>
 #include <iostream>
 #include <sstream>
 

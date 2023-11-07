@@ -15,14 +15,14 @@ AudioDevice::AudioDevice()
 	if (!device)
 	{
 		std::cerr << getError();
-		throw std::exception("Error opening the device\n");
+		throw std::exception();
 	}
 
 	context = alcCreateContext(device, nullptr);
 	if (!alcMakeContextCurrent(context))
 	{
 		std::cerr << getError();
-		throw std::exception("Error creating Audio Context\n");
+		throw std::exception();
 	}
 
 	deviceName = nullptr;
