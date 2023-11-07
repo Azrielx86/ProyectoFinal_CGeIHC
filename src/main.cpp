@@ -314,7 +314,7 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		flipper.render();
-
+		
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(-58, 48, -19)
 		            .rotateZ(-6)
