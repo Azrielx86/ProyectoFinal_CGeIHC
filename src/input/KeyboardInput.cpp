@@ -38,7 +38,7 @@ void KeyboardInput::handleKey(int key, [[maybe_unused]] int code, int action, [[
 
 	currentKeymap->at(key).action = action;
 	currentKeymap->at(key).pressed = action != GLFW_RELEASE;
-
+	
 	for (auto &k : *currentKeymap)
 	{
 		if (k.action == GLFW_PRESS || (k.action == GLFW_REPEAT && k.repeat))
@@ -53,7 +53,6 @@ KeyboardInput &KeyboardInput::addCallback(int keymap, int key, const std::functi
 	keymaps[keymap].at(key).repeat = repeat;
 	return *this;
 }
-
 
 std::vector<KeyboardInput::Key> *KeyboardInput::getCurrentKeymap()
 {
