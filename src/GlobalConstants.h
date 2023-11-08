@@ -8,7 +8,7 @@
 #include "stb_image.h"
 
 const int MAX_POINT_LIGHTS = 3;
-const int MAX_SPOT_LIGHTS = 5;
+const int MAX_SPOT_LIGHTS = 3;
 
 enum KEYMAPS
 {
@@ -29,6 +29,13 @@ enum AMB_LIGHTS
 {
 	DAY = 0,
 	NIGHT
+};
+
+enum ShaderTypes
+{
+	BONE_SHADER,
+	LIGHT_SHADER,
+	BASE_SHADER
 };
 
 #endif // PROYECTOFINAL_CGEIHC_GLOBALCONSTANTS_H

@@ -80,7 +80,8 @@ void InitKeymaps()
 	        []() -> void
 	        {
 		        std::cout << "Tecla P presionada\n";
-	        }, true)
+	        },
+	        true)
 	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_L,
 	        []() -> void
@@ -130,11 +131,15 @@ void InitShaders()
 {
 	auto shader = new Shader();
 	shader->loadShader("shaders/shader.vert", "shaders/shader.frag");
-	shaders[Shader::ShaderTypes::BASE_SHADER] = shader;
+	shaders[ShaderTypes::BASE_SHADER] = shader;
 
 	auto lightShader = new Shader();
 	lightShader->loadShader("shaders/shader_light.vert", "shaders/shader_light.frag");
-	shaders[Shader::ShaderTypes::LIGHT_SHADER] = lightShader;
+	shaders[ShaderTypes::LIGHT_SHADER] = lightShader;
+	
+	auto boneShader = new Shader();
+	boneShader->loadShader("shaders/shader_bone.vert", "shaders/shader_bone.frag");
+	shaders[ShaderTypes::BONE_SHADER] = boneShader;
 }
 
 void InitCameras()
@@ -254,8 +259,8 @@ int main()
 	auto flipper = models[MODELS::FLIPPER];
 
 	// Shaders
-	auto shaderLight = shaders[Shader::ShaderTypes::LIGHT_SHADER];
-
+	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
+	
 	while (!mainWindow.shouldClose())
 	{
 		auto now = (float) glfwGetTime();
@@ -314,7 +319,7 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		flipper.render();
-		
+
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(-58, 48, -19)
 		            .rotateZ(-6)
