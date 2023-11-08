@@ -9,12 +9,15 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <ranges>
+#include <algorithm>
 
 namespace Input
 {
 /**
  * Input class, manages a global input system by a singleton instance.
  * It can use different keymaps.
+ * @todo Agregar un keymap global
  * @author Azrielx86 (Edgar Chalico)
  */
 class KeyboardInput

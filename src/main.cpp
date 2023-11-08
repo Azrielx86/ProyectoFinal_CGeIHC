@@ -47,6 +47,10 @@ const float limitFPS = 1.0f / 60.0f;
 
 AMB_LIGHTS ambLight = AMB_LIGHTS::DAY;
 
+// Variables auxiliares que no se encapsularon en otras clases :v
+float rightFlipperRotation = 0.0f;
+float leftFlipperRotation = 0.0f;
+
 void InitKeymaps()
 {
 	Input::KeyboardInput::GetInstance()
@@ -72,6 +76,12 @@ void InitKeymaps()
 		        mainWindow.toggleMouse();
 	        })
 	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_P,
+	        []() -> void
+	        {
+		        std::cout << "Tecla P presionada\n";
+	        }, true)
+	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_L,
 	        []() -> void
 	        {
@@ -80,6 +90,17 @@ void InitKeymaps()
 		        else
 			        ambLight = AMB_LIGHTS::DAY;
 	        });
+	//	    .addCallback(
+	//	        KEYMAPS::FREE_CAMERA,
+	//	        GLFW_KEY_L,
+	//	        []() -> void
+	//	        {
+	//		        std::cout << "Flipper Right: " << rightFlipperRotation << '\n';
+	//		        if (rightFlipperRotation < -25)
+	//			        return;
+	//		        rightFlipperRotation -= 8;
+	//	        },
+	//	        true);
 
 	Input::MouseInput::GetInstance()
 	    .createKeymap(KEYMAPS::FREE_CAMERA)
@@ -161,6 +182,31 @@ void InitLights()
 	                 .build();
 }
 
+void updateFlippers()
+{
+	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_RIGHT_SHIFT).pressed)
+	{
+		if (rightFlipperRotation > -20)
+			rightFlipperRotation -= 5;
+	}
+	else
+	{
+		if (rightFlipperRotation < 20)
+			rightFlipperRotation += 5;
+	}
+
+	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_LEFT_SHIFT).pressed)
+	{
+		if (leftFlipperRotation < 20)
+			leftFlipperRotation += 5;
+	}
+	else
+	{
+		if (leftFlipperRotation > -20)
+			leftFlipperRotation -= 5;
+	}
+}
+
 int main()
 {
 	mainWindow = Window(1280, 720, "Proyecto Final \"Maquina de pinball\" - Semestre 2024-1");
@@ -220,6 +266,8 @@ int main()
 		glfwPollEvents();
 		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
 
+		updateFlippers();
+
 		// Configuración del shader
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -260,16 +308,17 @@ int main()
 		maquinaPinball.render();
 
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(-58, 49, 10)
+		            .translate(-58, 48, 10)
 		            .rotateZ(6)
+		            .rotateY(rightFlipperRotation)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		flipper.render();
-
+		
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(-58, 49, -19)
-		            .rotateY(180)
+		            .translate(-58, 48, -19)
 		            .rotateZ(-6)
+		            .rotateY(180 + leftFlipperRotation)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		flipper.render();
