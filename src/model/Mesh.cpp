@@ -62,7 +62,15 @@ void Mesh::clear()
 }
 Mesh::~Mesh()
 {
-	clear();
+	if (IBO != 0)
+		glDeleteBuffers(1, &IBO);
+	if (VBO != 0)
+		glDeleteBuffers(1, &VBO);
+	if (VAO != 0)
+		glDeleteBuffers(1, &VAO);
+	
+	VAO = VBO = IBO = 0;
+	idxCount = 0;
 }
 
 } // namespace Model

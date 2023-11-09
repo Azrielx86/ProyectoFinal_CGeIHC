@@ -220,6 +220,12 @@ void updateFlippers()
 	}
 }
 
+void exitProgram()
+{
+	for (auto &shader : shaders)
+		delete shader.second;
+}
+
 int main()
 {
 	mainWindow = Window(1280, 720, "Proyecto Final \"Maquina de pinball\" - Semestre 2024-1");
@@ -366,6 +372,7 @@ int main()
 	}
 
 	Audio::AudioDevice::Terminate();
+	exitProgram();
 
 	return 0;
 }
