@@ -34,7 +34,9 @@ Model::ModelCollection models;
 Lights::LightCollection<Lights::DirectionalLight> directionalLights;
 Lights::LightCollection<Lights::PointLight> pointLights;
 Lights::LightCollection<Lights::SpotLight> spotLights;
-Skybox skybox;
+Skybox skyboxDay;
+Skybox skyboxNight;
+Skybox *skyBoxCurrent;
 
 Model::Material Material_brillante;
 Model::Material Material_opaco;
@@ -87,9 +89,15 @@ void InitKeymaps()
 	        []() -> void
 	        {
 		        if (ambLight == AMB_LIGHTS::DAY)
+		        {
+			        skyBoxCurrent = &skyboxNight;
 			        ambLight = AMB_LIGHTS::NIGHT;
+		        }
 		        else
+		        {
+			        skyBoxCurrent = &skyboxDay;
 			        ambLight = AMB_LIGHTS::DAY;
+		        }
 	        });
 	//	    .addCallback(
 	//	        KEYMAPS::FREE_CAMERA,
@@ -136,7 +144,7 @@ void InitShaders()
 	auto lightShader = new Shader();
 	lightShader->loadShader("shaders/shader_light.vert", "shaders/shader_light.frag");
 	shaders[ShaderTypes::LIGHT_SHADER] = lightShader;
-	
+
 	auto boneShader = new Shader();
 	boneShader->loadShader("shaders/shader_bone.vert", "shaders/shader_bone.frag");
 	shaders[ShaderTypes::BONE_SHADER] = boneShader;
@@ -229,17 +237,30 @@ int main()
 	InitModels();
 	InitLights();
 
-	std::vector<std::string> skyboxFaces;
+	// SKyBoxes Faces Day
+	std::vector<std::string> skbfDay;
+	// SKyBoxes Faces Night
+	std::vector<std::string> skbfNight;
 
-	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_rt.png");
-	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_lf.png");
-	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_dn.png");
-	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_up.png");
-	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_bk.png");
-	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_ft.png");
+	// Comando para rotar las texturas: Get-ChildItem -Recurse -Filter "*.png" | foreach { if ($_.Name -match '\wy.png') { magick.exe $_.Name -rotate 180 $_.Name  } }
+	// Pasar de panorama a cubica: https://jaxry.github.io/panorama-to-cubemap/
+	skbfDay.emplace_back("assets/Textures/Skybox/Day/nx.png");
+	skbfDay.emplace_back("assets/Textures/Skybox/Day/px.png");
+	skbfDay.emplace_back("assets/Textures/Skybox/Day/ny.png");
+	skbfDay.emplace_back("assets/Textures/Skybox/Day/py.png");
+	skbfDay.emplace_back("assets/Textures/Skybox/Day/nz.png");
+	skbfDay.emplace_back("assets/Textures/Skybox/Day/pz.png");
+	skyboxDay = Skybox(skbfDay);
 
-	skybox = Skybox(skyboxFaces);
+	skbfNight.emplace_back("assets/Textures/Skybox/Night/nx.png");
+	skbfNight.emplace_back("assets/Textures/Skybox/Night/px.png");
+	skbfNight.emplace_back("assets/Textures/Skybox/Night/ny.png");
+	skbfNight.emplace_back("assets/Textures/Skybox/Night/py.png");
+	skbfNight.emplace_back("assets/Textures/Skybox/Night/nz.png");
+	skbfNight.emplace_back("assets/Textures/Skybox/Night/pz.png");
+	skyboxNight = Skybox(skbfNight);
 
+	skyBoxCurrent = &skyboxDay;
 	Audio::AudioDevice::GetInstance();
 
 	Material_brillante = Model::Material(4.0f, 256);
@@ -260,7 +281,7 @@ int main()
 
 	// Shaders
 	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
-	
+
 	while (!mainWindow.shouldClose())
 	{
 		auto now = (float) glfwGetTime();
@@ -276,7 +297,7 @@ int main()
 		// Configuración del shader
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		skybox.DrawSkybox(activeCamera->calculateViewMatrix(), projection);
+		skyBoxCurrent->DrawSkybox(activeCamera->calculateViewMatrix(), projection);
 		shaderLight->useProgram();
 		uModel = shaderLight->getUniformModel();
 		uProjection = shaderLight->getUniformProjection();
@@ -297,21 +318,22 @@ int main()
 		shaderLight->SetDirectionalLight(&directionalLights[ambLight]);
 		shaderLight->SetSpotLights(nullptr, 0);
 		shaderLight->SetPointLights(pointLights.getLightArray(), pointLights.getCurrentCount());
-		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);
 
 		toffset = {0.0f, 0.0f};
 		color = {1.0f, 1.0f, 1.0f};
+		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);
 
 		glUniform2fv((GLint) uTexOffset, 1, glm::value_ptr(toffset));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(0.0, -1.0, 0.0)
+		            .translate(0.0, 0.0, 0.0)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 		maquinaPinball.render();
 
+		// Fliper izquierdo
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(-58, 48, 10)
 		            .rotateZ(6)
@@ -320,10 +342,21 @@ int main()
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		flipper.render();
 
+		// Flipper derecho
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(-58, 48, -19)
-		            .rotateZ(-6)
+		            .rotateZ(6)
 		            .rotateY(180 + leftFlipperRotation)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		flipper.render();
+
+		// Flipper superior
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(1.637, 54, -13.314)
+		            .rotateZ(6)
+		            .rotateY(180)
+		            .scale(0.586)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		flipper.render();
