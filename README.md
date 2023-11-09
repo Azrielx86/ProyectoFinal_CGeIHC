@@ -57,7 +57,7 @@ Compilación
 
 ## Fase 3 - Shading y texturizado
 - [x] Sistema de carga / búsqueda de texturas
-- [x] Pre-Sistema de shaders (para skybox e iluminación)
+- [x] Pre-Sistema de shaders (para skyboxDay e iluminación)
 - [x] Texturizado de los elementos en pantalla
 
 ## Fase 4 - Iluminación

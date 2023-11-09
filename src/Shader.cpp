@@ -83,7 +83,7 @@ void Shader::compileShader()
 		std::cerr << "Error validating the shader: " << eLog << "\n";
 		return;
 	}
-	
+
 	uniformProjection = glGetUniformLocation(shaderProgramId, "projection");
 	uniformModel = glGetUniformLocation(shaderProgramId, "model");
 	uniformView = glGetUniformLocation(shaderProgramId, "view");

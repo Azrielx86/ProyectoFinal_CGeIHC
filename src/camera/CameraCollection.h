@@ -7,6 +7,7 @@
 
 #include "Camera.h"
 #include <vector>
+#include <iostream>
 
 namespace Camera
 {
