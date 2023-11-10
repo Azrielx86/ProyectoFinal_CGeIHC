@@ -9,7 +9,17 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd ../Textures/Texturas_NieR.png
+map_Kd BaseMaquinaPinballV2.png
+
+newmtl FloorDusty
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd TopStandTexture.png
 
 newmtl MarcadorNumeros
 Ns 250.000000
@@ -19,7 +29,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd ../Textures/NumerosMarcador.png
+map_Kd NumerosMarcador.png
 
 newmtl Material.001
 Ns 250.000000
@@ -29,7 +39,17 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd ../Textures/PuenteDerechoBaseColor.png
+map_Kd PuenteDerechoBaseColor.png
+
+newmtl Rust
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd RustBaseColor.png
 
 newmtl TableroFrontal
 Ns 250.000000
@@ -39,7 +59,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd ../Textures/PanelFontal.png
+map_Kd PanelFontal.png
 
 newmtl WIP_Texture
 Ns 250.000000
@@ -49,4 +69,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd ../Textures/wip_texture.png
+map_Kd wip_texture.png

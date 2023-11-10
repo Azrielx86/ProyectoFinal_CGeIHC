@@ -19,6 +19,7 @@ class CameraCollection
 		cameraIndex = 0;
 		activeCamera = nullptr;
 	};
+	~CameraCollection();
 	CameraCollection &addCamera(Camera *camera);
 	Camera *switchCamera();
 	[[nodiscard]] Camera *getAcviveCamera() const;

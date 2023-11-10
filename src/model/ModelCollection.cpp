@@ -41,4 +41,9 @@ Model &ModelCollection::operator[](int index)
 {
 	return *models.at(index);
 }
+ModelCollection::~ModelCollection()
+{
+	for (auto &model : models)
+		delete model.second;
+}
 } // namespace Model
