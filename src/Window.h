@@ -13,6 +13,8 @@
 #include "input/MouseInput.h"
 #include <functional>
 #include <iostream>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class Window
 {
@@ -28,9 +30,11 @@ class Window
 	void bindCallbacks();
 	void toggleMouse();
 	GLFWwindow *getWindowPointer() { return window; }
+	glm::mat4 getProjectionMatrix();
 	static void handleKeyboard([[maybe_unused]] GLFWwindow *window, int key, int code, int action, int mode);
 	static void handleMousePos(GLFWwindow *window, double xPos, double yPos);
 	static void handleMouseClick(GLFWwindow* window, int button, int action, int mode);
+	static void windowResizeCallback(GLFWwindow* window, int width, int height);
 
   private:
 	GLFWwindow *window;
@@ -39,6 +43,7 @@ class Window
 	int bufferWidth;
 	int bufferHeight;
 	const char *title;
+	glm::mat4 projection;
 };
 
 #endif // PROYECTOFINAL_CGEIHC_WINDOW_H

@@ -343,7 +343,7 @@ int main()
 		// Configuración del shader
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		skyBoxCurrent->DrawSkybox(activeCamera->calculateViewMatrix(), projection);
+		skyBoxCurrent->DrawSkybox(activeCamera->calculateViewMatrix(), mainWindow.getProjectionMatrix());
 		shaderLight->useProgram();
 		uModel = shaderLight->getUniformModel();
 		uProjection = shaderLight->getUniformProjection();
@@ -355,7 +355,7 @@ int main()
 		uShininess = shaderLight->getUniformShininess();
 
 		// Camara
-		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(mainWindow.getProjectionMatrix()));
 		glUniformMatrix4fv((GLint) uView, 1, GL_FALSE, glm::value_ptr(activeCamera->calculateViewMatrix()));
 		auto camPos = activeCamera->getCameraPosition();
 		glUniform3f((GLint) uEyePosition, camPos.x, camPos.y, camPos.z);
