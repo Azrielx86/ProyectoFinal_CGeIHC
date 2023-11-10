@@ -9,7 +9,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 2
-map_Kd ../Textures/BaseMaquinaPinball.png
+map_Kd Texturas_NieR.png
 
 newmtl Cristal
 Ns 250.000000
@@ -19,4 +19,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 0.247934
 illum 9
-map_Kd ../Textures/cristal.png
+map_Kd cristal.png

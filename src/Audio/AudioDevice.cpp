@@ -58,6 +58,7 @@ AudioDevice::~AudioDevice()
 void AudioDevice::Terminate()
 {
 	delete instance;
-	std::cout << "[AudioDevice] Audio device closed.\n";
+	std::cout << "[ " << typeid(AudioDevice).name()
+	          << " ] Audio device closed.\n";
 }
 } // namespace Audio

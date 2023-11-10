@@ -27,6 +27,7 @@
 #include "model/Model.h"
 #include "model/ModelCollection.h"
 
+// region Global Variables
 Window mainWindow;
 Camera::CameraCollection cameras;
 Camera::Camera *activeCamera;
@@ -48,10 +49,13 @@ float lastTime = 0.0f;
 const float limitFPS = 1.0f / 60.0f;
 
 AMB_LIGHTS ambLight = AMB_LIGHTS::DAY;
+// endregion
 
-// Variables auxiliares que no se encapsularon en otras clases :v
+// region Variables auxiliares que no se encapsularon en otras clases :v
 float rightFlipperRotation = 0.0f;
 float leftFlipperRotation = 0.0f;
+float upFlipperRotation = 0.0f;
+// endregion
 
 void InitKeymaps()
 {
@@ -64,7 +68,7 @@ void InitKeymaps()
 		        glfwSetWindowShouldClose(mainWindow.getWindowPointer(), GL_TRUE);
 	        })
 	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_C,
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_TAB,
 	        []() -> void
 	        {
 		        activeCamera = cameras.switchCamera();
@@ -168,6 +172,13 @@ void InitModels()
 	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
 	    .addModel(MODELS::CANICA, "assets/Models/canica.obj")
 	    .addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
+	    .addModel(MODELS::JK_1, Utils::PathUtils::getModelsPath().append("/Marx/Base.obj"))
+	    .addModel(MODELS::JK_2, Utils::PathUtils::getModelsPath().append("/Marx/Body.obj"))
+	    .addModel(MODELS::JK_3, Utils::PathUtils::getModelsPath().append("/Marx/Brazo1.obj"))
+	    .addModel(MODELS::JK_4, Utils::PathUtils::getModelsPath().append("/Marx/Brazo2.obj"))
+	    .addModel(MODELS::JK_5, Utils::PathUtils::getModelsPath().append("/Marx/Brazo3.obj"))
+	    .addModel(MODELS::JK_6, Utils::PathUtils::getModelsPath().append("/Marx/Rotor.obj"))
+	    .addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/ExtraModels/Building.obj"))
 	    .loadModels();
 }
 
@@ -180,18 +191,24 @@ void InitLights()
 	                                                           0.0f, -1.0f, 0.0f))
 	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
 	                                                           0.3f, 0.3f,
-	                                                           0.0f, 0.0f, -1.0f))
+	                                                           0.0f, -1.0f, 0.0f))
 	                        .build();
 
 	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(3);
 	pointLights = pointLightsBuilder
-	                  .addLight(Lights::PointLight(1.0f, 0.0f, 1.0f,
-	                                               0.8f, 0.3f,
-	                                               0.0f, 0.0f, 0.0f,
-	                                               1.0f, 0.01f, 0.001f))
+//	                  .addLight(Lights::PointLight(1.0f, 0.0f, 1.0f,
+//	                                               0.8f, 0.3f,
+//	                                               0.0f, 0.0f, 0.0f,
+//	                                               1.0f, 0.01f, 0.001f))
 	                  .build();
 	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(3);
 	spotLights = spotLightBuilder
+//	                 .addLight(Lights::SpotLight(1.0f, 1.0f, 1.0f,
+//	                                             0.8f, 0.3f,
+//	                                             5.22617, 234.113, 1.82546,
+//	                                             0.0f, -1.0f, 0.0f,
+//	                                             1.0f, 0.0f, 0.01f,
+//	                                             40.0f))
 	                 .build();
 }
 
@@ -218,6 +235,17 @@ void updateFlippers()
 		if (leftFlipperRotation > -20)
 			leftFlipperRotation -= 5;
 	}
+
+	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_M).pressed)
+	{
+		if (upFlipperRotation < 20)
+			upFlipperRotation += 5;
+	}
+	else
+	{
+		if (upFlipperRotation > -20)
+			upFlipperRotation -= 5;
+	}
 }
 
 void exitProgram()
@@ -237,12 +265,14 @@ int main()
 	}
 
 	// Inicializar los componentes del programa
+	Audio::AudioDevice::GetInstance(); // inicializa el componente de audio
 	InitShaders();
 	InitKeymaps();
 	InitCameras();
 	InitModels();
 	InitLights();
 
+	// region Skybox settings
 	// SKyBoxes Faces Day
 	std::vector<std::string> skbfDay;
 	// SKyBoxes Faces Night
@@ -267,7 +297,7 @@ int main()
 	skyboxNight = Skybox(skbfNight);
 
 	skyBoxCurrent = &skyboxDay;
-	Audio::AudioDevice::GetInstance();
+	// endregion
 
 	Material_brillante = Model::Material(4.0f, 256);
 	Material_opaco = Model::Material(0.3f, 4);
@@ -278,12 +308,21 @@ int main()
 
 	Utils::ModelMatrix handler(glm::mat4(1.0f));
 	glm::mat4 model(1.0f);
+	glm::mat4 modelaux(1.0f);
 	glm::vec3 color(1.0f, 1.0f, 1.0f);
 	glm::vec2 toffset = glm::vec2(0.0f, 0.0f);
 
 	// modelos
 	auto maquinaPinball = models[MODELS::MAQUINA_PINBALL];
+	auto cristal = models[MODELS::MAQUINA_CRISTAL];
 	auto flipper = models[MODELS::FLIPPER];
+	auto mj1 = models[MODELS::JK_1];
+	auto mj2 = models[MODELS::JK_2];
+	auto mj3 = models[MODELS::JK_3];
+	auto mj4 = models[MODELS::JK_4];
+	auto mj5 = models[MODELS::JK_5];
+	auto mj6 = models[MODELS::JK_6];
+	auto destroyedBuilding = models[MODELS::DESTROYED_BUILDING];
 
 	// Shaders
 	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
@@ -300,6 +339,7 @@ int main()
 
 		updateFlippers();
 
+		// region Shader settings
 		// Configuración del shader
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -322,7 +362,7 @@ int main()
 
 		// Iluminacion
 		shaderLight->SetDirectionalLight(&directionalLights[ambLight]);
-		shaderLight->SetSpotLights(nullptr, 0);
+		shaderLight->SetSpotLights(spotLights.getLightArray(), spotLights.getCurrentCount());
 		shaderLight->SetPointLights(pointLights.getLightArray(), pointLights.getCurrentCount());
 
 		toffset = {0.0f, 0.0f};
@@ -332,6 +372,11 @@ int main()
 		glUniform2fv((GLint) uTexOffset, 1, glm::value_ptr(toffset));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 
+		// endregion Shader settings
+
+		// Para tomar las coordenadas de Blender
+		// y <-> z
+		// z -> -z
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(0.0, 0.0, 0.0)
 		            .getMatrix();
@@ -339,6 +384,7 @@ int main()
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 		maquinaPinball.render();
 
+		// region Flippers
 		// Fliper izquierdo
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(-58, 48, 10)
@@ -361,16 +407,142 @@ int main()
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(1.637, 54, -13.314)
 		            .rotateZ(6)
-		            .rotateY(180)
+		            .rotateY(180 + upFlipperRotation)
 		            .scale(0.586)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		flipper.render();
+		// endregion Flippers
+
+		// region Modelo Jerarquico 1
+		// Para tomar las coordenadas de Blender
+		// y <-> z
+		// z -> -z
+		model = handler
+		            .setMatrix(glm::mat4(1.0f))
+		            .translate(15.5f, 58.287f, -9.987f)
+		            .rotateZ(6)
+		            .rotateY((float) (15 * glfwGetTime()))
+		            .saveActualState(modelaux)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		mj1.render();
+
+		model = handler.setMatrix(modelaux)
+		            .saveActualState(modelaux)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		mj2.render();
+
+		model = handler.setMatrix(modelaux)
+		            .translate(0.0f, 2.9f, -3.2f)
+		            .saveActualState(modelaux)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		mj3.render();
+
+		model = handler.setMatrix(modelaux)
+		            .translate(0.0f, 4.13f, -0.19f)
+		            .saveActualState(modelaux)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		mj4.render();
+
+		model = handler.setMatrix(modelaux)
+		            .translate(0.0f, 0.41f, -3.3f)
+		            .saveActualState(modelaux)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		mj5.render();
+
+		model = handler.setMatrix(modelaux)
+		            .translate(0.0f, 0.186f, -2.01f)
+		            .rotateX((float) (70 * glfwGetTime()))
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		mj6.render();
+		// endregion Modelo Jerarquico 1
+
+		// region Modelo Jerarquico 2
+		model = handler
+		            .setMatrix(glm::mat4(1.0f))
+		            .translate(6.336f, 57.283f, 5.82f)
+		            .rotateZ(6)
+		            .rotateY((float) (15 * glfwGetTime()))
+		            .saveActualState(modelaux)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		mj1.render();
+
+		model = handler.setMatrix(modelaux)
+		            .saveActualState(modelaux)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		mj2.render();
+
+		model = handler.setMatrix(modelaux)
+		            .translate(0.0f, 2.9f, -3.2f)
+		            .saveActualState(modelaux)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		mj3.render();
+
+		model = handler.setMatrix(modelaux)
+		            .translate(0.0f, 4.13f, -0.19f)
+		            .saveActualState(modelaux)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		mj4.render();
+
+		model = handler.setMatrix(modelaux)
+		            .translate(0.0f, 0.41f, -3.3f)
+		            .saveActualState(modelaux)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		mj5.render();
+
+		model = handler.setMatrix(modelaux)
+		            .translate(0.0f, 0.186f, -2.01f)
+		            .rotateX((float) (70 * glfwGetTime()))
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		mj6.render();
+		// endregion Modelo Jerarquico 2
+
+		// region Extra models
+		// region Destroyed Buildings
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(53.983, 71.612, -27.538)
+		            .rotateY(46.061)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		destroyedBuilding.render();
+		
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(56.002, 71.377, 35.124)
+		            .rotateY(-416.5)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		destroyedBuilding.render();
+		// endregion
+		// endregion
+		
+		// region ALPHA
+
+		// region Cristal
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		model = glm::mat4(1.0f);
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		cristal.render();
+		glDisable(GL_BLEND);
+		// endregion
+
+		// endregion
 
 		glUseProgram(0);
 		mainWindow.swapBuffers();
 	}
-
 	Audio::AudioDevice::Terminate();
 	exitProgram();
 

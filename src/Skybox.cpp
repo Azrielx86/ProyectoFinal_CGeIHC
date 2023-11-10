@@ -16,7 +16,7 @@ Skybox::Skybox(std::vector<std::string> faceLocations)
 	int width, height, bitDepth;
 	for (size_t i = 0; i < 6; i++)
 	{
-		auto alpha = Utils::ImageUtils::GetPngChannel(faceLocations[i].c_str()) == Utils::ImageUtils::CHANNEL_TYPE::RGBA;     // true si es RGBA
+		auto alpha = Utils::ImageUtils::GetPngChannel(faceLocations[i]) == Utils::ImageUtils::CHANNEL_TYPE::RGBA;     // true si es RGBA
 		unsigned char *texData = stbi_load(faceLocations[i].c_str(), &width, &height, &bitDepth, alpha ? STBI_rgb_alpha : 0); // el tipo unsigned char es para un array de bytes de la imagen, obtener datos de la imagen
 		if (!texData)
 		{
