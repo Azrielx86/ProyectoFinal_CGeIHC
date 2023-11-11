@@ -6,6 +6,7 @@
 #define PROYECTOFINAL_CGEIHC_CAMERACOLLECTION_H
 
 #include "Camera.h"
+#include <iostream>
 #include <vector>
 
 namespace Camera
@@ -23,7 +24,7 @@ class CameraCollection
 	[[nodiscard]] Camera *getAcviveCamera() const;
 
   private:
-	std::vector<Camera *> cameras;
+	std:: vector<Camera *> cameras;
 	Camera *activeCamera{};
 	int cameraIndex;
 };

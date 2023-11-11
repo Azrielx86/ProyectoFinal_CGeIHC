@@ -154,6 +154,11 @@ void InitModels()
 	    .addModel(MODELS::MAQUINA_PINBALL, "assets/Models/MaquinaPinball.obj")
 	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
 	    .addModel(MODELS::CANICA, "assets/Models/canica.obj")
+		.addModel(MODELS::NORA,"assets/Models/NoraF.obj")
+	    .addModel(MODELS::MUNECO, "assets/Models/muneco_Hielo.obj")
+	    .addModel(MODELS::PICOP, "assets/Models/Pico_P.obj")
+	    .addModel(MODELS::PICOM, "assets/Models/Pico_M.obj")
+	    .addModel(MODELS::PICOG, "assets/Models/Pico_G.obj")
 	    .addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
 	    .loadModels();
 }
@@ -246,13 +251,18 @@ int main()
 
 	Utils::ModelMatrix handler(glm::mat4(1.0f));
 	glm::mat4 model(1.0f);
+	glm::mat4 aux(1.0f);
 	glm::vec3 color(1.0f, 1.0f, 1.0f);
 	glm::vec2 toffset = glm::vec2(0.0f, 0.0f);
 
 	// modelos
 	auto maquinaPinball = models[MODELS::MAQUINA_PINBALL];
 	auto flipper = models[MODELS::FLIPPER];
-
+	auto Nora = models[MODELS::NORA];
+	auto Muneco = models[MODELS::MUNECO];
+	auto PicoP = models[MODELS::PICOP];
+	auto PicoM = models[MODELS::PICOM];
+	auto PicoG = models[MODELS::PICOG];
 	// Shaders
 	auto shaderLight = shaders[Shader::ShaderTypes::LIGHT_SHADER];
 
@@ -300,6 +310,9 @@ int main()
 		glUniform2fv((GLint) uTexOffset, 1, glm::value_ptr(toffset));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 
+		glm::mat4 modelaux(1.0);
+		glm::mat4 modelaux2(1.0);
+		glm::mat4 modelaux3(1.0);
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(0.0, -1.0, 0.0)
 		            .getMatrix();
@@ -322,6 +335,90 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		flipper.render();
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(26, 61, 19)
+		            .scale(2.0)
+		            .rotateY(-90)
+		            .rotateX(6)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		Nora.render();
+		glDisable(GL_BLEND);
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(8, 55, -26)
+		            .scale(0.4)
+		            .rotateZ(-6)
+		            .rotateY(180)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		Muneco.render();
+		
+		//1er pico animado
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(15.5, 57.45, -10)
+		            .saveActualState(modelaux)// modelaux = model;   
+		            .scale(2.2)
+					.rotateZ(6)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoG.render();
+		//1
+		model = handler.setMatrix(modelaux)
+		            .translate(-2.5, 1.55, 0)
+		            .scale(2.2)
+		            .rotateZ(44.39)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		//2
+		model = handler.setMatrix(modelaux)
+		            .translate(.5, 3.55, +2)
+					.rotateZ(-8)
+		            .rotateX(48)
+					.scale(2.2)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		//3
+		model = handler.setMatrix(modelaux)
+		            .translate(.5, 3.55, -2)
+		            .rotateZ(-8)
+		            .rotateX(-48)
+					.scale(2.2)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		//4
+		model = handler.setMatrix(modelaux)
+		            .translate(-0.7, 5.55, +.5)
+		            .scale(2.2)
+		            .rotateZ(40)
+		            .rotateX(24)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		//5
+		model = handler.setMatrix(modelaux)
+		            .translate(-0.5, 5.55, -.5)
+		            .scale(2.2)
+		            .rotateZ(25)
+		            .rotateX(-20)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		// 5
+		model = handler.setMatrix(modelaux)
+		            .translate(-0.5, 5.55, -.5)
+		            .scale(2.2)
+		            .rotateZ(25)
+		            .rotateX(-20)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
 
 		glUseProgram(0);
 		mainWindow.swapBuffers();
