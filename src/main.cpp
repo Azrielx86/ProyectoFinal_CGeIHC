@@ -178,7 +178,9 @@ void InitModels()
 	    .addModel(MODELS::JK_4, Utils::PathUtils::getModelsPath().append("/Marx/Brazo2.obj"))
 	    .addModel(MODELS::JK_5, Utils::PathUtils::getModelsPath().append("/Marx/Brazo3.obj"))
 	    .addModel(MODELS::JK_6, Utils::PathUtils::getModelsPath().append("/Marx/Rotor.obj"))
+#ifndef DEBUG // Este modelo causa muchos problemas
 	    .addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/ExtraModels/Building.obj"))
+#endif
 	    .loadModels();
 }
 
@@ -322,7 +324,9 @@ int main()
 	auto mj4 = models[MODELS::JK_4];
 	auto mj5 = models[MODELS::JK_5];
 	auto mj6 = models[MODELS::JK_6];
+#ifndef DEBUG
 	auto destroyedBuilding = models[MODELS::DESTROYED_BUILDING];
+#endif
 
 	// Shaders
 	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
@@ -511,6 +515,7 @@ int main()
 
 		// region Extra models
 		// region Destroyed Buildings
+#ifndef DEBUG
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(53.983, 71.612, -27.538)
 		            .rotateY(46.061)
@@ -524,6 +529,7 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		destroyedBuilding.render();
+#endif
 		// endregion
 		// endregion
 		
