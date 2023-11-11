@@ -115,6 +115,8 @@ add_executable(ProyectoFinal_CGeIHC
         src/Utils/ImageUtils.h
         src/Utils/Logger.cpp
         src/Utils/Logger.h
+        src/Animation/Animation.cpp
+        src/Animation/Animation.h
 )
 
 message(STATUS "Copiando archivos de shader")

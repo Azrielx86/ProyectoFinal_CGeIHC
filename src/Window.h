@@ -31,11 +31,23 @@ class Window
 	static void handleKeyboard([[maybe_unused]] GLFWwindow *window, int key, int code, int action, int mode);
 	static void handleMousePos(GLFWwindow *window, double xPos, double yPos);
 	static void handleMouseClick(GLFWwindow* window, int button, int action, int mode);
-
+	//para animacion
+	GLboolean getStartAnimacionPico1(){return StartAnimacionPico1; }
+	GLboolean setStartAnimacionPico1TRUE() { return StartAnimacionPico1 = true; }
+	GLboolean setStartAnimacionPico1FALSE() { return StartAnimacionPico1 = false; }
+	GLboolean getStartAnimacionPico2() { return StartAnimacionPico2; }
+	GLboolean setStartAnimacionPico2TRUE() { return StartAnimacionPico2 = true; }
+	GLboolean setStartAnimacionPico2FALSE() { return StartAnimacionPico2 = false; }
+	GLboolean getStartAnimacionPico3() { return StartAnimacionPico3; }
+	GLboolean setStartAnimacionPico3TRUE() { return StartAnimacionPico3 = true; }
+	GLboolean setStartAnimacionPico3FALSE() { return StartAnimacionPico3 = false; }
   private:
 	GLFWwindow *window;
 	GLuint width;
 	GLuint height;
+	GLboolean StartAnimacionPico1=false;
+	GLboolean StartAnimacionPico2 = false;
+	GLboolean StartAnimacionPico3 = false;
 	int bufferWidth;
 	int bufferHeight;
 	const char *title;

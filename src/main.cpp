@@ -12,6 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Animation/Animation.h"
 #include "Audio/AudioDevice.h"
 #include "GlobalConstants.h"
 #include "Lights/DirectionalLight.h"
@@ -116,14 +117,14 @@ void InitKeymaps()
 	        GLFW_MOUSE_BUTTON_RIGHT,
 	        []() -> void
 	        {
-		        std::cout << "Click derecho presionado\n";
-	        })
-	    .addMoveCallback(
-	        KEYMAPS::FREE_CAMERA,
-	        [](float) -> void
-	        {
-		        activeCamera->mouseControl(Input::MouseInput::GetInstance());
-	        });
+				std::cout << "Click derecho presionado\n";
+			})
+			.addMoveCallback(
+				KEYMAPS::FREE_CAMERA,
+				[](float) -> void
+				{
+					activeCamera->mouseControl(Input::MouseInput::GetInstance());
+				});
 }
 
 void InitShaders()
@@ -140,51 +141,61 @@ void InitShaders()
 void InitCameras()
 {
 	cameras.addCamera(new Camera::Camera(glm::vec3(0.0f, 60.0f, 20.0f),
-	                                     glm::vec3(0.0f, 1.0f, 0.0f),
-	                                     -60.0f, 0.0f, 0.5f, 0.5f));
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		-60.0f, 0.0f, 0.5f, 0.5f));
 	cameras.addCamera(new Camera::Camera(glm::vec3(-134.618, 124.889, 4.39917),
-	                                     glm::vec3(0.0f, 1.0f, 0.0f),
-	                                     0.0f, -30.0f, 0.5f, 0.5f, true));
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		0.0f, -30.0f, 0.5f, 0.5f, true));
 	activeCamera = cameras.getAcviveCamera();
 }
 
 void InitModels()
 {
 	models
-	    .addModel(MODELS::MAQUINA_PINBALL, "assets/Models/MaquinaPinball.obj")
-	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
-	    .addModel(MODELS::CANICA, "assets/Models/canica.obj")
-		.addModel(MODELS::NORA,"assets/Models/NoraF.obj")
-	    .addModel(MODELS::MUNECO, "assets/Models/muneco_Hielo.obj")
-	    .addModel(MODELS::PICOP, "assets/Models/Pico_P.obj")
-	    .addModel(MODELS::PICOM, "assets/Models/Pico_M.obj")
-	    .addModel(MODELS::PICOG, "assets/Models/Pico_G.obj")
-	    .addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
-	    .loadModels();
+		.addModel(MODELS::MAQUINA_PINBALL, "assets/Models/MaquinaPinball.obj")
+		.addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
+		.addModel(MODELS::CANICA, "assets/Models/canica.obj")
+		.addModel(MODELS::NORA, "assets/Models/NoraF.obj")
+		.addModel(MODELS::MUNECO, "assets/Models/muneco_Hielo.obj")
+		.addModel(MODELS::PICOP, "assets/Models/Pico_P.obj")
+		.addModel(MODELS::PICOM, "assets/Models/Pico_M.obj")
+		.addModel(MODELS::PICOG, "assets/Models/Pico_G.obj")
+		.addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
+		.loadModels();
 }
 
 void InitLights()
 {
 	Lights::LightCollectionBuilder<Lights::DirectionalLight> directionalLightsBuilder(2);
 	directionalLights = directionalLightsBuilder
-	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
-	                                                           0.8f, 0.3f,
-	                                                           0.0f, -1.0f, 0.0f))
-	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
-	                                                           0.3f, 0.3f,
-	                                                           0.0f, 0.0f, -1.0f))
-	                        .build();
+		.addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
+			0.8f, 0.3f,
+			0.0f, -1.0f, 0.0f))
+		.addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
+			0.3f, 0.3f,
+			0.0f, 0.0f, -1.0f))
+		.build();
 
 	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(3);
 	pointLights = pointLightsBuilder
-	                  .addLight(Lights::PointLight(1.0f, 0.0f, 1.0f,
-	                                               0.8f, 0.3f,
-	                                               0.0f, 0.0f, 0.0f,
-	                                               1.0f, 0.01f, 0.001f))
-	                  .build();
+		.addLight(Lights::PointLight(1.0f, 0.0f, 1.0f,
+			0.8f, 0.3f,
+			0.0f, 0.0f, 0.0f,
+			1.0f, 0.01f, 0.001f))
+	    .addLight(Lights::PointLight(0.0f, 0.0f, 1.0f,
+	        0.8f, 0.3f,
+	        0.0f, 0.0f, 0.0f,
+	        1.0f, 0.01f, 0.001f))
+		.build();
 	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(3);
 	spotLights = spotLightBuilder
-	                 .build();
+	  /*.addLight(Lights::SpotLight(0.0f, 0.0f, 1.0f,
+	        0.8f, 0.3f,
+	        0.0f, 0.0f, 0.0f,//pos
+			1.0f, 0.01f, 0.001f,//dir
+			1.0f, 0.01f, 0.0f,//ec y angulo
+			1.0f))*/
+		.build();
 }
 
 void updateFlippers()
@@ -209,6 +220,19 @@ void updateFlippers()
 	{
 		if (leftFlipperRotation > -20)
 			leftFlipperRotation -= 5;
+	}
+	//prueba anim
+	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_O).pressed)
+	{
+		mainWindow.setStartAnimacionPico1TRUE();
+	}
+	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_I).pressed)
+	{
+		mainWindow.setStartAnimacionPico2TRUE();
+	}
+	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_P).pressed)
+	{
+		mainWindow.setStartAnimacionPico3TRUE();
 	}
 }
 
@@ -254,7 +278,19 @@ int main()
 	glm::mat4 aux(1.0f);
 	glm::vec3 color(1.0f, 1.0f, 1.0f);
 	glm::vec2 toffset = glm::vec2(0.0f, 0.0f);
-
+	//variables para animacion
+	float rotOffPico=3.5;
+	float escOffPico = .01;
+	float rotPico1=0;
+	float rotPicoZ1 = 0;
+	float escPico1 = 0;
+	float rotPico2 = 0;
+	float rotPicoZ2 = 0;
+	float escPico2 = 0;
+	float rotPico3 = 0;
+	float rotPicoZ3 = 0;
+	float escPico3 = 0;
+	
 	// modelos
 	auto maquinaPinball = models[MODELS::MAQUINA_PINBALL];
 	auto flipper = models[MODELS::FLIPPER];
@@ -266,18 +302,111 @@ int main()
 	// Shaders
 	auto shaderLight = shaders[Shader::ShaderTypes::LIGHT_SHADER];
 
+	//animaciones
+	Animation PicoJerarquia1;
+	PicoJerarquia1
+		.addCondition(
+	     [](float delta) -> bool
+		 { return mainWindow.getStartAnimacionPico1(); })
+		.addCondition(
+	        [&rotOffPico, &rotPico1, &rotPicoZ1, &escOffPico, &escPico1](float delta) -> bool
+	        {
+				if (rotPico1 < 720)
+			    {
+			        if (rotPicoZ1 < 6 && rotPico1<70)
+			        {
+				        rotPicoZ1 +=10* escOffPico * delta;
+					}
+				    rotPico1 += rotOffPico * delta;
+					if (escPico1 < 2.2) {
+				        escPico1 += escOffPico * delta;
+					}
+			        if (rotPicoZ1 > 6 && rotPico1 > 650)
+			        {
+				        rotPicoZ1 -= 10 * escOffPico * delta;
+			        }
+
+				    return false;
+			    }
+			    else
+			        rotPicoZ1 = 0;
+				    return true;}
+		)
+		.prepare();
+	Animation PicoJerarquia2;
+	PicoJerarquia2
+	    .addCondition(
+	        [](float delta) -> bool
+	        { return mainWindow.getStartAnimacionPico2(); })
+	    .addCondition(
+	        [&rotOffPico, &rotPico2, &rotPicoZ2, &escOffPico, &escPico2](float delta) -> bool
+	        {
+				if (rotPico2 < 720)
+			    {
+			        if (rotPicoZ2 < 6 && rotPico2<70)
+			        {
+				        rotPicoZ2 +=10* escOffPico * delta;
+					}
+				    rotPico2 += rotOffPico * delta;
+					if (escPico2 < 2.2) {
+				        escPico2 += escOffPico * delta;
+					}
+			        if (rotPicoZ2 > 6 && rotPico2 > 650)
+			        {
+				        rotPicoZ2 -= 10 * escOffPico * delta;
+			        }
+
+				    return false;
+			    }
+			    else
+			        rotPicoZ2 = 0;
+				    return true; })
+	    .prepare();
+
+	Animation PicoJerarquia3;
+	PicoJerarquia3
+	    .addCondition(
+	        [](float delta) -> bool
+	        { return mainWindow.getStartAnimacionPico3(); })
+	    .addCondition(
+	        [&rotOffPico, &rotPico3, &rotPicoZ3, &escOffPico, &escPico3](float delta) -> bool
+	        {
+				if (rotPico3 < 720)
+			    {
+			        if (rotPicoZ3 < 6 && rotPico3<70)
+			        {
+				        rotPicoZ3 +=10* escOffPico * delta;
+					}
+				    rotPico3 += rotOffPico * delta;
+					if (escPico3 < 2.2) {
+				        escPico3 += escOffPico * delta;
+					}
+			        if (rotPicoZ3 > 6 && rotPico3 > 650)
+			        {
+				        rotPicoZ3 -= 10 * escOffPico * delta;
+			        }
+
+				    return false;
+			    }
+			    else
+			        rotPicoZ3 = 0;
+				    return true; })
+	    .prepare();
+
 	while (!mainWindow.shouldClose())
 	{
 		auto now = (float) glfwGetTime();
 		deltaTime = now - lastTime;
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
-
+		
 		glfwPollEvents();
 		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
 
 		updateFlippers();
-
+		PicoJerarquia1.update(deltaTime);
+		PicoJerarquia2.update(deltaTime);
+		PicoJerarquia3.update(deltaTime);
 		// Configuración del shader
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -359,17 +488,18 @@ int main()
 		
 		//1er pico animado
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(15.5, 57.45, -10)
+		            .translate(15.5, 57.35, -10)
+		            .rotateY(rotPico1)
 		            .saveActualState(modelaux)// modelaux = model;   
 		            .scale(2.2)
-					.rotateZ(6)
+		            .rotateZ(6 - rotPicoZ1)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoG.render();
 		//1
 		model = handler.setMatrix(modelaux)
 		            .translate(-2.5, 1.55, 0)
-		            .scale(2.2)
+		            .scale(escPico1)
 		            .rotateZ(44.39)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -379,7 +509,7 @@ int main()
 		            .translate(.5, 3.55, +2)
 					.rotateZ(-8)
 		            .rotateX(48)
-					.scale(2.2)
+		            .scale(escPico1)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
@@ -388,14 +518,14 @@ int main()
 		            .translate(.5, 3.55, -2)
 		            .rotateZ(-8)
 		            .rotateX(-48)
-					.scale(2.2)
+		            .scale(escPico1)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
 		//4
 		model = handler.setMatrix(modelaux)
 		            .translate(-0.7, 5.55, +.5)
-		            .scale(2.2)
+		            .scale(escPico1)
 		            .rotateZ(40)
 		            .rotateX(24)
 		            .getMatrix();
@@ -404,16 +534,116 @@ int main()
 		//5
 		model = handler.setMatrix(modelaux)
 		            .translate(-0.5, 5.55, -.5)
-		            .scale(2.2)
+		            .scale(escPico1)
 		            .rotateZ(25)
 		            .rotateX(-20)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
-		// 5
-		model = handler.setMatrix(modelaux)
-		            .translate(-0.5, 5.55, -.5)
+		//2do pico
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(31, 61.1, -26)
+		            .rotateY(rotPico2)
+		            .saveActualState(modelaux2) // modelaux = model;
 		            .scale(2.2)
+		            .rotateZ(6 - rotPicoZ2)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoG.render();
+		// 1
+		model = handler.setMatrix(modelaux2)
+		            .translate(-2.5, 1.55, 0)
+		            .scale(escPico2)
+		            .rotateZ(44.39)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		// 2
+		model = handler.setMatrix(modelaux2)
+		            .translate(.5, 3.55, +2)
+		            .rotateZ(-8)
+		            .rotateX(48)
+		            .scale(escPico2)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		// 3
+		model = handler.setMatrix(modelaux2)
+		            .translate(.5, 3.55, -2)
+		            .rotateZ(-8)
+		            .rotateX(-48)
+		            .scale(escPico2)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		// 4
+		model = handler.setMatrix(modelaux2)
+		            .translate(-0.7, 5.55, +.5)
+		            .scale(escPico2)
+		            .rotateZ(40)
+		            .rotateX(24)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		// 5
+		model = handler.setMatrix(modelaux2)
+		            .translate(-0.5, 5.55, -.5)
+		            .scale(escPico2)
+		            .rotateZ(25)
+		            .rotateX(-20)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+
+		// 3do pico
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(6.5, 56.35, 6)
+		            .rotateY(rotPico3)
+		            .saveActualState(modelaux3) // modelaux = model;
+		            .scale(2.2)
+		            .rotateZ(6 - rotPicoZ3)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoG.render();
+		// 1
+		model = handler.setMatrix(modelaux3)
+		            .translate(-2.5, 1.55, 0)
+		            .scale(escPico3)
+		            .rotateZ(44.39)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		// 2
+		model = handler.setMatrix(modelaux3)
+		            .translate(.5, 3.55, +2)
+		            .rotateZ(-8)
+		            .rotateX(48)
+		            .scale(escPico3)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		// 3
+		model = handler.setMatrix(modelaux3)
+		            .translate(.5, 3.55, -2)
+		            .rotateZ(-8)
+		            .rotateX(-48)
+		            .scale(escPico3)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		// 4
+		model = handler.setMatrix(modelaux3)
+		            .translate(-0.7, 5.55, +.5)
+		            .scale(escPico3)
+		            .rotateZ(40)
+		            .rotateX(24)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		PicoM.render();
+		// 5
+		model = handler.setMatrix(modelaux3)
+		            .translate(-0.5, 5.55, -.5)
+		            .scale(escPico3)
 		            .rotateZ(25)
 		            .rotateX(-20)
 		            .getMatrix();
