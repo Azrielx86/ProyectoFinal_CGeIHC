@@ -128,30 +128,6 @@ void InitKeymaps()
 		        mainWindow.toggleMouse();
 	        })
 	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_P,
-	        []() -> void
-	        {
-		        globalCounter++;
-		        std::cout << "Tecla P presionada "
-		                  << globalCounter << " veces\n";
-	        },
-	        true)
-//	    .addCallback(
-//	        KEYMAPS::FREE_CAMERA, GLFW_KEY_L,
-//	        []() -> void
-//	        {
-//		        if (ambLight == AMB_LIGHTS::DAY)
-//		        {
-//			        skyBoxCurrent = &skyboxNight;
-//			        ambLight = AMB_LIGHTS::NIGHT;
-//		        }
-//		        else
-//		        {
-//			        skyBoxCurrent = &skyboxDay;
-//			        ambLight = AMB_LIGHTS::DAY;
-//		        }
-//	        })
-	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_0,
 	        []() -> void
 	        {
@@ -231,7 +207,7 @@ void InitKeymaps()
 	    .createKeymap(KEYMAPS::FREE_CAMERA)
 	    .addClickCallback(
 	        KEYMAPS::FREE_CAMERA,
-	        GLFW_MOUSE_BUTTON_LEFT, // Expansion del resorte
+	        GLFW_MOUSE_BUTTON_RIGHT, // Expansion del resorte
 	        []() -> void
 	        {
 		        marblePreLaunch.start();
@@ -241,13 +217,6 @@ void InitKeymaps()
 	        {
 		        if (!captureMode)
 			        marbleKfAnim.play();
-	        })
-	    .addClickCallback(
-	        KEYMAPS::FREE_CAMERA,
-	        GLFW_MOUSE_BUTTON_RIGHT,
-	        []() -> void
-	        {
-		        std::cout << "Click derecho presionado\n";
 	        })
 	    .addMoveCallback(
 	        KEYMAPS::FREE_CAMERA,
@@ -360,13 +329,13 @@ void InitAnimations()
 	marblePreLaunch
 	    .addCondition([](float dt) -> bool
 	                  {
-		                  if(expandeResorte >= 0.5f && Input::MouseInput::GetInstance().getCurrentKeymap()->at(GLFW_MOUSE_BUTTON_LEFT).pressed)
+		                  if(expandeResorte >= 0.5f && Input::MouseInput::GetInstance().getCurrentKeymap()->at(GLFW_MOUSE_BUTTON_RIGHT).pressed)
 		                  {
 								expandeResorte -= 0.05f * dt;
 			                    leverPos += leverDirection * 0.08f * dt;
 								return false;
 		                  }
-		                  return !Input::MouseInput::GetInstance().getCurrentKeymap()->at(GLFW_MOUSE_BUTTON_LEFT).pressed; })
+		                  return !Input::MouseInput::GetInstance().getCurrentKeymap()->at(GLFW_MOUSE_BUTTON_RIGHT).pressed; })
 	    .addCondition([](float dt) -> bool
 	                  {
 		                  if (expandeResorte <=0.5)
