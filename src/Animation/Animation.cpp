@@ -24,11 +24,16 @@ void Animation::prepare()
 
 void Animation::update(float deltaTime)
 {
+	if (!started) return;
 	if (current == nullptr) return;
 	if ((*current)(deltaTime))
 	{
 		currentIndex++;
-		if (currentIndex >= (int) conditions.size()) currentIndex = 0;
+		if (currentIndex >= (int) conditions.size())
+		{
+			currentIndex = 0;
+			started = false;
+		}
 		current = &conditions[currentIndex];
 	}
 }

@@ -47,6 +47,8 @@ Entity::SimpleEntity marbleEntity;
 Animation::KeyFrameAnimation marbleKfAnim;
 Animation::Animation marbleAnimation;
 glm::vec3 marblePos;
+Animation::Animation marblePreLaunch;
+Animation::Animation marblePostLaunch;
 
 Model::Material matMetal;
 Model::Material Material_brillante;
@@ -67,6 +69,7 @@ float rightFlipperRotation = 0.0f;
 float leftFlipperRotation = 0.0f;
 float upFlipperRotation = 0.0f;
 bool captureMode = false;
+float expandeResorte = 1.0f;
 // endregion
 
 void InitKeymaps()
@@ -205,15 +208,20 @@ void InitKeymaps()
 	    .createKeymap(KEYMAPS::FREE_CAMERA)
 	    .addClickCallback(
 	        KEYMAPS::FREE_CAMERA,
-	        GLFW_MOUSE_BUTTON_LEFT,
+	        GLFW_MOUSE_BUTTON_LEFT, // Expansion del resorte
 	        []() -> void
 	        {
 		        std::cout << "Click izquierdo presionado\n";
+		        // Activar la animacion
+		        marblePreLaunch.start();
 	        },
-	        false,
+	        true,
 	        []() -> void
 	        {
+		        // Comenzar la animacion
 		        std::cout << "Click izquierdo soltado\n";
+		        if (!captureMode)
+			        marbleKfAnim.play();
 	        })
 	    .addClickCallback(
 	        KEYMAPS::FREE_CAMERA,
@@ -327,13 +335,33 @@ void InitLights()
 
 void InitAnimations()
 {
-	marbleAnimation
-	    .addCondition([](float dt) -> bool
-	                  { return true; })
+
+	marblePreLaunch
 	    .addCondition([](float dt) -> bool
 	                  {
-		                  // pos -78.1875, 46.4197, 37.00
-	                  });
+		                  if(expandeResorte >= 0.5f && Input::MouseInput::GetInstance().getCurrentKeymap()->at(GLFW_MOUSE_BUTTON_LEFT).pressed)
+		                  {
+								expandeResorte -= 0.05f * dt;
+								return false;
+		                  }
+		                  return !Input::MouseInput::GetInstance().getCurrentKeymap()->at(GLFW_MOUSE_BUTTON_LEFT).pressed; })
+	    .addCondition([](float dt) -> bool
+	                  {
+		                  if (expandeResorte <=0.5)
+		                  {
+			                  expandeResorte += 0.05f * dt;
+			                  return false;
+		                  }
+		                  expandeResorte = 1.0f;
+		                  return true; })
+	    .prepare();
+	//	marbleAnimation
+	//	    .addCondition([](float dt) -> bool
+	//	                  { return true; })
+	//	    .addCondition([](float dt) -> bool
+	//	                  {
+	//		                  // pos -78.1875, 46.4197, 37.00
+	//	                  });
 }
 
 void updateFlippers()
@@ -400,6 +428,7 @@ int main()
 	InitCameras();
 	InitModels();
 	InitLights();
+	InitAnimations();
 	LoadAnimations();
 
 	// region Skybox settings
@@ -470,6 +499,7 @@ int main()
 		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
 
 		updateFlippers();
+		marblePreLaunch.update(deltaTime);
 
 		if (captureMode)
 			marbleEntity.update(nullptr, deltaTime);
@@ -680,6 +710,10 @@ int main()
 
 		// region Resorte
 		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(-83.614f, 45.123f, 36.931f)
+		            .rotateZ(-76)
+		            .scale(0.582)
+		            .scale(1.0f, expandeResorte, 1.0f)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		resorte.render();

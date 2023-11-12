@@ -40,7 +40,8 @@ void KeyboardInput::handleKey(int key, [[maybe_unused]] int code, int action, [[
 	currentKeymap->at(key).pressed = action != GLFW_RELEASE;
 	for (auto &k : *currentKeymap)
 	{
-		if (k.action == GLFW_PRESS || (k.action == GLFW_REPEAT && k.repeat))
+//		if (k.action == GLFW_PRESS || (k.action & 0x3 && k.repeat))
+		if (k.action == GLFW_PRESS || (k.pressed && k.repeat))
 			if (k.callback != nullptr)
 				k.callback();
 	}

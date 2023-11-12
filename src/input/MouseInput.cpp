@@ -25,14 +25,16 @@ void MouseInput::handleClick(int button, int action, [[maybe_unused]] int mode) 
 
 	auto btn = &currentKeymap->at(button);
 	//	currentKeymap->at(button).action = action;
-	if ((btn->action == GLFW_PRESS || btn->action == GLFW_REPEAT) && action == GLFW_RELEASE)
+	if (((btn->action & 0x3) != 0) && action == GLFW_RELEASE)
 		if (btn->releaseCallback != nullptr)
 			btn->releaseCallback();
 
 	btn->action = action;
+	btn->pressed = action != GLFW_RELEASE;
 	for (const auto &k : *currentKeymap)
 	{
-		if (k.action == GLFW_PRESS || (k.action == GLFW_REPEAT && k.repeat))
+//		if (k.action == GLFW_PRESS || (k.action == GLFW_REPEAT && k.repeat))
+		if (k.action == GLFW_PRESS || (k.pressed && k.repeat))
 			if (k.callback != nullptr)
 				k.callback();
 	}

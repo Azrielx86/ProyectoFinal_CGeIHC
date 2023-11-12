@@ -36,8 +36,19 @@ class Animation
 	 */
 	void update(float deltaTime);
 
+	/**
+	 * Starts the animation.
+	 */
+	void start() { this->started = true; }
+
+	/**
+	 * @return Return the animation status. 
+	 */
+	[[nodiscard]] bool isStarted() const { return started; }
+
   private:
 	int currentIndex;
+	bool started = false;
 	std::function<bool(float)> *current;
 	std::vector<std::function<bool(float)>> conditions;
 };
