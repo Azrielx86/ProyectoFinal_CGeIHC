@@ -312,8 +312,8 @@ int main()
 	float movXCanica = 0;
 	float movYCanica = 0;
 	float movZCanica = 0;
-	float movXOffCanica = 0.2;
-	float movYOffCanica = 0.1;
+	float movXOffCanica = 0.4;
+	float movYOffCanica = 0.06;
 	float movZOffCanica = 0.2;
 	float movYImpulso = 0.0524;
 	float movXImpulso = 0.5;
@@ -357,7 +357,7 @@ int main()
 	        [&movZCanica, &movZOffCanica, &movXCanica, &movYCanica, &movXImpulso, &movYImpulso, &rotCanica, &rotOffCanica, &BCan](float delta) -> bool
 	        //[&movXCanica, &movYCanica, &movZCanica, &movXOffCanica, &movYOffCanica, &movZOffCanica, &rotCanica, &rotOffCanica](float delta) -> bool
 			{
-				if (movXCanica < 100)
+				if (movXCanica < 100 && BCan==0)
 				{
 			        movXCanica += movXImpulso * delta;
 			        movYCanica += movYImpulso * delta;
@@ -365,26 +365,41 @@ int main()
 			        movZOffCanica = 0.23;
 					return false;
 				}
-		        else if (movXCanica > 100 && movXCanica < 125 && movZCanica>20)
+		        else if (movXCanica > 100 && movXCanica < 125 && movZCanica > 19 && BCan == 0)
 		        {
 			        movXCanica += movXImpulso * delta;
 			        movZCanica -= movZOffCanica * delta;
-			        printf("%f\n", movZCanica);
 			        movYCanica += movYImpulso * delta;
 			        rotCanica += rotOffCanica * delta;
 			        return false;
 				}
 				else
 					BCan=1;
-					movZOffCanica = 0.2;
+					movZOffCanica = 0.35;
 					return true; })
 	    .addCondition(
-			[&movXCanica, &movXOffCanica,&movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool 
+			[&movXCanica, &movXOffCanica,&movYCanica, &movYImpulso, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool 
 			{
-				/*if (movXCanica < 120) {
-			        movXCanica += movXImpulso * delta;
-			        rotCanica += rotOffCanica * delta;
-				}else*/
+				if (movZCanica > 12 && BCan==1) {
+			        movXCanica += 0.05 * delta;
+			        movZCanica -= movZOffCanica * delta;
+			        movYCanica += 0.08 * delta;
+					//rotCanica += rotOffCanica * delta;
+		        }
+		        else if (movXCanica > 110 && BCan == 1)
+		        {
+			        //movZOffCanica = 0.19;
+					//printf("%f,%f,%f\n", movXCanica, movYCanica, movZCanica);
+					movXCanica -= movXOffCanica * delta;
+			        movZCanica -= movZOffCanica * delta;
+				}
+		        /* else if (movXCanica <)
+		        {
+			        movXCanica += movXOffCanica * delta;
+			        movZCanica += movZOffCanica * delta;
+			        movYCanica -= movYOffCanica * delta;*/
+				else
+			        printf("%f,%f,%f\n", movXCanica, movYCanica,movZCanica);
 					return true; })
 		.prepare();
 
@@ -507,6 +522,9 @@ int main()
 		uTexOffset = shaderLight->getUniformTextureOffset();
 		uSpecularIntensity = shaderLight->getUniformSpecularIntensity();
 		uShininess = shaderLight->getUniformShininess();
+		//Texture CanicaTexture;
+		//CanicaTexture = Texture("Textures/CanicaTexture.png");
+		//CanicaTexture.LoadTextureA();
 
 		// Camara
 		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(projection));
