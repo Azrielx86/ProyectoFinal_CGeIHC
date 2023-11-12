@@ -31,6 +31,8 @@
 #include "model/Material.h"
 #include "model/Model.h"
 #include "model/ModelCollection.h"
+#include "model/BoneMesh.h"
+#include "model/BoneModel.h"
 
 // region Global Variables
 Window mainWindow;
@@ -53,6 +55,7 @@ glm::vec3 leverPos = {-85.369f, 43.931f, 36.921f};
 const glm::vec3 leverEnd = {-90.089f, 42.213f, 36.921f};
 const glm::vec3 leverDirection = glm::normalize(leverEnd - leverPos);
 //const float movLeverDistance = glm::length(leverEnd - leverPos);
+Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/2b.obj"));
 
 Model::Material matMetal;
 Model::Material Material_brillante;
@@ -215,15 +218,11 @@ void InitKeymaps()
 	        GLFW_MOUSE_BUTTON_LEFT, // Expansion del resorte
 	        []() -> void
 	        {
-		        std::cout << "Click izquierdo presionado\n";
-		        // Activar la animacion
 		        marblePreLaunch.start();
 	        },
 	        true,
 	        []() -> void
 	        {
-		        // Comenzar la animacion
-		        std::cout << "Click izquierdo soltado\n";
 		        if (!captureMode)
 			        marbleKfAnim.play();
 	        })
@@ -253,7 +252,7 @@ void InitShaders()
 	shaders[ShaderTypes::LIGHT_SHADER] = lightShader;
 
 	auto boneShader = new Shader();
-	boneShader->loadShader("shaders/shader_bone.vert", "shaders/shader_bone.frag");
+	boneShader->loadShader("shaders/shader_bone.vert", "shaders/shader_light.frag");
 	shaders[ShaderTypes::BONE_SHADER] = boneShader;
 }
 
@@ -284,12 +283,15 @@ void InitModels()
 	    .addModel(MODELS::MARBLE, Utils::PathUtils::getModelsPath().append("/canica.obj"))
 	    .addModel(MODELS::RESORTE, Utils::PathUtils::getModelsPath().append("/Resorte.obj"))
 	    .addModel(MODELS::PALANCA, Utils::PathUtils::getModelsPath().append("/Lever.obj"))
+	    .addModel(MODELS::ROBOT, Utils::PathUtils::getModelsPath().append("/sstubby.obj"))
 #ifdef DEBUG
 	    .addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/Coin.obj"))
 #else
 	    .addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/ExtraModels/Building.obj"))
 #endif
 	    .loadModels();
+	
+	avatar.loadModel();
 }
 
 void InitLights()
@@ -484,6 +486,7 @@ int main()
 	auto marbleKf = models[MODELS::MARBLE];
 	auto resorte = models[MODELS::RESORTE];
 	auto lever = models[MODELS::PALANCA];
+	auto robot = models[MODELS::ROBOT];
 
 	// Shaders
 	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
@@ -725,8 +728,24 @@ int main()
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		resorte.render();
 		// endregion Resorte
+		
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(44.797, 66.892, 0)
+		            .rotateY(180)
+		            .scale(11.492)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		robot.render();
 
 		// region ALPHA
+
+#ifdef AVATAR
+		shaders[ShaderTypes::BONE_SHADER]->useProgram();
+		model = handler.setMatrix(glm::mat4 (1.0f))
+		        .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		avatar.render();
+#endif
 
 		// region Cristal
 		glEnable(GL_BLEND);

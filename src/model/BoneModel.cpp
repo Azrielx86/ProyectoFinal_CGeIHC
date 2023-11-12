@@ -22,6 +22,7 @@ BoneModel::BoneModel(const std::string &path)
 	if (!std::filesystem::exists(path))
 		std::cerr << "[ " << typeid(BoneModel).name() << " ] El modelo "
 		          << path << " no existe. \n";
+	m_BoneCounter = 0;
 }
 void BoneModel::loadModel()
 {
@@ -64,14 +65,17 @@ void BoneModel::loadMesh(aiMesh *mesh, const aiScene *scene)
 			vertex.TexCoords = {0.0f, 0.0f};
 		vertices.push_back(vertex);
 	}
-
+	
 	for (uint i = 0; i < mesh->mNumFaces; ++i)
 	{
 		aiFace face = mesh->mFaces[i];
 		for (uint j = 0; j < face.mNumIndices; ++j)
 			indices.push_back(face.mIndices[j]);
-		
 	}
+	
+	ExtractBoneWeightForVertices(vertices, mesh, scene);
+	meshList.push_back(new BoneMesh(vertices, indices));
+	meshesToTexturize.push_back(mesh->mMaterialIndex);
 }
 void BoneModel::loadMaterials(const aiScene *scene)
 {
@@ -117,9 +121,9 @@ const std::unordered_map<std::string, BoneInfo> &BoneModel::getMBoneInfoMap() co
 	return m_BoneInfoMap;
 }
 
-int BoneModel::getMBoneCount() const
+int BoneModel::getMBoneCounter() const
 {
-	return m_BoneCount;
+	return m_BoneCounter;
 }
 void BoneModel::setVertexBoneDataToDefault(Vertex &vtx)
 {
@@ -127,6 +131,51 @@ void BoneModel::setVertexBoneDataToDefault(Vertex &vtx)
 	{
 		vtx.m_BoneIDs[i] = -1;
 		vtx.m_Weights[i] = 0.0f;
+	}
+}
+void BoneModel::SetVertexBoneData(Vertex &vertex, int boneID, float weight)
+{
+	for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+	{
+		if(vertex.m_Weights[i] < 0)
+		{
+			vertex.m_Weights[i] = weight;
+			vertex.m_BoneIDs[i] = boneID;
+			break;
+		}
+	}
+}
+void BoneModel::ExtractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *mesh, const aiScene *scene)
+{
+	for (uint boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+	{
+		int boneID = -1;
+		std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+		if (m_BoneInfoMap.find(boneName) == m_BoneInfoMap.end())
+		{
+			BoneInfo newBoneInfo{};
+			newBoneInfo.id = m_BoneCounter;
+			newBoneInfo.offset = ConvertMatrixToGLMFormat(
+			    mesh->mBones[boneIndex]->mOffsetMatrix);
+			m_BoneInfoMap[boneName] = newBoneInfo;
+			boneID = m_BoneCounter;
+			m_BoneCounter++;
+		}
+		else
+		{
+			boneID = m_BoneInfoMap[boneName].id;
+		}
+		assert(boneID != -1);
+		auto weights = mesh->mBones[boneIndex]->mWeights;
+		int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+		
+		for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+		{
+			int vertexId = weights[weightIndex].mVertexId;
+			float weight = weights[weightIndex].mWeight;
+			assert(vertexId <= vertices.size());
+			SetVertexBoneData(vertices[vertexId], boneID, weight);
+		}
 	}
 }
 } // namespace Model
