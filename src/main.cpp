@@ -46,9 +46,13 @@ Skybox *skyBoxCurrent;
 Entity::SimpleEntity marbleEntity;
 Animation::KeyFrameAnimation marbleKfAnim;
 Animation::Animation marbleAnimation;
-glm::vec3 marblePos;
 Animation::Animation marblePreLaunch;
 Animation::Animation marblePostLaunch;
+glm::vec3 marblePos;
+glm::vec3 leverPos = {-85.369f, 43.931f, 36.921f};
+const glm::vec3 leverEnd = {-90.089f, 42.213f, 36.921f};
+const glm::vec3 leverDirection = glm::normalize(leverEnd - leverPos);
+//const float movLeverDistance = glm::length(leverEnd - leverPos);
 
 Model::Material matMetal;
 Model::Material Material_brillante;
@@ -279,6 +283,7 @@ void InitModels()
 	    .addModel(MODELS::JK_6, Utils::PathUtils::getModelsPath().append("/Marx/Rotor.obj"))
 	    .addModel(MODELS::MARBLE, Utils::PathUtils::getModelsPath().append("/canica.obj"))
 	    .addModel(MODELS::RESORTE, Utils::PathUtils::getModelsPath().append("/Resorte.obj"))
+	    .addModel(MODELS::PALANCA, Utils::PathUtils::getModelsPath().append("/Lever.obj"))
 #ifdef DEBUG
 	    .addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/Coin.obj"))
 #else
@@ -292,7 +297,7 @@ void InitLights()
 	Lights::LightCollectionBuilder<Lights::DirectionalLight> directionalLightsBuilder(2);
 	directionalLights = directionalLightsBuilder
 	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
-	                                                           0.8f, 0.3f,
+	                                                           0.6f, 0.3f,
 	                                                           0.0f, -1.0f, 0.0f))
 	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
 	                                                           0.3f, 0.3f,
@@ -335,13 +340,13 @@ void InitLights()
 
 void InitAnimations()
 {
-
 	marblePreLaunch
 	    .addCondition([](float dt) -> bool
 	                  {
 		                  if(expandeResorte >= 0.5f && Input::MouseInput::GetInstance().getCurrentKeymap()->at(GLFW_MOUSE_BUTTON_LEFT).pressed)
 		                  {
 								expandeResorte -= 0.05f * dt;
+			                    leverPos += leverDirection * 0.08f * dt;
 								return false;
 		                  }
 		                  return !Input::MouseInput::GetInstance().getCurrentKeymap()->at(GLFW_MOUSE_BUTTON_LEFT).pressed; })
@@ -353,15 +358,9 @@ void InitAnimations()
 			                  return false;
 		                  }
 		                  expandeResorte = 1.0f;
+		                  leverPos = {-85.369f, 43.931f, 36.921f};
 		                  return true; })
 	    .prepare();
-	//	marbleAnimation
-	//	    .addCondition([](float dt) -> bool
-	//	                  { return true; })
-	//	    .addCondition([](float dt) -> bool
-	//	                  {
-	//		                  // pos -78.1875, 46.4197, 37.00
-	//	                  });
 }
 
 void updateFlippers()
@@ -484,6 +483,7 @@ int main()
 	auto destroyedBuilding = models[MODELS::DESTROYED_BUILDING];
 	auto marbleKf = models[MODELS::MARBLE];
 	auto resorte = models[MODELS::RESORTE];
+	auto lever = models[MODELS::PALANCA];
 
 	// Shaders
 	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
@@ -555,6 +555,13 @@ int main()
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 		maquinaPinball.render();
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(leverPos)
+		            .rotateZ(110)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		lever.render();
 
 		// region Flippers
 		// Fliper izquierdo
