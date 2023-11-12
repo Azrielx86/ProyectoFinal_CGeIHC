@@ -1,8 +1,9 @@
 //
 // Created by edgar on 10/17/2023.
 //
-
 #include "Animation.h"
+namespace Animation
+{
 Animation::Animation()
 {
 	current = nullptr;
@@ -31,3 +32,4 @@ void Animation::update(float deltaTime)
 		current = &conditions[currentIndex];
 	}
 }
+} // namespace Animation

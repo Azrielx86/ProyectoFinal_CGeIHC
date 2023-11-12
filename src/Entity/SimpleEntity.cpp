@@ -57,5 +57,10 @@ void SimpleEntity::update(const bool *keys, float dt)
 		position.y += MOV_OFFSET * dt;
 	if (kmp->at(GLFW_KEY_K).pressed)
 		position.y -= MOV_OFFSET * dt;
+
+	std::cout << "Pos: " << position.x
+	          << ", " << position.y
+	          << ", " << position.z
+	          << "\r";
 }
 } // namespace Entity

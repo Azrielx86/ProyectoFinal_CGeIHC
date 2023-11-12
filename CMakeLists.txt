@@ -122,6 +122,7 @@ add_executable(ProyectoFinal_CGeIHC
         src/Entity/SimpleEntity.cpp
         src/Entity/SimpleEntity.h
         src/Animation/KeyFrameAnimation.cpp
+        src/Animation/Animation.cpp
 )
 
 message(STATUS "Copiando archivos de shader")

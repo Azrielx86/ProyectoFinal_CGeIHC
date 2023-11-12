@@ -4,6 +4,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define MARBLE_ANIM_FILE "Animations/marble.json"
 
+#define ToRGB(col) col / 255.0f
+
 #include <cmath>
 #include <iostream>
 
@@ -13,6 +15,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Animation/Animation.h"
 #include "Animation/KeyFrameAnimation.h"
 #include "Audio/AudioDevice.h"
 #include "Entity/SimpleEntity.h"
@@ -43,6 +46,8 @@ Skybox skyboxNight;
 Skybox *skyBoxCurrent;
 Entity::SimpleEntity marbleEntity;
 Animation::KeyFrameAnimation marbleKfAnim;
+Animation::Animation marbleAnimation;
+glm::vec3 marblePos;
 
 Model::Material Material_brillante;
 Model::Material Material_opaco;
@@ -61,9 +66,7 @@ int globalCounter = 0; // Temporal xd
 float rightFlipperRotation = 0.0f;
 float leftFlipperRotation = 0.0f;
 float upFlipperRotation = 0.0f;
-bool captureMode = true;
-int animationIndex = 0;
-bool playAnimation = false;
+bool captureMode = false;
 // endregion
 
 void InitKeymaps()
@@ -118,46 +121,85 @@ void InitKeymaps()
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_0,
 	        []() -> void
 	        {
-		        captureMode = !captureMode;
+		        captureMode = true;
+		        Input::KeyboardInput::GetInstance().setKeymap(KEYMAPS::KEYFRAME_CAPTURE);
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_1,
+	        []() -> void
+	        {
+		        spotLights.toggleLight(1, !spotLights.getLightStatus(1));
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_2,
+	        []() -> void
+	        {
+		        spotLights.toggleLight(2, !spotLights.getLightStatus(2));
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_3,
+	        []() -> void
+	        {
+		        pointLights.toggleLight(0, !pointLights.getLightStatus(0));
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_4,
+	        []() -> void
+	        {
+		        pointLights.toggleLight(1, !pointLights.getLightStatus(1));
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA,
+	        GLFW_KEY_SPACE,
+	        []() -> void
+	        {
+		        if (!captureMode)
+			        marbleKfAnim.play();
 	        });
-	//	    .addCallback(
-	//	        KEYMAPS::FREE_CAMERA,
-	//	        GLFW_KEY_L,
-	//	        []() -> void
-	//	        {
-	//		        std::cout << "Flipper Right: " << rightFlipperRotation << '\n';
-	//		        if (rightFlipperRotation < -25)
-	//			        return;
-	//		        rightFlipperRotation -= 8;
-	//	        },
-	//	        true);
 
 	Input::KeyboardInput::GetInstance()
-	    .addCallback(KEYMAPS::FREE_CAMERA,
+	    .createKeymap(KEYMAPS::KEYFRAME_CAPTURE)
+	    .addCallback(
+	        KEYMAPS::KEYFRAME_CAPTURE, GLFW_KEY_T,
+	        []() -> void
+	        {
+		        std::cout << "Mouse disabled!";
+		        Input::MouseInput::GetInstance().toggleMouseEnabled();
+		        mainWindow.toggleMouse();
+	        })
+	    .addCallback(KEYMAPS::KEYFRAME_CAPTURE,
 	                 GLFW_KEY_G,
 	                 []() -> void
 	                 {
 		                 marbleKfAnim.saveToFile(MARBLE_ANIM_FILE);
 	                 })
-	    .addCallback(KEYMAPS::FREE_CAMERA,
+	    .addCallback(KEYMAPS::KEYFRAME_CAPTURE,
 	                 GLFW_KEY_C,
 	                 []() -> void
 	                 {
 		                 marbleKfAnim.addKeyframe(marbleEntity.getPosition(), marbleEntity.getRotation());
 	                 })
-	    .addCallback(KEYMAPS::FREE_CAMERA,
+	    .addCallback(KEYMAPS::KEYFRAME_CAPTURE,
 	                 GLFW_KEY_R,
 	                 []() -> void
 	                 {
 		                 marbleKfAnim.removeLastFrame();
 	                 })
-	    .addCallback(KEYMAPS::FREE_CAMERA,
-	                 GLFW_KEY_SPACE,
-	                 []() -> void
-	                 {
-		                 if (!captureMode)
-			                 marbleKfAnim.play();
-	                 });
+	    .addCallback(
+	        KEYMAPS::KEYFRAME_CAPTURE, GLFW_KEY_0,
+	        []() -> void
+	        {
+		        captureMode = false;
+		        Input::KeyboardInput::GetInstance().setKeymap(KEYMAPS::FREE_CAMERA);
+	        })
+	    .addCallback(
+	        KEYMAPS::KEYFRAME_CAPTURE,
+	        GLFW_KEY_SPACE,
+	        []() -> void
+	        {
+		        if (!captureMode)
+			        marbleKfAnim.play();
+	        });
 
 	Input::MouseInput::GetInstance()
 	    .createKeymap(KEYMAPS::FREE_CAMERA)
@@ -245,20 +287,47 @@ void InitLights()
 
 	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(3);
 	pointLights = pointLightsBuilder
-	                  //	                  .addLight(Lights::PointLight(1.0f, 0.0f, 1.0f,
-	                  //	                                               0.8f, 0.3f,
-	                  //	                                               0.0f, 0.0f, 0.0f,
-	                  //	                                               1.0f, 0.01f, 0.001f))
+	                  .addLight(Lights::PointLight(ToRGB(51), 1.0f, ToRGB(119),
+	                                               0.8f, 0.3f,
+	                                               -58.6934, 51.8151, 9.73,
+	                                               1.0f, 0.05f, 0.008f))
+	                  .addLight(Lights::PointLight(ToRGB(159), 1.0f, ToRGB(51),
+	                                               0.8f, 0.3f,
+	                                               -58.6934, 51.8151, -9.73,
+	                                               1.0f, 0.05f, 0.008f))
 	                  .build();
 	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(3);
 	spotLights = spotLightBuilder
-	                 //	                 .addLight(Lights::SpotLight(1.0f, 1.0f, 1.0f,
-	                 //	                                             0.8f, 0.3f,
-	                 //	                                             5.22617, 234.113, 1.82546,
-	                 //	                                             0.0f, -1.0f, 0.0f,
-	                 //	                                             1.0f, 0.0f, 0.01f,
-	                 //	                                             40.0f))
+	                 .addLight(Lights::SpotLight(1.0f, 1.0f, 1.0f,
+	                                             0.8f, 0.3f,
+	                                             5.22617, 234.113, 1.82546,
+	                                             0.0f, -1.0f, 0.0f,
+	                                             1.0f, 0.0f, 0.01f,
+	                                             40.0f))
+	                 .addLight(Lights::SpotLight(ToRGB(199), 1.0f, ToRGB(51),
+	                                             0.8f, 0.3f,
+	                                             47.6584, 84.0895, 36.4503,
+	                                             -2.0f, -2.0f, -2.0f,
+	                                             1.0f, 0.001f, 0.001f,
+	                                             20.0f))
+	                 .addLight(Lights::SpotLight(1.0f, ToRGB(221), ToRGB(51),
+	                                             0.8f, 0.3f,
+	                                             47.6584, 84.0895, -36.4503,
+	                                             -2.0f, -2.0f, 2.0f,
+	                                             1.0f, 0.001f, 0.001f,
+	                                             20.0f))
 	                 .build();
+}
+
+void InitAnimations()
+{
+	marbleAnimation
+	    .addCondition([](float dt) -> bool
+	                  { return true; })
+	    .addCondition([](float dt) -> bool
+	                  {
+		                  // pos -78.1875, 46.4197, 37.00
+	                  });
 }
 
 void updateFlippers()
@@ -295,10 +364,6 @@ void updateFlippers()
 		if (upFlipperRotation > -20)
 			upFlipperRotation -= 5;
 	}
-}
-
-void updateSimpleEntity()
-{
 }
 
 void LoadAnimations()
@@ -454,14 +519,6 @@ int main()
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 		maquinaPinball.render();
 
-		// region Entity Marble
-		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(captureMode ? marbleEntity.getPosition() : marbleKfAnim.getPosition() + marbleKfAnim.getMovement())
-		            .getMatrix();
-		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		marbleKf.render();
-		// endregion Entity Marble
-
 		// region Flippers
 		// Fliper izquierdo
 		model = handler.setMatrix(glm::mat4(1.0f))
@@ -604,6 +661,15 @@ int main()
 		destroyedBuilding.render();
 		// endregion
 		// endregion
+
+		// region Entity Marble
+		Material_brillante.UseMaterial(uSpecularIntensity, uShininess);
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(captureMode ? marbleEntity.getPosition() : marbleKfAnim.getPosition() + marbleKfAnim.getMovement())
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		marbleKf.render();
+		// endregion Entity Marble
 
 		// region ALPHA
 

@@ -58,6 +58,11 @@ class LightCollection
 		updateArray();
 	}
 
+	bool getLightStatus(int index)
+	{
+		return lightsVector.at(index).second;
+	}
+
 	/**
 	 * @return Arreglo unicamente con luces encendidas.
 	 */

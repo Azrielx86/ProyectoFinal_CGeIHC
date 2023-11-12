@@ -51,16 +51,11 @@ bool KeyFrameAnimation::play()
 	else
 	{
 		currentFrame = frames.at(playIndex);
-#ifndef DEBUG
+#ifdef PRINT_ANIM_TRACE
 		printf("\x1b[2J\x1b[H");
 		printf("[ KeyFrameAnimation ] ===== [ Current Frame Increments ] =====\n");
 		printf("Play index: %d\n", playIndex);
 		printf("Mov: (%f, %f, %f)\n", movement.x, movement.y, movement.z);
-		for (const auto &vec : this->frames)
-		{
-			printf("Matriz: %s\n", glm::to_string(vec->mov).c_str());
-			printf("Mov: %s\n", glm::to_string(vec->movInc).c_str());
-		}
 		printf("[ KeyFrameAnimation ] ========================================\n");
 #endif
 		this->movement += currentFrame->movInc;
