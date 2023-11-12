@@ -321,7 +321,18 @@ int main()
 	float rotZCanica = 0.0;
 	float rotOffCanica = 1.5;
 	int BCan = 0;//bandera canica
-	
+
+	float XN =0;
+	float YN =0; 
+	float ZN =0;
+	float ZA = 0;
+	float YA = 0;
+	float XA = 0;
+	float ZAn = 0;
+	float YAn = 0;
+	float XAn = 0;
+	float t = 0;
+	float i = 0;
 	// modelos
 	auto maquinaPinball = models[MODELS::MAQUINA_PINBALL];
 	auto flipper = models[MODELS::FLIPPER];
@@ -430,28 +441,66 @@ int main()
 				else
 					return true; })
 	    .addCondition( // activa pico
-	        [](float delta) -> bool
-	        { mainWindow.setStartAnimacionPico3TRUE();
-				return mainWindow.getStartAnimacionCanica(); })
-	    .addCondition(
-			[&rotZCanica, &rotOffCanica, &movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool
-			{
-				if (BCan==4) {
-			        if (movXCanica < 100 && movXCanica > 95)
-			        {
-				        movYCanica += 0.1 * delta;
-				        movZCanica -= movZOffCanica*1.2 * delta;
-				        movXCanica += 0.1 * delta;
-			        }
-					else if (movXCanica > 100 && movXCanica < 95) {
-				        movXCanica -= movXOffCanica * delta;
-					}
-					else {
-						BCan = 5;
-					}
+	        [&i,&BCan](float delta) -> bool
+				{ if (i<200){
+					i += 0.2 * delta;
 				}
 				else
-					return true; })
+				{
+					i = 0;
+					mainWindow.setStartAnimacionPico3TRUE();
+
+			        BCan = 5;
+				}
+				return mainWindow.getStartAnimacionCanica(); })
+	    .addCondition(
+	        [&movXCanica, &movYCanica, &movZCanica, &BCan, &XA, &YA, &ZA](float delta) -> bool
+			{
+				if (BCan = 5) {
+					movZCanica = 0;
+					movYCanica = 0;
+					movXCanica = 0;
+				    //XA = 78.0;
+				    //YA = -45.5;
+				    //ZA = -7.5;
+					return true; 
+				}
+			
+			})
+	    .addCondition(
+	        [&XN, &YN, &ZN, &XA, &YA, &ZA, &XAn, &YAn, &ZAn,&i, &t](float delta) -> bool
+	        {
+				if (i == 0) {
+					XN = 20.0;
+					YN = 56.0;
+				    ZN = -5.0;
+				    XAn = 12.0;
+				    YAn = 55.35;
+				    ZAn = 4;
+				}
+				else if(t!=1){
+			        i = 1;
+			        XA =   ((1 - t) * XAn + t * XN);//78.0
+					YA =   ((1 - t) * YAn + t * YN);//-45.5
+					ZA =   ((1 - t) * ZAn + t * ZN);//-7.5
+			        t += 0.001;
+				}
+		        else
+					return true;
+	        })
+				
+			        // translate(-78.0 + movXCanica, 45.5 + movYCanica, 7.5 + movZCanica)
+			        /*
+			        * float coorXN =0;
+			        float coorYN =0;
+			        float coorZN =0;
+			        float coorZA = 0;
+			        float coorYA = 0;
+			        float coorXA = 0;
+			        float coorZAn = 0;
+			        float coorYAn = 0;
+			        float coorXAn = 0;
+			        */
 	   /* addCondition(
 	        [&movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool
 	        {
@@ -654,14 +703,28 @@ int main()
 		Material_brillante.UseMaterial(uSpecularIntensity, uShininess);
 		//canica animada simple
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(-78.0 + movXCanica, 45.5 + movYCanica, 7.5 +movZCanica)
+		            .translate(-78.0 + movXCanica + XA, 45.5 + movYCanica+YA, 7.5 + movZCanica+ZA)
 		            .rotateX(rotXCanica)
-		            //.scale(2.2)
 		            .rotateZ(6+rotZCanica)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica.render();
-		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);
+		//canica orientacion
+		/*model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(12.0, 55.35, 4)
+		            .rotateX(rotXCanica)
+		            .rotateZ(6 + rotZCanica)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		 Canica.render();
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(20.0, 56.0, -5)
+		            .rotateX(rotXCanica)
+		            .rotateZ(6 + rotZCanica)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		Canica.render();
+		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);*/
 		//1er pico animado
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(15.5, 57.35, -10)
