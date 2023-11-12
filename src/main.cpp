@@ -343,22 +343,27 @@ int main()
 	    .addCondition(
 	        [&movZCanica, &movZOffCanica, &rotXCanica, &rotOffCanica, &BCan](float delta) -> bool
 	        {
-				if (movZCanica < 29 && BCan==0)
-			    {
-			        movZCanica += movZOffCanica * delta;
-			        rotXCanica += rotOffCanica * delta;
-				    return false;
-			    }
+				if (BCan==0) {
+					if (movZCanica < 29 )
+					{
+						movZCanica += movZOffCanica * delta;
+						rotXCanica += rotOffCanica * delta;
+						return false;
+			        }
+					else {
+				        BCan = 1;
+				        return false;
+					}
+				}
 			    else
 				    return true; })
 		.addCondition(//soltar palanca pendiente
 	        [](float delta) -> bool
 	        {return mainWindow.getStartAnimacionCanica(); })
-		.addCondition(
+		.addCondition(//llega a la parte de arriba
 	        [&movZCanica, &movZOffCanica, &movXCanica, &movYCanica, &movXImpulso, &movYImpulso, &rotZCanica, &rotXCanica, &rotOffCanica, &BCan](float delta) -> bool
-	        //[&movXCanica, &movYCanica, &movZCanica, &movXOffCanica, &movYOffCanica, &movZOffCanica, &rotCanica, &rotOffCanica](float delta) -> bool
 			{
-				if (movXCanica < 100 && BCan==0)
+				if (movXCanica < 100 && BCan==1)
 				{
 			        movXCanica += movXImpulso * delta;
 			        movYCanica += movYImpulso * delta;
@@ -366,7 +371,7 @@ int main()
 			        movZOffCanica = 0.23;
 					return false;
 				}
-		        else if (movXCanica > 100 && movXCanica < 125 && movZCanica > 19 && BCan == 0)
+		        else if (movXCanica > 100 && movXCanica < 125 && movZCanica > 19 && BCan == 1)
 		        {
 			        movXCanica += movXImpulso * delta;
 			        movZCanica -= movZOffCanica * delta;
@@ -375,63 +380,86 @@ int main()
 			        return false;
 				}
 				else
-					BCan=1;
-					movZOffCanica = 0.35;
+					BCan=2;
+					movZOffCanica = 0.38;
 					return true; })
 	    .addCondition(
-	        [&movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &rotXCanica, &rotZCanica, &BCan](float delta) -> bool 
+	        [&movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &rotXCanica, &rotZCanica, &rotOffCanica, &BCan](float delta) -> bool 
 			{
-				if (movZCanica > 12 && BCan==1) {
-			        movXCanica += 0.05 * delta;
-			        movZCanica -= movZOffCanica * delta;
+				if (movZCanica > 12 && BCan==2) {
+			        movXCanica += 0.06 * delta;
+			        movZCanica -= movZOffCanica *.5 * delta;
 					if (movYCanica > 57) {
 						movYCanica -= 0.08 * delta;
 					}
-			        
-					//rotCanica += rotOffCanica * delta;
+					rotXCanica += rotOffCanica * delta;
 		        }
-		        else if (movXCanica > 110 && BCan == 1)
+		        else if (movXCanica > 106 && BCan == 2)
 		        {
-					//printf("%f,%f,%f\n", movXCanica, movYCanica, movZCanica);
 					movXCanica -= movXOffCanica * delta;
 			        movZCanica -= movZOffCanica * delta;
-			        printf("%f movYCanica", movYCanica);
 			        if (movYCanica > 11)
 			        {
 				        movYCanica -= 0.08 * delta;
 			        }
+			        rotZCanica += rotOffCanica * delta;
 				}
 				else
-			        BCan=2;
+			        BCan=3;
 					return true; })
 	    .addCondition(
-	        [&movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool
+	        [&rotZCanica, &rotOffCanica, &movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool
 	        {
-				//movZOffCanica=0.1;
-				if (movXCanica > 90 && movZCanica<10&& BCan==2) {
-			        movXCanica -= movXOffCanica * delta;
-			        movZCanica -= movZOffCanica * delta;
-			        if (movYCanica > 10)
+				movXOffCanica=0.7;
+				if (BCan==3) {
+					if (movYCanica > 10)
 			        {
 				        movYCanica -= 0.1 * delta;
 			        }
-					//rotCanica += rotOffCanica * delta;
+					if (movXCanica > 95 ) {
+						movXCanica -= movXOffCanica * delta;
+						movZCanica -= movZOffCanica *.8 * delta;
+						rotZCanica -= rotOffCanica * delta;
+					}else if (movXCanica > 90 && movXCanica < 95) {
+				        movXOffCanica = 1.0;
+				        movXCanica -= movXOffCanica * delta;
+			        }
+			        else
+				        BCan = 4; 
 		        }
 				else
-			        BCan=3;
 					return true; })
-	    .addCondition( // soltar palanca pendiente
+	    .addCondition( // activa pico
 	        [](float delta) -> bool
-	        {	mainWindow.setStartAnimacionPico3TRUE();
-				return mainWindow.getStartAnimacionPico3(); })
-		.addCondition(
+	        { mainWindow.setStartAnimacionPico3TRUE();
+				return mainWindow.getStartAnimacionCanica(); })
+	    .addCondition(
+			[&rotZCanica, &rotOffCanica, &movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool
+			{
+				if (BCan==4) {
+			        if (movXCanica < 100 && movXCanica > 95)
+			        {
+				        movYCanica += 0.1 * delta;
+				        movZCanica -= movZOffCanica*1.2 * delta;
+				        movXCanica += 0.1 * delta;
+			        }
+					else if (movXCanica > 100 && movXCanica < 95) {
+				        movXCanica -= movXOffCanica * delta;
+					}
+					else {
+						BCan = 5;
+					}
+				}
+				else
+					return true; })
+	   /* addCondition(
 	        [&movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool
 	        {
-				movZOffCanica=0.3;
-				if (movXCanica < 100 && BCan==3) {
+			
+				if (movXCanica < 93 && BCan==3) {
 			        movXCanica += movXOffCanica * delta;
 			        movZCanica -= movZOffCanica * delta;
-			        if (movYCanica > 9)
+			        if (movYCanica > 8)
 			        {
 				        movYCanica -= 0.1 * delta;
 			        }
@@ -439,7 +467,7 @@ int main()
 		        }
 				else
 			        BCan=3;
-					return true; })
+					return true; })*/
 		.prepare();
 
 	Animation PicoJerarquia1;
