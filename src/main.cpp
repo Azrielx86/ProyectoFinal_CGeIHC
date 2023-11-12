@@ -4,7 +4,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define MARBLE_ANIM_FILE "Animations/marble.json"
 
-#define ToRGB(col) col / 255.0f
+#define ToRGB(col) (col / 255.0f)
 
 #include <cmath>
 #include <iostream>
@@ -28,7 +28,6 @@
 #include "camera/Camera.h"
 #include "camera/CameraCollection.h"
 #include "input/KeyboardInput.h"
-#include "model/BasicPrimitives.h"
 #include "model/Material.h"
 #include "model/Model.h"
 #include "model/ModelCollection.h"
@@ -49,6 +48,7 @@ Animation::KeyFrameAnimation marbleKfAnim;
 Animation::Animation marbleAnimation;
 glm::vec3 marblePos;
 
+Model::Material matMetal;
 Model::Material Material_brillante;
 Model::Material Material_opaco;
 
@@ -209,6 +209,11 @@ void InitKeymaps()
 	        []() -> void
 	        {
 		        std::cout << "Click izquierdo presionado\n";
+	        },
+	        false,
+	        []() -> void
+	        {
+		        std::cout << "Click izquierdo soltado\n";
 	        })
 	    .addClickCallback(
 	        KEYMAPS::FREE_CAMERA,
@@ -265,6 +270,7 @@ void InitModels()
 	    .addModel(MODELS::JK_5, Utils::PathUtils::getModelsPath().append("/Marx/Brazo3.obj"))
 	    .addModel(MODELS::JK_6, Utils::PathUtils::getModelsPath().append("/Marx/Rotor.obj"))
 	    .addModel(MODELS::MARBLE, Utils::PathUtils::getModelsPath().append("/canica.obj"))
+	    .addModel(MODELS::RESORTE, Utils::PathUtils::getModelsPath().append("/Resorte.obj"))
 #ifdef DEBUG
 	    .addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/Coin.obj"))
 #else
@@ -423,12 +429,12 @@ int main()
 	skyBoxCurrent = &skyboxDay;
 	// endregion
 
+	matMetal = Model::Material(256.0f, 256);
 	Material_brillante = Model::Material(4.0f, 256);
 	Material_opaco = Model::Material(0.3f, 4);
 
 	// Constantes para uniforms
 	GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess, uTexOffset, uColor;
-	glm::mat4 projection = glm::perspective(45.0f, (GLfloat) mainWindow.getBufferWidth() / (GLfloat) mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 
 	Utils::ModelMatrix handler(glm::mat4(1.0f));
 	glm::mat4 model(1.0f);
@@ -448,6 +454,7 @@ int main()
 	auto mj6 = models[MODELS::JK_6];
 	auto destroyedBuilding = models[MODELS::DESTROYED_BUILDING];
 	auto marbleKf = models[MODELS::MARBLE];
+	auto resorte = models[MODELS::RESORTE];
 
 	// Shaders
 	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
@@ -663,13 +670,20 @@ int main()
 		// endregion
 
 		// region Entity Marble
-		Material_brillante.UseMaterial(uSpecularIntensity, uShininess);
+		matMetal.UseMaterial(uSpecularIntensity, uShininess);
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(captureMode ? marbleEntity.getPosition() : marbleKfAnim.getPosition() + marbleKfAnim.getMovement())
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		marbleKf.render();
 		// endregion Entity Marble
+
+		// region Resorte
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		resorte.render();
+		// endregion Resorte
 
 		// region ALPHA
 

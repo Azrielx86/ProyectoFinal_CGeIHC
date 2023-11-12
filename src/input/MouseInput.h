@@ -28,6 +28,7 @@ class MouseInput
 		int action;
 		std::function<void()> callback;
 		bool repeat;
+		std::function<void()> releaseCallback;
 	} Click;
 
 	MouseInput(MouseInput &) = delete;
@@ -39,8 +40,8 @@ class MouseInput
 
 	void toggleMouseEnabled();
 	[[nodiscard]] bool isMouseEnabled() const;
-	[[nodiscard]] float getXChange();
-	[[nodiscard]] float getYChange();
+	[[nodiscard]] float getXChange() const;
+	[[nodiscard]] float getYChange() const;
 
 	/**
 	 * Creates a new keymap
@@ -57,7 +58,7 @@ class MouseInput
 	 * @param repeat Enable it if the function must or can be called multiple times on a single press.
 	 * @return Input current instance.
 	 */
-	MouseInput &addClickCallback(int keymap, int key, const std::function<void()> &callback, bool repeat = false);
+	MouseInput &addClickCallback(int keymap, int key, const std::function<void()> &callback, bool repeat = false, const std::function<void()>& releaseCallback = nullptr);
 
 	MouseInput &addMoveCallback(int keymap, const std::function<void(float)> &callback);
 

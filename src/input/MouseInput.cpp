@@ -23,8 +23,13 @@ void MouseInput::handleClick(int button, int action, [[maybe_unused]] int mode) 
 	if (currentKeymap == nullptr) return;
 	if (button == GLFW_KEY_UNKNOWN) return;
 
-	currentKeymap->at(button).action = action;
+	auto btn = &currentKeymap->at(button);
+	//	currentKeymap->at(button).action = action;
+	if ((btn->action == GLFW_PRESS || btn->action == GLFW_REPEAT) && action == GLFW_RELEASE)
+		if (btn->releaseCallback != nullptr)
+			btn->releaseCallback();
 
+	btn->action = action;
 	for (const auto &k : *currentKeymap)
 	{
 		if (k.action == GLFW_PRESS || (k.action == GLFW_REPEAT && k.repeat))
@@ -52,12 +57,12 @@ void MouseInput::handlePosition(float xPos, float yPos)
 	(*currentMoveFunction)(0);
 }
 
-float MouseInput::getXChange()
+float MouseInput::getXChange() const
 {
 	return xChange;
 }
 
-float MouseInput::getYChange()
+float MouseInput::getYChange() const
 {
 	return yChange;
 }
@@ -82,11 +87,11 @@ MouseInput &MouseInput::createKeymap(int keymap)
 		currentMoveFunction = &moveMappings[keymap];
 	return *this;
 }
-
-MouseInput &MouseInput::addClickCallback(int keymap, int key, const std::function<void()> &callback, bool repeat)
+MouseInput &MouseInput::addClickCallback(int keymap, int key, const std::function<void()> &callback, bool repeat, const std::function<void()> &releaseCallback)
 {
 	keymaps[keymap].at(key).callback = callback;
 	keymaps[keymap].at(key).repeat = repeat;
+	keymaps[keymap].at(key).releaseCallback = releaseCallback;
 	return *this;
 }
 MouseInput &MouseInput::addMoveCallback(int keymap, const std::function<void(float)> &callback)
