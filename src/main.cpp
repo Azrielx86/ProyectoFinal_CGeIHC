@@ -442,21 +442,21 @@ int main()
 					return true; })
 	    .addCondition( // activa pico
 	        [&i,&BCan](float delta) -> bool
-				{ if (i<200){
-					i += 0.2 * delta;
+				{ if (i<3){
+					i += 12.0 * delta;
+					printf("%f   ", i);
 				}
 				else
 				{
 					i = 0;
 					mainWindow.setStartAnimacionPico3TRUE();
-
 			        BCan = 5;
 				}
 				return mainWindow.getStartAnimacionCanica(); })
 	    .addCondition(
 	        [&movXCanica, &movYCanica, &movZCanica, &BCan, &XA, &YA, &ZA](float delta) -> bool
 			{
-				if (BCan = 5) {
+				if (BCan == 5) {
 					movZCanica = 0;
 					movYCanica = 0;
 					movXCanica = 0;
@@ -478,12 +478,14 @@ int main()
 				    YAn = 55.35;
 				    ZAn = 4;
 				}
-				else if(t!=1){
+		        else if (t < 1)
+		        {
 			        i = 1;
 			        XA =   ((1 - t) * XAn + t * XN);//78.0
 					YA =   ((1 - t) * YAn + t * YN);//-45.5
 					ZA =   ((1 - t) * ZAn + t * ZN);//-7.5
 			        t += 0.001;
+			        printf("%d XA %d X %d Z", XA, YA, ZA);
 				}
 		        else
 					return true;
@@ -501,22 +503,6 @@ int main()
 			        float coorYAn = 0;
 			        float coorXAn = 0;
 			        */
-	   /* addCondition(
-	        [&movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool
-	        {
-			
-				if (movXCanica < 93 && BCan==3) {
-			        movXCanica += movXOffCanica * delta;
-			        movZCanica -= movZOffCanica * delta;
-			        if (movYCanica > 8)
-			        {
-				        movYCanica -= 0.1 * delta;
-			        }
-					//rotCanica += rotOffCanica * delta;
-		        }
-				else
-			        BCan=3;
-					return true; })*/
 		.prepare();
 
 	Animation PicoJerarquia1;
