@@ -28,11 +28,9 @@
 #include "camera/Camera.h"
 #include "camera/CameraCollection.h"
 #include "input/KeyboardInput.h"
-#include "model/Material.h"
-#include "model/Model.h"
-#include "model/ModelCollection.h"
-#include "model/BoneMesh.h"
 #include "model/BoneModel.h"
+#include "model/Material.h"
+#include "model/ModelCollection.h"
 
 // region Global Variables
 Window mainWindow;
@@ -54,7 +52,7 @@ glm::vec3 marblePos;
 glm::vec3 leverPos = {-85.369f, 43.931f, 36.921f};
 const glm::vec3 leverEnd = {-90.089f, 42.213f, 36.921f};
 const glm::vec3 leverDirection = glm::normalize(leverEnd - leverPos);
-//const float movLeverDistance = glm::length(leverEnd - leverPos);
+// const float movLeverDistance = glm::length(leverEnd - leverPos);
 Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/2b.obj"));
 
 Model::Material matMetal;
@@ -62,6 +60,11 @@ Model::Material Material_brillante;
 Model::Material Material_opaco;
 
 std::unordered_map<int, Shader *> shaders;
+
+Animation::Animation modeloJerarquico1;
+bool mJ1_trigger = false;
+
+// Posicion numeros: 60.3627, 115.599, -34.7832
 
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
@@ -77,6 +80,25 @@ float leftFlipperRotation = 0.0f;
 float upFlipperRotation = 0.0f;
 bool captureMode = false;
 float expandeResorte = 1.0f;
+
+// #define MJ_BASE_ROT(n) glm::vec3 MjBaseRot##n = {0.0f, 0.0f, 0.0f};
+//  n = Numero de articulacion
+#define MJ_ROT(n) glm::vec3 MjRot_##n = {0.0f, 0.0f, 0.0f};
+#define MJ_POS(n) glm::vec3 MjPos_##n = {0.0f, 0.0f, 0.0f};
+
+// Base del modelo
+MJ_ROT(0)
+MJ_ROT(2)
+MJ_ROT(3)
+MJ_ROT(4)
+MJ_POS(0)
+MJ_POS(1)
+MJ_POS(2)
+MJ_POS(3)
+
+// MJ_BASE_ROT(1)
+// MJ_BASE_ROT(2)
+
 // endregion
 
 void InitKeymaps()
@@ -157,14 +179,6 @@ void InitKeymaps()
 	        []() -> void
 	        {
 		        pointLights.toggleLight(1, !pointLights.getLightStatus(1));
-	        })
-	    .addCallback(
-	        KEYMAPS::FREE_CAMERA,
-	        GLFW_KEY_SPACE,
-	        []() -> void
-	        {
-		        if (!captureMode)
-			        marbleKfAnim.play();
 	        });
 
 	Input::KeyboardInput::GetInstance()
@@ -284,14 +298,13 @@ void InitModels()
 	    .addModel(MODELS::RESORTE, Utils::PathUtils::getModelsPath().append("/Resorte.obj"))
 	    .addModel(MODELS::PALANCA, Utils::PathUtils::getModelsPath().append("/Lever.obj"))
 	    .addModel(MODELS::ROBOT, Utils::PathUtils::getModelsPath().append("/sstubby.obj"))
-#ifdef DEBUG
-	    .addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/Coin.obj"))
-#else
+	    .addModel(MODELS::TRIANGLE, Utils::PathUtils::getModelsPath().append("/Triangle.obj"))
+	    .addModel(MODELS::POD, Utils::PathUtils::getModelsPath().append("/pod.obj"))
 	    .addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/ExtraModels/Building.obj"))
-#endif
 	    .loadModels();
-	
+#ifdef AVATAR
 	avatar.loadModel();
+#endif
 }
 
 void InitLights()
@@ -323,19 +336,19 @@ void InitLights()
 	                                             0.8f, 0.3f,
 	                                             5.22617, 234.113, 1.82546,
 	                                             0.0f, -1.0f, 0.0f,
-	                                             1.0f, 0.0f, 0.01f,
-	                                             40.0f))
+	                                             1.0f, 0.008f, 0.001f,
+	                                             50.0f))
 	                 .addLight(Lights::SpotLight(ToRGB(199), 1.0f, ToRGB(51),
 	                                             0.8f, 0.3f,
 	                                             47.6584, 84.0895, 36.4503,
 	                                             -2.0f, -2.0f, -2.0f,
-	                                             1.0f, 0.001f, 0.001f,
+	                                             1.0f, 0.005f, 0.0008f,
 	                                             20.0f))
 	                 .addLight(Lights::SpotLight(1.0f, ToRGB(221), ToRGB(51),
 	                                             0.8f, 0.3f,
 	                                             47.6584, 84.0895, -36.4503,
 	                                             -2.0f, -2.0f, 2.0f,
-	                                             1.0f, 0.001f, 0.001f,
+	                                             1.0f, 0.005f, 0.0008f,
 	                                             20.0f))
 	                 .build();
 }
@@ -363,6 +376,14 @@ void InitAnimations()
 		                  leverPos = {-85.369f, 43.931f, 36.921f};
 		                  return true; })
 	    .prepare();
+//
+//	MjPos_0 = {0.0f, 2.9f, -3.2f};
+//	modeloJerarquico1
+//	    .addCondition([](float) -> bool
+//	                               { 
+//		                  MjRot_0 = -90;
+//	                  })
+//	    .prepare();
 }
 
 void updateFlippers()
@@ -487,6 +508,8 @@ int main()
 	auto resorte = models[MODELS::RESORTE];
 	auto lever = models[MODELS::PALANCA];
 	auto robot = models[MODELS::ROBOT];
+	auto triangle = models[MODELS::TRIANGLE];
+	auto pod = models[MODELS::POD];
 
 	// Shaders
 	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
@@ -596,7 +619,22 @@ int main()
 		flipper.render();
 		// endregion Flippers
 
-		// region Modelo Jerarquico 1
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(-43.281, 51.479, -22.837)
+		            .rotateZ(6)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		triangle.render();
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(-43.281, 51.479, 14.002)
+		            .rotateZ(6)
+		            .scale(1.0f, 1.0f, -1.0f)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		triangle.render();
+
+		// region Modelo Jerarquico 1 (art 0-3)
 		// Para tomar las coordenadas de Blender
 		// y <-> z
 		// z -> -z
@@ -663,7 +701,9 @@ int main()
 		mj2.render();
 
 		model = handler.setMatrix(modelaux)
-		            .translate(0.0f, 2.9f, -3.2f)
+		            //		            .translate(0.0f, 2.9f, -3.2f)
+		            .translate(MjPos_0)
+		            .rotateX(MjRot_0.x)
 		            .saveActualState(modelaux)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -728,7 +768,7 @@ int main()
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		resorte.render();
 		// endregion Resorte
-		
+
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(44.797, 66.892, 0)
 		            .rotateY(180)
@@ -737,12 +777,20 @@ int main()
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		robot.render();
 
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(6.4173, 66.183f + (float) (1.5f * sin(glfwGetTime())), -25.935)
+		            .rotateY(-131.41)
+		            .scale(2)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		pod.render();
+
 		// region ALPHA
 
 #ifdef AVATAR
 		shaders[ShaderTypes::BONE_SHADER]->useProgram();
-		model = handler.setMatrix(glm::mat4 (1.0f))
-		        .getMatrix();
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		avatar.render();
 #endif
