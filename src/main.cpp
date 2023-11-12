@@ -2,6 +2,7 @@
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
 #pragma ide diagnostic ignored "OCUnusedMacroInspection"
 #define STB_IMAGE_IMPLEMENTATION
+#define MARBLE_ANIM_FILE "Animations/marble.json"
 
 #include <cmath>
 #include <iostream>
@@ -12,7 +13,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Animation/KeyFrameAnimation.h"
 #include "Audio/AudioDevice.h"
+#include "Entity/SimpleEntity.h"
 #include "GlobalConstants.h"
 #include "Lights/DirectionalLight.h"
 #include "Lights/LightCollection.h"
@@ -38,6 +41,8 @@ Lights::LightCollection<Lights::SpotLight> spotLights;
 Skybox skyboxDay;
 Skybox skyboxNight;
 Skybox *skyBoxCurrent;
+Entity::SimpleEntity marbleEntity;
+Animation::KeyFrameAnimation marbleKfAnim;
 
 Model::Material Material_brillante;
 Model::Material Material_opaco;
@@ -52,9 +57,13 @@ AMB_LIGHTS ambLight = AMB_LIGHTS::DAY;
 // endregion
 
 // region Variables auxiliares que no se encapsularon en otras clases :v
+int globalCounter = 0; // Temporal xd
 float rightFlipperRotation = 0.0f;
 float leftFlipperRotation = 0.0f;
 float upFlipperRotation = 0.0f;
+bool captureMode = true;
+int animationIndex = 0;
+bool playAnimation = false;
 // endregion
 
 void InitKeymaps()
@@ -85,7 +94,9 @@ void InitKeymaps()
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_P,
 	        []() -> void
 	        {
-		        std::cout << "Tecla P presionada\n";
+		        globalCounter++;
+		        std::cout << "Tecla P presionada "
+		                  << globalCounter << " veces\n";
 	        },
 	        true)
 	    .addCallback(
@@ -102,6 +113,12 @@ void InitKeymaps()
 			        skyBoxCurrent = &skyboxDay;
 			        ambLight = AMB_LIGHTS::DAY;
 		        }
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_0,
+	        []() -> void
+	        {
+		        captureMode = !captureMode;
 	        });
 	//	    .addCallback(
 	//	        KEYMAPS::FREE_CAMERA,
@@ -114,6 +131,33 @@ void InitKeymaps()
 	//		        rightFlipperRotation -= 8;
 	//	        },
 	//	        true);
+
+	Input::KeyboardInput::GetInstance()
+	    .addCallback(KEYMAPS::FREE_CAMERA,
+	                 GLFW_KEY_G,
+	                 []() -> void
+	                 {
+		                 marbleKfAnim.saveToFile(MARBLE_ANIM_FILE);
+	                 })
+	    .addCallback(KEYMAPS::FREE_CAMERA,
+	                 GLFW_KEY_C,
+	                 []() -> void
+	                 {
+		                 marbleKfAnim.addKeyframe(marbleEntity.getPosition(), marbleEntity.getRotation());
+	                 })
+	    .addCallback(KEYMAPS::FREE_CAMERA,
+	                 GLFW_KEY_R,
+	                 []() -> void
+	                 {
+		                 marbleKfAnim.removeLastFrame();
+	                 })
+	    .addCallback(KEYMAPS::FREE_CAMERA,
+	                 GLFW_KEY_SPACE,
+	                 []() -> void
+	                 {
+		                 if (!captureMode)
+			                 marbleKfAnim.play();
+	                 });
 
 	Input::MouseInput::GetInstance()
 	    .createKeymap(KEYMAPS::FREE_CAMERA)
@@ -170,7 +214,7 @@ void InitModels()
 	models
 	    .addModel(MODELS::MAQUINA_PINBALL, "assets/Models/MaquinaPinball.obj")
 	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
-	    .addModel(MODELS::CANICA, "assets/Models/canica.obj")
+	    .addModel(MODELS::MARBLE, "assets/Models/canica.obj")
 	    .addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
 	    .addModel(MODELS::JK_1, Utils::PathUtils::getModelsPath().append("/Marx/Base.obj"))
 	    .addModel(MODELS::JK_2, Utils::PathUtils::getModelsPath().append("/Marx/Body.obj"))
@@ -178,7 +222,12 @@ void InitModels()
 	    .addModel(MODELS::JK_4, Utils::PathUtils::getModelsPath().append("/Marx/Brazo2.obj"))
 	    .addModel(MODELS::JK_5, Utils::PathUtils::getModelsPath().append("/Marx/Brazo3.obj"))
 	    .addModel(MODELS::JK_6, Utils::PathUtils::getModelsPath().append("/Marx/Rotor.obj"))
+	    .addModel(MODELS::MARBLE, Utils::PathUtils::getModelsPath().append("/canica.obj"))
+#ifdef DEBUG
+	    .addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/Coin.obj"))
+#else
 	    .addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/ExtraModels/Building.obj"))
+#endif
 	    .loadModels();
 }
 
@@ -196,19 +245,19 @@ void InitLights()
 
 	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(3);
 	pointLights = pointLightsBuilder
-//	                  .addLight(Lights::PointLight(1.0f, 0.0f, 1.0f,
-//	                                               0.8f, 0.3f,
-//	                                               0.0f, 0.0f, 0.0f,
-//	                                               1.0f, 0.01f, 0.001f))
+	                  //	                  .addLight(Lights::PointLight(1.0f, 0.0f, 1.0f,
+	                  //	                                               0.8f, 0.3f,
+	                  //	                                               0.0f, 0.0f, 0.0f,
+	                  //	                                               1.0f, 0.01f, 0.001f))
 	                  .build();
 	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(3);
 	spotLights = spotLightBuilder
-//	                 .addLight(Lights::SpotLight(1.0f, 1.0f, 1.0f,
-//	                                             0.8f, 0.3f,
-//	                                             5.22617, 234.113, 1.82546,
-//	                                             0.0f, -1.0f, 0.0f,
-//	                                             1.0f, 0.0f, 0.01f,
-//	                                             40.0f))
+	                 //	                 .addLight(Lights::SpotLight(1.0f, 1.0f, 1.0f,
+	                 //	                                             0.8f, 0.3f,
+	                 //	                                             5.22617, 234.113, 1.82546,
+	                 //	                                             0.0f, -1.0f, 0.0f,
+	                 //	                                             1.0f, 0.0f, 0.01f,
+	                 //	                                             40.0f))
 	                 .build();
 }
 
@@ -248,6 +297,15 @@ void updateFlippers()
 	}
 }
 
+void updateSimpleEntity()
+{
+}
+
+void LoadAnimations()
+{
+	marbleKfAnim.loadFromFile(MARBLE_ANIM_FILE);
+}
+
 void exitProgram()
 {
 	for (auto &shader : shaders)
@@ -271,6 +329,7 @@ int main()
 	InitCameras();
 	InitModels();
 	InitLights();
+	LoadAnimations();
 
 	// region Skybox settings
 	// SKyBoxes Faces Day
@@ -323,6 +382,7 @@ int main()
 	auto mj5 = models[MODELS::JK_5];
 	auto mj6 = models[MODELS::JK_6];
 	auto destroyedBuilding = models[MODELS::DESTROYED_BUILDING];
+	auto marbleKf = models[MODELS::MARBLE];
 
 	// Shaders
 	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
@@ -338,6 +398,16 @@ int main()
 		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
 
 		updateFlippers();
+
+		if (captureMode)
+			marbleEntity.update(nullptr, deltaTime);
+		else
+		{
+			if (marbleKfAnim.isPlaying())
+				marbleKfAnim.play();
+			else
+				marbleKfAnim.resetAnimation();
+		}
 
 		// region Shader settings
 		// Configuración del shader
@@ -383,6 +453,14 @@ int main()
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 		maquinaPinball.render();
+
+		// region Entity Marble
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(captureMode ? marbleEntity.getPosition() : marbleKfAnim.getPosition() + marbleKfAnim.getMovement())
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		marbleKf.render();
+		// endregion Entity Marble
 
 		// region Flippers
 		// Fliper izquierdo
@@ -517,7 +595,7 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		destroyedBuilding.render();
-		
+
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(56.002, 71.377, 35.124)
 		            .rotateY(-416.5)
@@ -526,7 +604,7 @@ int main()
 		destroyedBuilding.render();
 		// endregion
 		// endregion
-		
+
 		// region ALPHA
 
 		// region Cristal
