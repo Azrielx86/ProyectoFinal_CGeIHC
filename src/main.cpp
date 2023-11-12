@@ -317,7 +317,8 @@ int main()
 	float movZOffCanica = 0.2;
 	float movYImpulso = 0.0524;
 	float movXImpulso = 0.5;
-	float rotCanica = 0.0;
+	float rotXCanica = 0.0;
+	float rotZCanica = 0.0;
 	float rotOffCanica = 1.5;
 	int BCan = 0;//bandera canica
 	
@@ -340,12 +341,12 @@ int main()
 	        [](float delta) -> bool
 	        { return mainWindow.getStartAnimacionCanica(); })
 	    .addCondition(
-	        [&movZCanica, &movZOffCanica, &rotCanica, &rotOffCanica, &BCan](float delta) -> bool
+	        [&movZCanica, &movZOffCanica, &rotXCanica, &rotOffCanica, &BCan](float delta) -> bool
 	        {
 				if (movZCanica < 29 && BCan==0)
 			    {
 			        movZCanica += movZOffCanica * delta;
-			        rotCanica += rotOffCanica * delta;
+			        rotXCanica += rotOffCanica * delta;
 				    return false;
 			    }
 			    else
@@ -354,14 +355,14 @@ int main()
 	        [](float delta) -> bool
 	        {return mainWindow.getStartAnimacionCanica(); })
 		.addCondition(
-	        [&movZCanica, &movZOffCanica, &movXCanica, &movYCanica, &movXImpulso, &movYImpulso, &rotCanica, &rotOffCanica, &BCan](float delta) -> bool
+	        [&movZCanica, &movZOffCanica, &movXCanica, &movYCanica, &movXImpulso, &movYImpulso, &rotZCanica, &rotXCanica, &rotOffCanica, &BCan](float delta) -> bool
 	        //[&movXCanica, &movYCanica, &movZCanica, &movXOffCanica, &movYOffCanica, &movZOffCanica, &rotCanica, &rotOffCanica](float delta) -> bool
 			{
 				if (movXCanica < 100 && BCan==0)
 				{
 			        movXCanica += movXImpulso * delta;
 			        movYCanica += movYImpulso * delta;
-					rotCanica += rotOffCanica *delta;
+					rotZCanica += rotOffCanica *delta;
 			        movZOffCanica = 0.23;
 					return false;
 				}
@@ -370,7 +371,7 @@ int main()
 			        movXCanica += movXImpulso * delta;
 			        movZCanica -= movZOffCanica * delta;
 			        movYCanica += movYImpulso * delta;
-			        rotCanica += rotOffCanica * delta;
+			        rotZCanica += rotOffCanica * delta;
 			        return false;
 				}
 				else
@@ -378,28 +379,66 @@ int main()
 					movZOffCanica = 0.35;
 					return true; })
 	    .addCondition(
-			[&movXCanica, &movXOffCanica,&movYCanica, &movYImpulso, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool 
+	        [&movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &rotXCanica, &rotZCanica, &BCan](float delta) -> bool 
 			{
 				if (movZCanica > 12 && BCan==1) {
 			        movXCanica += 0.05 * delta;
 			        movZCanica -= movZOffCanica * delta;
-			        movYCanica += 0.08 * delta;
+					if (movYCanica > 57) {
+						movYCanica -= 0.08 * delta;
+					}
+			        
 					//rotCanica += rotOffCanica * delta;
 		        }
 		        else if (movXCanica > 110 && BCan == 1)
 		        {
-			        //movZOffCanica = 0.19;
 					//printf("%f,%f,%f\n", movXCanica, movYCanica, movZCanica);
 					movXCanica -= movXOffCanica * delta;
 			        movZCanica -= movZOffCanica * delta;
+			        printf("%f movYCanica", movYCanica);
+			        if (movYCanica > 11)
+			        {
+				        movYCanica -= 0.08 * delta;
+			        }
 				}
-		        /* else if (movXCanica <)
-		        {
-			        movXCanica += movXOffCanica * delta;
-			        movZCanica += movZOffCanica * delta;
-			        movYCanica -= movYOffCanica * delta;*/
 				else
-			        printf("%f,%f,%f\n", movXCanica, movYCanica,movZCanica);
+			        BCan=2;
+					return true; })
+	    .addCondition(
+	        [&movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool
+	        {
+				//movZOffCanica=0.1;
+				if (movXCanica > 90 && movZCanica<10&& BCan==2) {
+			        movXCanica -= movXOffCanica * delta;
+			        movZCanica -= movZOffCanica * delta;
+			        if (movYCanica > 10)
+			        {
+				        movYCanica -= 0.1 * delta;
+			        }
+					//rotCanica += rotOffCanica * delta;
+		        }
+				else
+			        BCan=3;
+					return true; })
+	    .addCondition( // soltar palanca pendiente
+	        [](float delta) -> bool
+	        {	mainWindow.setStartAnimacionPico3TRUE();
+				return mainWindow.getStartAnimacionPico3(); })
+		.addCondition(
+	        [&movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool
+	        {
+				movZOffCanica=0.3;
+				if (movXCanica < 100 && BCan==3) {
+			        movXCanica += movXOffCanica * delta;
+			        movZCanica -= movZOffCanica * delta;
+			        if (movYCanica > 9)
+			        {
+				        movYCanica -= 0.1 * delta;
+			        }
+					//rotCanica += rotOffCanica * delta;
+		        }
+				else
+			        BCan=3;
 					return true; })
 		.prepare();
 
@@ -522,9 +561,6 @@ int main()
 		uTexOffset = shaderLight->getUniformTextureOffset();
 		uSpecularIntensity = shaderLight->getUniformSpecularIntensity();
 		uShininess = shaderLight->getUniformShininess();
-		//Texture CanicaTexture;
-		//CanicaTexture = Texture("Textures/CanicaTexture.png");
-		//CanicaTexture.LoadTextureA();
 
 		// Camara
 		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(projection));
@@ -591,9 +627,9 @@ int main()
 		//canica animada simple
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(-78.0 + movXCanica, 45.5 + movYCanica, 7.5 +movZCanica)
-		            .rotateY(rotCanica)
+		            .rotateX(rotXCanica)
 		            //.scale(2.2)
-		            .rotateZ(6)
+		            .rotateZ(6+rotZCanica)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica.render();

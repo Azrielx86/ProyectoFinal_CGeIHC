@@ -109,6 +109,8 @@ add_executable(ProyectoFinal_CGeIHC
         src/Lights/PointLight.h
         src/model/Material.cpp
         src/model/Material.h
+        src/model/Texture.cpp
+        src/model/Texture.h
         src/Skybox.h
         src/Skybox.cpp
         src/Utils/ImageUtils.cpp
