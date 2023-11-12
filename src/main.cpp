@@ -91,6 +91,13 @@ void InitKeymaps()
 		        else
 			        ambLight = AMB_LIGHTS::DAY;
 	        });
+	/*.addCallback(
+			 KEYMAPS::FREE_CAMERA, GLFW_KEY_U,
+			 []() -> void
+			  {
+				//pointLights.toggleLignt(ind:2, new state: !pointLights.getLightStauts(2);
+			 })*/
+
 	//	    .addCallback(
 	//	        KEYMAPS::FREE_CAMERA,
 	//	        GLFW_KEY_L,
@@ -164,7 +171,7 @@ void InitModels()
 		.addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
 		.loadModels();
 }
-//pendiente
+
 void InitLights()
 {
 	Lights::LightCollectionBuilder<Lights::DirectionalLight> directionalLightsBuilder(2);
@@ -443,15 +450,23 @@ int main()
 					return true; })
 	    .addCondition( // activa pico
 	        [&i,&BCan](float delta) -> bool
-				{ if (i<3){
+				{ 
+				if (BCan == 4) {
+					if (i<3){
 					i += 12.0 * delta;
-					printf("%f   ", i);
+					printf("i es: %f \n", i);
+			        }
+					else {
+						i = 10;
+						mainWindow.setStartAnimacionPico3TRUE();
+						BCan = 5;
+				        printf("paso por A \n");
+					}
 				}
-				else
+		        else if (BCan==5)
 				{
-					i = 0;
-					mainWindow.setStartAnimacionPico3TRUE();
-			        BCan = 5;
+			        printf("paso por b \n");
+			        return true;
 				}
 				return mainWindow.getStartAnimacionCanica(); })
 	    /*.addCondition(
@@ -468,24 +483,28 @@ int main()
 				}
 			})*/
 	    .addCondition(
-	        [&XN, &YN, &ZN, &XA, &YA, &ZA, &XAn, &YAn, &ZAn,&i, &t](float delta) -> bool
+	        [&XN, &YN, &ZN, &XA, &YA, &ZA, &XAn, &YAn, &ZAn, &BCan, &t](float delta) -> bool
 	        {
-				if (i == 0) {
+		        if (BCan == 5)
+		        {
+			        printf("paso por c \n");
 					XN = 20.0;
 					YN = 56.0;
 				    ZN = -5.0;
 				    XAn = 12.0;
 				    YAn = 55.35;
 				    ZAn = 4;
+			        BCan = 6;
 				}
-		        else if (t < 1)
+		        else if (t < 1 &&BCan==6)
 		        {
-			        i = 1;
-			        XA = 78.0+ ((1 - t) * XAn + t * XN); // 78.0
-			        YA = -45.5+((1 - t) * YAn + t * YN);   //-45.5
-			        ZA = -7.5+ ((1 - t) * ZAn + t * ZN);     //-7.5
+			        //i = 1;
+			        XA =  ((1 - t) * XAn + t * XN);//78.0
+					YA =  ((1 - t) * YAn + t * YN);//-45.5
+					ZA =  ((1 - t) * ZAn + t * ZN);//-7.5
 			        t += 0.1;
 			        printf("%f\n", t);
+			        printf("%f, %f, %f \n", XA,YA,ZA);
 				}
 		        else
 					return true;
