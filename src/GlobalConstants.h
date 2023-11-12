@@ -27,6 +27,7 @@ enum MODELS
 	PICOP,
 	PICOM,
 	PICOG,
+	BASE,
 	AVATAR
 };
 

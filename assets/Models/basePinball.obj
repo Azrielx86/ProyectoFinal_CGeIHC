@@ -1,6 +1,6 @@
 # Blender 3.6.4
 # www.blender.org
-mtllib basePinball.mtl.mtl
+mtllib basePinball.mtl
 o Cilindro
 v 0.017994 0.018304 -4.847848
 v 0.017994 0.501862 -4.847848

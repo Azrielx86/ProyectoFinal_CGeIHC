@@ -160,6 +160,7 @@ void InitModels()
 		.addModel(MODELS::PICOP, "assets/Models/Pico_P.obj")
 		.addModel(MODELS::PICOM, "assets/Models/Pico_M.obj")
 		.addModel(MODELS::PICOG, "assets/Models/Pico_G.obj")
+	    .addModel(MODELS::BASE, "assets/Models/basePinball.obj")
 		.addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
 		.loadModels();
 }
@@ -182,7 +183,6 @@ void InitLights()
 			0.8f, 0.3f,
 			0.0f, 0.0f, 0.0f,
 			1.0f, 0.01f, 0.001f))
-		/*
 		.addLight(Lights::PointLight(0.0f, 0.0f, 1.0f,//1er pico
 	        0.8f, 0.3f,
 			15.5f, 60.35f, -10.0f,
@@ -194,7 +194,7 @@ void InitLights()
 	    .addLight(Lights::PointLight(0.0f, 0.0f, 1.0f,//3erpico
 	        0.8f, 0.3f,
 	        6.5f, 59.35f, 6.0f,
-	        1.0f, 0.01f, 0.001f))*/
+	        1.0f, 0.01f, 0.001f))
 		.build();
 	//pointLights = pointLightsBuilder.;
 	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(3);
@@ -342,6 +342,7 @@ int main()
 	auto PicoM = models[MODELS::PICOM];
 	auto PicoG = models[MODELS::PICOG];
 	auto Canica = models[MODELS::CANICA];
+	auto Base = models[MODELS::BASE];
 	// Shaders
 	auto shaderLight = shaders[Shader::ShaderTypes::LIGHT_SHADER];
 
@@ -453,7 +454,7 @@ int main()
 			        BCan = 5;
 				}
 				return mainWindow.getStartAnimacionCanica(); })
-	    .addCondition(
+	    /*.addCondition(
 	        [&movXCanica, &movYCanica, &movZCanica, &BCan, &XA, &YA, &ZA](float delta) -> bool
 			{
 				if (BCan == 5) {
@@ -465,8 +466,7 @@ int main()
 				    //ZA = -7.5;
 					return true; 
 				}
-			
-			})
+			})*/
 	    .addCondition(
 	        [&XN, &YN, &ZN, &XA, &YA, &ZA, &XAn, &YAn, &ZAn,&i, &t](float delta) -> bool
 	        {
@@ -481,28 +481,15 @@ int main()
 		        else if (t < 1)
 		        {
 			        i = 1;
-			        XA =   ((1 - t) * XAn + t * XN);//78.0
-					YA =   ((1 - t) * YAn + t * YN);//-45.5
-					ZA =   ((1 - t) * ZAn + t * ZN);//-7.5
-			        t += 0.001;
-			        printf("%d XA %d X %d Z", XA, YA, ZA);
+			        XA = 78.0+ ((1 - t) * XAn + t * XN); // 78.0
+			        YA = -45.5+((1 - t) * YAn + t * YN);   //-45.5
+			        ZA = -7.5+ ((1 - t) * ZAn + t * ZN);     //-7.5
+			        t += 0.1;
+			        printf("%f\n", t);
 				}
 		        else
 					return true;
 	        })
-				
-			        // translate(-78.0 + movXCanica, 45.5 + movYCanica, 7.5 + movZCanica)
-			        /*
-			        * float coorXN =0;
-			        float coorYN =0;
-			        float coorZN =0;
-			        float coorZA = 0;
-			        float coorYA = 0;
-			        float coorXA = 0;
-			        float coorZAn = 0;
-			        float coorYAn = 0;
-			        float coorXAn = 0;
-			        */
 		.prepare();
 
 	Animation PicoJerarquia1;
@@ -686,6 +673,14 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		Muneco.render();
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(0, -90, 00)
+		            .scale(30.0)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		Base.render();
+
 		Material_brillante.UseMaterial(uSpecularIntensity, uShininess);
 		//canica animada simple
 		model = handler.setMatrix(glm::mat4(1.0f))
