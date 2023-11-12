@@ -163,7 +163,7 @@ void InitModels()
 		.addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
 		.loadModels();
 }
-
+//pendiente
 void InitLights()
 {
 	Lights::LightCollectionBuilder<Lights::DirectionalLight> directionalLightsBuilder(2);
@@ -182,11 +182,21 @@ void InitLights()
 			0.8f, 0.3f,
 			0.0f, 0.0f, 0.0f,
 			1.0f, 0.01f, 0.001f))
-	    .addLight(Lights::PointLight(0.0f, 0.0f, 1.0f,
+		/*
+		.addLight(Lights::PointLight(0.0f, 0.0f, 1.0f,//1er pico
 	        0.8f, 0.3f,
-	        0.0f, 0.0f, 0.0f,
+			15.5f, 60.35f, -10.0f,
 	        1.0f, 0.01f, 0.001f))
+		.addLight(Lights::PointLight(0.0f, 0.0f, 1.0f,//2dopico
+	        0.8f, 0.3f,
+	        31.0f, 64.1f, -26.0f,
+	        1.0f, 0.01f, 0.001f))
+	    .addLight(Lights::PointLight(0.0f, 0.0f, 1.0f,//3erpico
+	        0.8f, 0.3f,
+	        6.5f, 59.35f, 6.0f,
+	        1.0f, 0.01f, 0.001f))*/
 		.build();
+	//pointLights = pointLightsBuilder.;
 	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(3);
 	spotLights = spotLightBuilder
 	  /*.addLight(Lights::SpotLight(0.0f, 0.0f, 1.0f,
@@ -234,6 +244,10 @@ void updateFlippers()
 	{
 		mainWindow.setStartAnimacionPico3TRUE();
 	}
+	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_U).pressed)
+	{
+		mainWindow.setStartAnimacionCanicaTRUE();
+	}
 }
 
 int main()
@@ -276,8 +290,12 @@ int main()
 	Utils::ModelMatrix handler(glm::mat4(1.0f));
 	glm::mat4 model(1.0f);
 	glm::mat4 aux(1.0f);
+	glm::mat4 modelaux(1.0);
+	glm::mat4 modelaux2(1.0);
+	glm::mat4 modelaux3(1.0);
 	glm::vec3 color(1.0f, 1.0f, 1.0f);
 	glm::vec2 toffset = glm::vec2(0.0f, 0.0f);
+	
 	//variables para animacion
 	float rotOffPico=3.5;
 	float escOffPico = .01;
@@ -291,6 +309,18 @@ int main()
 	float rotPicoZ3 = 0;
 	float escPico3 = 0;
 	
+	float movXCanica = 0;
+	float movYCanica = 0;
+	float movZCanica = 0;
+	float movXOffCanica = 0.2;
+	float movYOffCanica = 0.1;
+	float movZOffCanica = 0.2;
+	float movYImpulso = 0.0524;
+	float movXImpulso = 0.5;
+	float rotCanica = 0.0;
+	float rotOffCanica = 1.5;
+	int BCan = 0;//bandera canica
+	
 	// modelos
 	auto maquinaPinball = models[MODELS::MAQUINA_PINBALL];
 	auto flipper = models[MODELS::FLIPPER];
@@ -299,10 +329,65 @@ int main()
 	auto PicoP = models[MODELS::PICOP];
 	auto PicoM = models[MODELS::PICOM];
 	auto PicoG = models[MODELS::PICOG];
+	auto Canica = models[MODELS::CANICA];
 	// Shaders
 	auto shaderLight = shaders[Shader::ShaderTypes::LIGHT_SHADER];
 
 	//animaciones
+	Animation CanicaAS;
+	CanicaAS
+	    .addCondition(//activar la palanca del resorte y dejar presionado
+	        [](float delta) -> bool
+	        { return mainWindow.getStartAnimacionCanica(); })
+	    .addCondition(
+	        [&movZCanica, &movZOffCanica, &rotCanica, &rotOffCanica, &BCan](float delta) -> bool
+	        {
+				if (movZCanica < 29 && BCan==0)
+			    {
+			        movZCanica += movZOffCanica * delta;
+			        rotCanica += rotOffCanica * delta;
+				    return false;
+			    }
+			    else
+				    return true; })
+		.addCondition(//soltar palanca pendiente
+	        [](float delta) -> bool
+	        {return mainWindow.getStartAnimacionCanica(); })
+		.addCondition(
+	        [&movZCanica, &movZOffCanica, &movXCanica, &movYCanica, &movXImpulso, &movYImpulso, &rotCanica, &rotOffCanica, &BCan](float delta) -> bool
+	        //[&movXCanica, &movYCanica, &movZCanica, &movXOffCanica, &movYOffCanica, &movZOffCanica, &rotCanica, &rotOffCanica](float delta) -> bool
+			{
+				if (movXCanica < 100)
+				{
+			        movXCanica += movXImpulso * delta;
+			        movYCanica += movYImpulso * delta;
+					rotCanica += rotOffCanica *delta;
+			        movZOffCanica = 0.23;
+					return false;
+				}
+		        else if (movXCanica > 100 && movXCanica < 125 && movZCanica>20)
+		        {
+			        movXCanica += movXImpulso * delta;
+			        movZCanica -= movZOffCanica * delta;
+			        printf("%f\n", movZCanica);
+			        movYCanica += movYImpulso * delta;
+			        rotCanica += rotOffCanica * delta;
+			        return false;
+				}
+				else
+					BCan=1;
+					movZOffCanica = 0.2;
+					return true; })
+	    .addCondition(
+			[&movXCanica, &movXOffCanica,&movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool 
+			{
+				/*if (movXCanica < 120) {
+			        movXCanica += movXImpulso * delta;
+			        rotCanica += rotOffCanica * delta;
+				}else*/
+					return true; })
+		.prepare();
+
 	Animation PicoJerarquia1;
 	PicoJerarquia1
 		.addCondition(
@@ -407,6 +492,8 @@ int main()
 		PicoJerarquia1.update(deltaTime);
 		PicoJerarquia2.update(deltaTime);
 		PicoJerarquia3.update(deltaTime);
+		CanicaAS.update(deltaTime);
+
 		// Configuración del shader
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -439,9 +526,6 @@ int main()
 		glUniform2fv((GLint) uTexOffset, 1, glm::value_ptr(toffset));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 
-		glm::mat4 modelaux(1.0);
-		glm::mat4 modelaux2(1.0);
-		glm::mat4 modelaux3(1.0);
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(0.0, -1.0, 0.0)
 		            .getMatrix();
@@ -485,7 +569,17 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		Muneco.render();
-		
+		Material_brillante.UseMaterial(uSpecularIntensity, uShininess);
+		//canica animada simple
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(-78.0 + movXCanica, 45.5 + movYCanica, 7.5 +movZCanica)
+		            .rotateY(rotCanica)
+		            //.scale(2.2)
+		            .rotateZ(6)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		Canica.render();
+		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);
 		//1er pico animado
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(15.5, 57.35, -10)

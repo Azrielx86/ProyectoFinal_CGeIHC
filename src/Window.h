@@ -41,6 +41,9 @@ class Window
 	GLboolean getStartAnimacionPico3() { return StartAnimacionPico3; }
 	GLboolean setStartAnimacionPico3TRUE() { return StartAnimacionPico3 = true; }
 	GLboolean setStartAnimacionPico3FALSE() { return StartAnimacionPico3 = false; }
+	GLboolean getStartAnimacionCanica() { return StartAnimacionCanica; }
+	GLboolean setStartAnimacionCanicaTRUE() { return StartAnimacionCanica = true; }
+	GLboolean setStartAnimacionCanicaFALSE() { return StartAnimacionCanica = false; }
   private:
 	GLFWwindow *window;
 	GLuint width;
@@ -48,6 +51,7 @@ class Window
 	GLboolean StartAnimacionPico1=false;
 	GLboolean StartAnimacionPico2 = false;
 	GLboolean StartAnimacionPico3 = false;
+	GLboolean StartAnimacionCanica = false;
 	int bufferWidth;
 	int bufferHeight;
 	const char *title;
