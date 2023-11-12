@@ -203,7 +203,6 @@ void InitLights()
 	        6.5f, 59.35f, 6.0f,
 	        1.0f, 0.01f, 0.001f))
 		.build();
-	//pointLights = pointLightsBuilder.;
 	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(3);
 	spotLights = spotLightBuilder
 	  /*.addLight(Lights::SpotLight(0.0f, 0.0f, 1.0f,
@@ -238,7 +237,7 @@ void updateFlippers()
 		if (leftFlipperRotation > -20)
 			leftFlipperRotation -= 5;
 	}
-	//prueba anim
+	//prueba animaciones
 	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_O).pressed)
 	{
 		mainWindow.setStartAnimacionPico1TRUE();
@@ -349,7 +348,7 @@ int main()
 	auto PicoM = models[MODELS::PICOM];
 	auto PicoG = models[MODELS::PICOG];
 	auto Canica = models[MODELS::CANICA];
-	auto Base = models[MODELS::BASE];
+	auto Base = models[MODELS::BASE];//
 	// Shaders
 	auto shaderLight = shaders[Shader::ShaderTypes::LIGHT_SHADER];
 
@@ -469,19 +468,6 @@ int main()
 			        return true;
 				}
 				return mainWindow.getStartAnimacionCanica(); })
-	    /*.addCondition(
-	        [&movXCanica, &movYCanica, &movZCanica, &BCan, &XA, &YA, &ZA](float delta) -> bool
-			{
-				if (BCan == 5) {
-					movZCanica = 0;
-					movYCanica = 0;
-					movXCanica = 0;
-				    //XA = 78.0;
-				    //YA = -45.5;
-				    //ZA = -7.5;
-					return true; 
-				}
-			})*/
 	    .addCondition(
 	        [&XN, &YN, &ZN, &XA, &YA, &ZA, &XAn, &YAn, &ZAn, &BCan, &t](float delta) -> bool
 	        {
@@ -519,6 +505,7 @@ int main()
 		.addCondition(
 	        [&rotOffPico, &rotPico1, &rotPicoZ1, &escOffPico, &escPico1](float delta) -> bool
 	        {
+				pointLights.toggleLight(1,true);//luces se prende
 				if (rotPico1 < 720)
 			    {
 			        if (rotPicoZ1 < 6 && rotPico1<70)
@@ -549,6 +536,7 @@ int main()
 	    .addCondition(
 	        [&rotOffPico, &rotPico2, &rotPicoZ2, &escOffPico, &escPico2](float delta) -> bool
 	        {
+				pointLights.toggleLight(2,true);//luces se prende
 				if (rotPico2 < 720)
 			    {
 			        if (rotPicoZ2 < 6 && rotPico2<70)
@@ -579,6 +567,7 @@ int main()
 	    .addCondition(
 	        [&rotOffPico, &rotPico3, &rotPicoZ3, &escOffPico, &escPico3](float delta) -> bool
 	        {
+				pointLights.toggleLight(3,true);//luces se prende
 				if (rotPico3 < 720)
 			    {
 			        if (rotPicoZ3 < 6 && rotPico3<70)
@@ -612,6 +601,17 @@ int main()
 		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
 
 		updateFlippers();
+		if (mainWindow.getStartAnimacionPico1() == false) {
+			pointLights.toggleLight(1,false);//luces apagadas de los picos
+		}
+		if (mainWindow.getStartAnimacionPico2() == false)
+		{
+			pointLights.toggleLight(2, false); // luces apagadas de los picos
+		}
+		if (mainWindow.getStartAnimacionPico3() == false)
+		{
+			pointLights.toggleLight(3, false); // luces apagadas de los picos
+		}
 		PicoJerarquia1.update(deltaTime);
 		PicoJerarquia2.update(deltaTime);
 		PicoJerarquia3.update(deltaTime);
@@ -709,22 +709,7 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		Canica.render();
-		//canica orientacion
-		/*model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(12.0, 55.35, 4)
-		            .rotateX(rotXCanica)
-		            .rotateZ(6 + rotZCanica)
-		            .getMatrix();
-		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		 Canica.render();
-		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(20.0, 56.0, -5)
-		            .rotateX(rotXCanica)
-		            .rotateZ(6 + rotZCanica)
-		            .getMatrix();
-		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica.render();
-		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);*/
+
 		//1er pico animado
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(15.5, 57.35, -10)
