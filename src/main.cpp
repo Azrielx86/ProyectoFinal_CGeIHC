@@ -59,6 +59,8 @@ Model::Material matMetal;
 Model::Material Material_brillante;
 Model::Material Material_opaco;
 
+float timer = 0.0f;
+
 std::unordered_map<int, Shader *> shaders;
 
 Animation::Animation modeloJerarquico1;
@@ -134,21 +136,21 @@ void InitKeymaps()
 		                  << globalCounter << " veces\n";
 	        },
 	        true)
-	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_L,
-	        []() -> void
-	        {
-		        if (ambLight == AMB_LIGHTS::DAY)
-		        {
-			        skyBoxCurrent = &skyboxNight;
-			        ambLight = AMB_LIGHTS::NIGHT;
-		        }
-		        else
-		        {
-			        skyBoxCurrent = &skyboxDay;
-			        ambLight = AMB_LIGHTS::DAY;
-		        }
-	        })
+//	    .addCallback(
+//	        KEYMAPS::FREE_CAMERA, GLFW_KEY_L,
+//	        []() -> void
+//	        {
+//		        if (ambLight == AMB_LIGHTS::DAY)
+//		        {
+//			        skyBoxCurrent = &skyboxNight;
+//			        ambLight = AMB_LIGHTS::NIGHT;
+//		        }
+//		        else
+//		        {
+//			        skyBoxCurrent = &skyboxDay;
+//			        ambLight = AMB_LIGHTS::DAY;
+//		        }
+//	        })
 	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_0,
 	        []() -> void
@@ -377,7 +379,7 @@ void InitAnimations()
 		                  return true; })
 	    .prepare();
 //
-//	MjPos_0 = {0.0f, 2.9f, -3.2f};
+	MjPos_0 = {0.0f, 2.9f, -3.2f};
 //	modeloJerarquico1
 //	    .addCondition([](float) -> bool
 //	                               { 
@@ -526,6 +528,21 @@ int main()
 
 		updateFlippers();
 		marblePreLaunch.update(deltaTime);
+		
+		if (timer <= glfwGetTime())
+		{
+			if (ambLight == AMB_LIGHTS::DAY)
+			{
+				skyBoxCurrent = &skyboxNight;
+				ambLight = AMB_LIGHTS::NIGHT;
+			}
+			else
+			{
+				skyBoxCurrent = &skyboxDay;
+				ambLight = AMB_LIGHTS::DAY;
+			}
+			timer = (float) glfwGetTime() + 5;
+		}
 
 		if (captureMode)
 			marbleEntity.update(nullptr, deltaTime);
