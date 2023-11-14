@@ -35,16 +35,24 @@ void KeyboardInput::handleKey(int key, [[maybe_unused]] int code, int action, [[
 {
 	if (key == GLFW_KEY_UNKNOWN)
 		return;
-
+#ifndef KB_VER2
 	currentKeymap->at(key).action = action;
 	currentKeymap->at(key).pressed = action != GLFW_RELEASE;
-	
 	for (auto &k : *currentKeymap)
 	{
-		if (k.action == GLFW_PRESS || (k.action == GLFW_REPEAT && k.repeat))
+//		if (k.action == GLFW_PRESS || (k.action & 0x3 && k.repeat))
+		if (k.action == GLFW_PRESS || (k.pressed && k.repeat))
 			if (k.callback != nullptr)
 				k.callback();
 	}
+#else
+	auto k = &currentKeymap->at(key);
+	k->action = action;
+	k->pressed = action != GLFW_RELEASE;
+	if (k->pressed)
+		if (k->callback != nullptr)
+			k->callback();
+#endif
 }
 
 KeyboardInput &KeyboardInput::addCallback(int keymap, int key, const std::function<void()> &callback, bool repeat)
@@ -58,5 +66,15 @@ std::vector<KeyboardInput::Key> *KeyboardInput::getCurrentKeymap()
 {
 	// Para el control del mouse ha sido necesario agregar esto (Ya que requiere de deltaTime).
 	return this->currentKeymap;
+}
+void KeyboardInput::setKeymap(int id)
+{
+	for (auto &k : *currentKeymap)
+	{
+		k.action = GLFW_RELEASE;
+		k.pressed = false;
+	}
+	this->currentKeymap = &this->keymaps.at(id);
+	std::cout << "[ " << typeid(KeyboardInput).name() << " ] Input keymap changed.\n";
 }
 } // namespace Input

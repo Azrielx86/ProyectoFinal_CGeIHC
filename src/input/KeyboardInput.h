@@ -11,6 +11,7 @@
 #include <vector>
 #include <ranges>
 #include <algorithm>
+#include <iostream>
 
 namespace Input
 {
@@ -77,7 +78,12 @@ class KeyboardInput
 	 */
 	void handleKey(int key, [[maybe_unused]] int code, int action, [[maybe_unused]] int mode);
 	
+	/**
+	 * @return Actual keymap.
+	 */
 	std::vector<Key> *getCurrentKeymap();
+	
+	void setKeymap(int id);
 
   private:
 	std::unordered_map<int, std::vector<Key>> keymaps;

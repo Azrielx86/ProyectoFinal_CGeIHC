@@ -27,12 +27,14 @@ namespace Lights
 template <typename T>
 class LightCollection
 {
-	//	static_assert(std::is_same<Light, T>::value || std::is_same<PointLight, T>::value || std::is_same<SpotLight, T>::value, "Must be Light-like type");
 	static_assert(std::is_base_of<Light, T>::value, "T must be Light-like type.");
 	using LightPair = std::pair<T, bool>;
 
   public:
-	LightCollection() = default;
+	LightCollection()
+	{
+		currentCount = 0;
+	};
 	/**
 	 * Constructor del arreglo, construye los pares T - bool
 	 * y los agrega a un nuevo vector
@@ -56,6 +58,11 @@ class LightCollection
 		if (newState == isTurnedOn) return;
 		lightsVector.at(idx).second = !isTurnedOn;
 		updateArray();
+	}
+
+	bool getLightStatus(int index)
+	{
+		return lightsVector.at(index).second;
 	}
 
 	/**
@@ -105,7 +112,7 @@ class LightCollection
   private:
 	std::vector<LightPair> lightsVector;
 	T *lightArray;
-	int currentCount;
+	int currentCount{};
 	std::vector<T> tmp;
 };
 
@@ -118,7 +125,6 @@ class LightCollection
 template <typename T>
 class LightCollectionBuilder
 {
-	//	static_assert(std::is_same<Light, T>::value || std::is_same<PointLight, T>::value || std::is_same<SpotLight, T>::value, "Must be Light-like type");
 	static_assert(std::is_base_of<Light, T>::value, "T must be Light-like type.");
 
   public:
