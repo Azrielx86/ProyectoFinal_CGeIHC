@@ -117,8 +117,14 @@ add_executable(ProyectoFinal_CGeIHC
         src/Utils/ImageUtils.h
         src/Utils/Logger.cpp
         src/Utils/Logger.h
+        src/model/BoneMesh.cpp
+        src/model/BoneMesh.h
+        src/model/BoneModel.cpp
+        src/model/BoneModel.h
+        src/Entity/SimpleEntity.cpp
+        src/Entity/SimpleEntity.h
+        src/Animation/KeyFrameAnimation.cpp
         src/Animation/Animation.cpp
-        src/Animation/Animation.h
 )
 
 message(STATUS "Copiando archivos de shader")
@@ -127,6 +133,8 @@ message(STATUS "Copiando archivos de modelos")
 file(COPY assets/Models DESTINATION ${CMAKE_BINARY_DIR}/assets)
 message(STATUS "Copiando archivos de texturas")
 file(COPY assets/Textures DESTINATION ${CMAKE_BINARY_DIR}/assets)
+message(STATUS "Copiando las animaciones")
+file(COPY Animations DESTINATION ${CMAKE_BINARY_DIR})
 
 target_include_directories(ProyectoFinal_CGeIHC PRIVATE ${Stb_INCLUDE_DIR})
 target_link_libraries(ProyectoFinal_CGeIHC PRIVATE GLEW::GLEW)

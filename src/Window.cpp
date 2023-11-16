@@ -64,6 +64,8 @@ bool Window::Init()
 	glViewport(0, 0, bufferWidth, bufferHeight);
 	glfwSetWindowUserPointer(window, this);
 
+	projection = glm::perspective(45.0f, (GLfloat) bufferWidth / (GLfloat) bufferHeight, 0.1f, 1000.0f);
+
 	// Cuando ya se tengan elementos 3D habilitar esto
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
@@ -82,6 +84,7 @@ void Window::bindCallbacks()
 	glfwSetKeyCallback(window, Window::handleKeyboard);
 	glfwSetCursorPosCallback(window, Window::handleMousePos);
 	glfwSetMouseButtonCallback(window, Window::handleMouseClick);
+	glfwSetWindowSizeCallback(window, Window::windowResizeCallback);
 }
 
 void Window::handleKeyboard([[maybe_unused]] GLFWwindow *window, int key, int code, int action, int mode)
@@ -104,4 +107,16 @@ void Window::toggleMouse()
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	else
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+void Window::windowResizeCallback(GLFWwindow *window, int width, int height)
+{
+	auto pWindow = static_cast<Window *>(glfwGetWindowUserPointer(window));
+	glViewport(0, 0, width, height);
+	glfwGetFramebufferSize(window, &pWindow->bufferWidth, &pWindow->bufferHeight);
+	pWindow->projection = glm::perspective(45.0f, (GLfloat) pWindow->bufferWidth / (GLfloat) pWindow->bufferHeight, 0.1f, 1000.0f);
+}
+glm::mat4 Window::getProjectionMatrix()
+{
+	return projection;
 }

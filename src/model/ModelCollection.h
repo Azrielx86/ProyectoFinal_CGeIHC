@@ -21,6 +21,7 @@ class ModelCollection
 {
   public:
 	explicit ModelCollection() = default;
+	~ModelCollection();
 	
 	/**
 	 * Insert a model into the collection.

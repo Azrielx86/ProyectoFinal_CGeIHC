@@ -13,6 +13,8 @@
 #include "input/MouseInput.h"
 #include <functional>
 #include <iostream>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class Window
 {
@@ -28,22 +30,12 @@ class Window
 	void bindCallbacks();
 	void toggleMouse();
 	GLFWwindow *getWindowPointer() { return window; }
+	glm::mat4 getProjectionMatrix();
 	static void handleKeyboard([[maybe_unused]] GLFWwindow *window, int key, int code, int action, int mode);
 	static void handleMousePos(GLFWwindow *window, double xPos, double yPos);
 	static void handleMouseClick(GLFWwindow* window, int button, int action, int mode);
-	//para animacion
-	GLboolean getStartAnimacionPico1(){return StartAnimacionPico1; }
-	GLboolean setStartAnimacionPico1TRUE() { return StartAnimacionPico1 = true; }
-	GLboolean setStartAnimacionPico1FALSE() { return StartAnimacionPico1 = false; }
-	GLboolean getStartAnimacionPico2() { return StartAnimacionPico2; }
-	GLboolean setStartAnimacionPico2TRUE() { return StartAnimacionPico2 = true; }
-	GLboolean setStartAnimacionPico2FALSE() { return StartAnimacionPico2 = false; }
-	GLboolean getStartAnimacionPico3() { return StartAnimacionPico3; }
-	GLboolean setStartAnimacionPico3TRUE() { return StartAnimacionPico3 = true; }
-	GLboolean setStartAnimacionPico3FALSE() { return StartAnimacionPico3 = false; }
-	GLboolean getStartAnimacionCanica() { return StartAnimacionCanica; }
-	GLboolean setStartAnimacionCanicaTRUE() { return StartAnimacionCanica = true; }
-	GLboolean setStartAnimacionCanicaFALSE() { return StartAnimacionCanica = false; }
+	static void windowResizeCallback(GLFWwindow* window, int width, int height);
+
   private:
 	GLFWwindow *window;
 	GLuint width;
@@ -55,6 +47,7 @@ class Window
 	int bufferWidth;
 	int bufferHeight;
 	const char *title;
+	glm::mat4 projection;
 };
 
 #endif // PROYECTOFINAL_CGEIHC_WINDOW_H

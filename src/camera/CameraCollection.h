@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include <iostream>
 #include <vector>
+#include <iostream>
 
 namespace Camera
 {
@@ -19,6 +20,7 @@ class CameraCollection
 		cameraIndex = 0;
 		activeCamera = nullptr;
 	};
+	~CameraCollection();
 	CameraCollection &addCamera(Camera *camera);
 	Camera *switchCamera();
 	[[nodiscard]] Camera *getAcviveCamera() const;

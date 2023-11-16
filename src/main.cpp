@@ -2,6 +2,9 @@
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
 #pragma ide diagnostic ignored "OCUnusedMacroInspection"
 #define STB_IMAGE_IMPLEMENTATION
+#define MARBLE_ANIM_FILE "Animations/marble.json"
+
+#define ToRGB(col) (col / 255.0f)
 
 #include <cmath>
 #include <iostream>
@@ -13,7 +16,9 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Animation/Animation.h"
+#include "Animation/KeyFrameAnimation.h"
 #include "Audio/AudioDevice.h"
+#include "Entity/SimpleEntity.h"
 #include "GlobalConstants.h"
 #include "Lights/DirectionalLight.h"
 #include "Lights/LightCollection.h"
@@ -23,11 +28,11 @@
 #include "camera/Camera.h"
 #include "camera/CameraCollection.h"
 #include "input/KeyboardInput.h"
-#include "model/BasicPrimitives.h"
+#include "model/BoneModel.h"
 #include "model/Material.h"
-#include "model/Model.h"
 #include "model/ModelCollection.h"
 
+// region Global Variables
 Window mainWindow;
 Camera::CameraCollection cameras;
 Camera::Camera *activeCamera;
@@ -35,22 +40,83 @@ Model::ModelCollection models;
 Lights::LightCollection<Lights::DirectionalLight> directionalLights;
 Lights::LightCollection<Lights::PointLight> pointLights;
 Lights::LightCollection<Lights::SpotLight> spotLights;
-Skybox skybox;
+Skybox skyboxDay;
+Skybox skyboxNight;
+Skybox *skyBoxCurrent;
+Entity::SimpleEntity marbleEntity;
+Animation::KeyFrameAnimation marbleKfAnim;
+Animation::Animation marbleAnimation;
+Animation::Animation marblePreLaunch;
+Animation::Animation marblePostLaunch;
+glm::vec3 marblePos;
+glm::vec3 leverPos = {-85.369f, 43.931f, 36.921f};
+const glm::vec3 leverEnd = {-90.089f, 42.213f, 36.921f};
+const glm::vec3 leverDirection = glm::normalize(leverEnd - leverPos);
+// const float movLeverDistance = glm::length(leverEnd - leverPos);
+Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/2b.obj"));
 
+Model::Material matMetal;
 Model::Material Material_brillante;
 Model::Material Material_opaco;
 
+float timer = 0.0f;
+
 std::unordered_map<int, Shader *> shaders;
+Animation::Animation PicoJerarquia1;
+Animation::Animation PicoJerarquia2;
+Animation::Animation PicoJerarquia3;
+//Animation::Animation modeloJerarquico1;
+bool mJ1_trigger = false;
+
+// Posicion numeros: 60.3627, 115.599, -34.7832
 
 float deltaTime = 0.0f;
 float lastTime = 0.0f;
 const float limitFPS = 1.0f / 60.0f;
 
 AMB_LIGHTS ambLight = AMB_LIGHTS::DAY;
+// endregion
 
-// Variables auxiliares que no se encapsularon en otras clases :v
+// region Variables auxiliares que no se encapsularon en otras clases :v
+int globalCounter = 0; // Temporal xd
 float rightFlipperRotation = 0.0f;
 float leftFlipperRotation = 0.0f;
+float upFlipperRotation = 0.0f;
+bool captureMode = false;
+float expandeResorte = 1.0f;
+
+bool activarP1 = false, activarP2 = false, activarP3 =false;
+float rotOffPico = 3.5;
+float escOffPico = .01;
+float rotPico1 = 0;
+float rotPicoZ1 = 0;
+float escPico1 = 0;
+float rotPico2 = 0;
+float rotPicoZ2 = 0;
+float escPico2 = 0;
+float rotPico3 = 0;
+float rotPicoZ3 = 0;
+float escPico3 = 0;
+
+// #define MJ_BASE_ROT(n) glm::vec3 MjBaseRot##n = {0.0f, 0.0f, 0.0f};
+//  n = Numero de articulacion
+#define MJ_ROT(n) glm::vec3 MjRot_##n = {0.0f, 0.0f, 0.0f};
+#define MJ_POS(n) glm::vec3 MjPos_##n = {0.0f, 0.0f, 0.0f};
+
+// Base del modelo
+MJ_ROT(0)
+MJ_ROT(2)
+MJ_ROT(3)
+MJ_ROT(4)
+MJ_POS(0)
+MJ_POS(1)
+MJ_POS(2)
+MJ_POS(3)
+
+// MJ_BASE_ROT(1)
+// MJ_BASE_ROT(2)
+
+// endregion
 
 void InitKeymaps()
 {
@@ -63,10 +129,31 @@ void InitKeymaps()
 		        glfwSetWindowShouldClose(mainWindow.getWindowPointer(), GL_TRUE);
 	        })
 	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_C,
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_TAB,
 	        []() -> void
 	        {
 		        activeCamera = cameras.switchCamera();
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_I,
+	        []() -> void
+	        {
+		        activarP1 = true;
+		        PicoJerarquia1.start();
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_O,
+	        []() -> void
+	        {
+		        activarP2 = true;
+		        PicoJerarquia2.start();
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_P,
+	        []() -> void
+	        {
+		        activarP3 = true;
+		        PicoJerarquia3.start();
 	        })
 	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_T,
@@ -77,141 +164,350 @@ void InitKeymaps()
 		        mainWindow.toggleMouse();
 	        })
 	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_P,
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_0,
 	        []() -> void
 	        {
-		        std::cout << "Tecla P presionada\n";
-	        }, true)
+		        captureMode = true;
+		        Input::KeyboardInput::GetInstance().setKeymap(KEYMAPS::KEYFRAME_CAPTURE);
+	        })
 	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_L,
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_1,
 	        []() -> void
 	        {
-		        if (ambLight == AMB_LIGHTS::DAY)
-			        ambLight = AMB_LIGHTS::NIGHT;
-		        else
-			        ambLight = AMB_LIGHTS::DAY;
+		        spotLights.toggleLight(1, !spotLights.getLightStatus(1));
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_2,
+	        []() -> void
+	        {
+		        spotLights.toggleLight(2, !spotLights.getLightStatus(2));
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_3,
+	        []() -> void
+	        {
+		        pointLights.toggleLight(0, !pointLights.getLightStatus(0));
+	        })
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_4,
+	        []() -> void
+	        {
+		        pointLights.toggleLight(1, !pointLights.getLightStatus(1));
 	        });
-	/*.addCallback(
-			 KEYMAPS::FREE_CAMERA, GLFW_KEY_U,
-			 []() -> void
-			  {
-				//pointLights.toggleLignt(ind:2, new state: !pointLights.getLightStauts(2);
-			 })*/
+	/*
+	Input::KeyboardInput::GetInstance()
+	    .createKeymap(KEYMAPS::KEYFRAME_CAPTURE)
+	    .addCallback(
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_R,
+	        []() -> void
+	        {
+		        activarP1 = 1;
+				//activeCamera = cameras.switchCamera();
+	        });*/
 
-	//	    .addCallback(
-	//	        KEYMAPS::FREE_CAMERA,
-	//	        GLFW_KEY_L,
-	//	        []() -> void
-	//	        {
-	//		        std::cout << "Flipper Right: " << rightFlipperRotation << '\n';
-	//		        if (rightFlipperRotation < -25)
-	//			        return;
-	//		        rightFlipperRotation -= 8;
-	//	        },
-	//	        true);
+	Input::KeyboardInput::GetInstance()
+	    .createKeymap(KEYMAPS::KEYFRAME_CAPTURE)
+	    .addCallback(
+	        KEYMAPS::KEYFRAME_CAPTURE, GLFW_KEY_T,
+	        []() -> void
+	        {
+		        std::cout << "Mouse disabled!";
+		        Input::MouseInput::GetInstance().toggleMouseEnabled();
+		        mainWindow.toggleMouse();
+	        })
+	    .addCallback(KEYMAPS::KEYFRAME_CAPTURE,
+	                 GLFW_KEY_G,
+	                 []() -> void
+	                 {
+		                 marbleKfAnim.saveToFile(MARBLE_ANIM_FILE);
+	                 })
+	    .addCallback(KEYMAPS::KEYFRAME_CAPTURE,
+	                 GLFW_KEY_C,
+	                 []() -> void
+	                 {
+		                 marbleKfAnim.addKeyframe(marbleEntity.getPosition(), marbleEntity.getRotation());
+	                 })
+	    .addCallback(KEYMAPS::KEYFRAME_CAPTURE,
+	                 GLFW_KEY_R,
+	                 []() -> void
+	                 {
+		                 marbleKfAnim.removeLastFrame();
+	                 })
+	    .addCallback(
+	        KEYMAPS::KEYFRAME_CAPTURE, GLFW_KEY_0,
+	        []() -> void
+	        {
+		        captureMode = false;
+		        Input::KeyboardInput::GetInstance().setKeymap(KEYMAPS::FREE_CAMERA);
+	        })
+	    .addCallback(
+	        KEYMAPS::KEYFRAME_CAPTURE,
+	        GLFW_KEY_SPACE,
+	        []() -> void
+	        {
+		        if (!captureMode)
+			        marbleKfAnim.play();
+	        });
 
 	Input::MouseInput::GetInstance()
 	    .createKeymap(KEYMAPS::FREE_CAMERA)
 	    .addClickCallback(
 	        KEYMAPS::FREE_CAMERA,
-	        GLFW_MOUSE_BUTTON_LEFT,
+	        GLFW_MOUSE_BUTTON_RIGHT, // Expansion del resorte
 	        []() -> void
 	        {
-		        std::cout << "Click izquierdo presionado\n";
+		        marblePreLaunch.start();
+	        },
+	        true,
+	        []() -> void
+	        {
+		        if (!captureMode)
+			        marbleKfAnim.play();
 	        })
-	    .addClickCallback(
+	    .addMoveCallback(
 	        KEYMAPS::FREE_CAMERA,
-	        GLFW_MOUSE_BUTTON_RIGHT,
-	        []() -> void
+	        [](float) -> void
 	        {
-				std::cout << "Click derecho presionado\n";
-			})
-			.addMoveCallback(
-				KEYMAPS::FREE_CAMERA,
-				[](float) -> void
-				{
-					activeCamera->mouseControl(Input::MouseInput::GetInstance());
-				});
+		        activeCamera->mouseControl(Input::MouseInput::GetInstance());
+	        });
 }
 
 void InitShaders()
 {
 	auto shader = new Shader();
 	shader->loadShader("shaders/shader.vert", "shaders/shader.frag");
-	shaders[Shader::ShaderTypes::BASE_SHADER] = shader;
+	shaders[ShaderTypes::BASE_SHADER] = shader;
 
 	auto lightShader = new Shader();
 	lightShader->loadShader("shaders/shader_light.vert", "shaders/shader_light.frag");
-	shaders[Shader::ShaderTypes::LIGHT_SHADER] = lightShader;
+	shaders[ShaderTypes::LIGHT_SHADER] = lightShader;
+
+	auto boneShader = new Shader();
+	boneShader->loadShader("shaders/shader_bone.vert", "shaders/shader_light.frag");
+	shaders[ShaderTypes::BONE_SHADER] = boneShader;
 }
 
 void InitCameras()
 {
 	cameras.addCamera(new Camera::Camera(glm::vec3(0.0f, 60.0f, 20.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f),
-		-60.0f, 0.0f, 0.5f, 0.5f));
+	                                     glm::vec3(0.0f, 1.0f, 0.0f),
+	                                     -60.0f, 0.0f, 0.5f, 0.5f));
 	cameras.addCamera(new Camera::Camera(glm::vec3(-134.618, 124.889, 4.39917),
-		glm::vec3(0.0f, 1.0f, 0.0f),
-		0.0f, -30.0f, 0.5f, 0.5f, true));
+	                                     glm::vec3(0.0f, 1.0f, 0.0f),
+	                                     0.0f, -30.0f, 0.5f, 0.5f, true));
 	activeCamera = cameras.getAcviveCamera();
 }
 
 void InitModels()
 {
 	models
-		.addModel(MODELS::MAQUINA_PINBALL, "assets/Models/MaquinaPinball.obj")
-		.addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
-		.addModel(MODELS::CANICA, "assets/Models/canica.obj")
-		.addModel(MODELS::NORA, "assets/Models/NoraF.obj")
-		.addModel(MODELS::MUNECO, "assets/Models/muneco_Hielo.obj")
-		.addModel(MODELS::PICOP, "assets/Models/Pico_P.obj")
-		.addModel(MODELS::PICOM, "assets/Models/Pico_M.obj")
-		.addModel(MODELS::PICOG, "assets/Models/Pico_G.obj")
-	    .addModel(MODELS::BASE, "assets/Models/basePinball.obj")
-		.addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
-		.loadModels();
+	    .addModel(MODELS::MAQUINA_PINBALL, "assets/Models/pinballFRIO.obj")
+	    .addModel(MODELS::FLIPPER, "assets/Models/FlipperH.obj")
+	    .addModel(MODELS::MARBLE, "assets/Models/canica.obj")
+	    .addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
+	    .addModel(MODELS::JK_1, Utils::PathUtils::getModelsPath().append("/Marx/Base.obj"))
+	    .addModel(MODELS::JK_2, Utils::PathUtils::getModelsPath().append("/Marx/Body.obj"))
+	    .addModel(MODELS::JK_3, Utils::PathUtils::getModelsPath().append("/Marx/Brazo1.obj"))
+	    .addModel(MODELS::JK_4, Utils::PathUtils::getModelsPath().append("/Marx/Brazo2.obj"))
+	    .addModel(MODELS::JK_5, Utils::PathUtils::getModelsPath().append("/Marx/Brazo3.obj"))
+	    .addModel(MODELS::JK_6, Utils::PathUtils::getModelsPath().append("/Marx/Rotor.obj"))
+	    .addModel(MODELS::MARBLE, Utils::PathUtils::getModelsPath().append("/canica.obj"))
+	    .addModel(MODELS::RESORTE, Utils::PathUtils::getModelsPath().append("/Resorte.obj"))
+	    .addModel(MODELS::PALANCA, Utils::PathUtils::getModelsPath().append("/Lever.obj"))
+	    .addModel(MODELS::ROBOT, Utils::PathUtils::getModelsPath().append("/sstubby.obj"))
+	    .addModel(MODELS::TRIANGLE, Utils::PathUtils::getModelsPath().append("/TriangleH.obj"))
+	    .addModel(MODELS::POD, Utils::PathUtils::getModelsPath().append("/pod.obj"))
+		.addModel(MODELS::MUNECO,  Utils::PathUtils::getModelsPath().append("/muneco_Hielo.obj"))
+		.addModel(MODELS::NORA, Utils::PathUtils::getModelsPath().append( "/NoraF.obj"))
+		.addModel(MODELS::PICOG, Utils::PathUtils::getModelsPath().append( "/Pico_G.obj"))
+	    .addModel(MODELS::PICOM, Utils::PathUtils::getModelsPath().append("/Pico_M.obj"))
+	    //.addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/ExtraModels/Building.obj"))
+	    .loadModels();
+#ifdef AVATAR
+	avatar.loadModel();
+#endif
 }
 
 void InitLights()
 {
 	Lights::LightCollectionBuilder<Lights::DirectionalLight> directionalLightsBuilder(2);
 	directionalLights = directionalLightsBuilder
-		.addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
-			0.8f, 0.3f,
-			0.0f, -1.0f, 0.0f))
-		.addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
-			0.3f, 0.3f,
-			0.0f, 0.0f, -1.0f))
-		.build();
+	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
+	                                                           0.5f, 0.3f,
+	                                                           0.0f, -1.0f, 0.0f))
+	                        .addLight(Lights::DirectionalLight(1.0f, 1.0f, 1.0f,
+	                                                           0.3f, 0.3f,
+	                                                           0.0f, -1.0f, 0.0f))
+	                        .build();
 
-	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(3);
+	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(5);
 	pointLights = pointLightsBuilder
-		.addLight(Lights::PointLight(1.0f, 0.0f, 1.0f,
-			0.8f, 0.3f,
-			0.0f, 0.0f, 0.0f,
-			1.0f, 0.01f, 0.001f))
-		.addLight(Lights::PointLight(0.0f, 0.0f, 1.0f,//1er pico
-	        0.8f, 0.3f,
-			15.5f, 60.35f, -10.0f,
-	        1.0f, 0.01f, 0.001f))
-		.addLight(Lights::PointLight(0.0f, 0.0f, 1.0f,//2dopico
-	        0.8f, 0.3f,
-	        31.0f, 64.1f, -26.0f,
-	        1.0f, 0.01f, 0.001f))
-	    .addLight(Lights::PointLight(0.0f, 0.0f, 1.0f,//3erpico
-	        0.8f, 0.3f,
-	        6.5f, 59.35f, 6.0f,
-	        1.0f, 0.01f, 0.001f))
-		.build();
+	                  .addLight(Lights::PointLight(ToRGB(51), 1.0f, ToRGB(119),
+	                                               0.8f, 0.3f,
+	                                               15.5f, 60.35f, -10.0f,
+	                                               1.0f, 0.05f, 0.008f))
+	                  .addLight(Lights::PointLight(ToRGB(159), 1.0f, ToRGB(51),
+	                                               0.8f, 0.3f,
+	                                               31.0f, 64.1f, -26.0f,
+	                                               1.0f, 0.05f, 0.008f))
+	                  .addLight(Lights::PointLight(ToRGB(159), 1.0f, ToRGB(51),
+	                                               0.8f, 0.3f,
+	                                               6.5f, 59.35f, 6.0f,
+	                                               1.0f, 0.05f, 0.008f))
+	                  .addLight(Lights::PointLight(ToRGB(51), 1.0f, ToRGB(119),
+	                                               0.8f, 0.3f,
+	                                               -58.6934, 51.8151, 9.73,
+	                                               1.0f, 0.05f, 0.008f))
+	                  .addLight(Lights::PointLight(ToRGB(159), 1.0f, ToRGB(51),
+	                                               0.8f, 0.3f,
+	                                               -58.6934, 51.8151, -9.73,
+	                                               1.0f, 0.05f, 0.008f))
+	                  .build();
 	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(3);
 	spotLights = spotLightBuilder
-	  /*.addLight(Lights::SpotLight(0.0f, 0.0f, 1.0f,
-	        0.8f, 0.3f,
-	        0.0f, 0.0f, 0.0f,//pos
-			1.0f, 0.01f, 0.001f,//dir
-			1.0f, 0.01f, 0.0f,//ec y angulo
-			1.0f))*/
-		.build();
+	                 .addLight(Lights::SpotLight(1.0f, 1.0f, 1.0f,
+	                                             0.8f, 0.3f,
+	                                             5.22617, 234.113, 1.82546,
+	                                             0.0f, -1.0f, 0.0f,
+	                                             1.0f, 0.008f, 0.001f,
+	                                             50.0f))
+	                 /*.addLight(Lights::SpotLight(ToRGB(199), 1.0f, ToRGB(51),
+	                                             0.8f, 0.3f,
+	                                             47.6584, 84.0895, 36.4503,
+	                                             -2.0f, -2.0f, -2.0f,
+	                                             1.0f, 0.005f, 0.0008f,
+	                                             20.0f))
+	                 .addLight(Lights::SpotLight(1.0f, ToRGB(221), ToRGB(51),
+	                                             0.8f, 0.3f,
+	                                             47.6584, 84.0895, -36.4503,
+	                                             -2.0f, -2.0f, 2.0f,
+	                                             1.0f, 0.005f, 0.0008f,
+	                                             20.0f))*/
+	                 .build();
+}
+
+void InitAnimations()
+{
+	marblePreLaunch
+	    .addCondition([](float dt) -> bool
+	                  {
+		                  if(expandeResorte >= 0.5f && Input::MouseInput::GetInstance().getCurrentKeymap()->at(GLFW_MOUSE_BUTTON_RIGHT).pressed)
+		                  {
+								expandeResorte -= 0.05f * dt;
+			                    leverPos += leverDirection * 0.08f * dt;
+								return false;
+		                  }
+		                  return !Input::MouseInput::GetInstance().getCurrentKeymap()->at(GLFW_MOUSE_BUTTON_RIGHT).pressed; })
+	    .addCondition([](float dt) -> bool
+	                  {
+		                  if (expandeResorte <=0.5)
+		                  {
+			                  expandeResorte += 0.05f * dt;
+			                  return false;
+		                  }
+		                  expandeResorte = 1.0f;
+		                  leverPos = {-85.369f, 43.931f, 36.921f};
+		                  return true; })
+	    .prepare();
+	
+	PicoJerarquia1
+	    .addCondition(
+	        [](float delta) -> bool
+	        { return activarP1; })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+				pointLights.toggleLight(0,true);//luces se prende
+				if (rotPico1 < 720)
+			    {
+			        if (rotPicoZ1 < 6 && rotPico1<70)
+			        {
+				        rotPicoZ1 +=10* escOffPico * delta;
+					}
+				    rotPico1 += rotOffPico * delta;
+					if (escPico1 < 2.2) {
+				        escPico1 += escOffPico * delta;
+					}
+			        if (rotPicoZ1 > 6 && rotPico1 > 650)
+			        {
+				        rotPicoZ1 -= 10 * escOffPico * delta;
+			        }
+
+				    return false;
+			    }
+			    else
+			        rotPicoZ1 = 0;
+				    return true; })
+	    .prepare();
+
+	PicoJerarquia2
+	    .addCondition(
+	        [](float delta) -> bool
+	        { return activarP2; })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+				pointLights.toggleLight(1,true);//luces se prende
+				if (rotPico2 < 720)
+			    {
+			        std::cout << "entra";
+					if (rotPicoZ2 < 6 && rotPico2<70)
+			        {
+				        rotPicoZ2 +=10* escOffPico * delta;
+					}
+				    rotPico2 += rotOffPico * delta;
+					if (escPico2 < 2.2) {
+				        escPico2 += escOffPico * delta;
+					}
+			        if (rotPicoZ2 > 6 && rotPico2 > 650)
+			        {
+				        rotPicoZ2 -= 10 * escOffPico * delta;
+			        }
+
+				    return false;
+			    }
+			    else
+			        rotPicoZ2 = 0;
+				    return true; })
+	    .prepare();
+
+	PicoJerarquia3
+	    .addCondition(
+	        [](float delta) -> bool
+	        {return activarP3;	})
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+				pointLights.toggleLight(2,true);//luces se prende
+				if (rotPico3 < 720)
+			    {
+			        if (rotPicoZ3 < 6 && rotPico3<70)
+			        {
+				        rotPicoZ3 +=10* escOffPico * delta;
+					}
+				    rotPico3 += rotOffPico * delta;
+					if (escPico3 < 2.2) {
+				        escPico3 += escOffPico * delta;
+					}
+			        if (rotPicoZ3 > 6 && rotPico3 > 650)
+			        {
+				        rotPicoZ3 -= 10 * escOffPico * delta;
+			        }
+
+				    return false;
+			    }
+			    else
+			        rotPicoZ3 = 0;
+				    return true; })
+	    .prepare();
+	//
+	MjPos_0 = {0.0f, 2.9f, -3.2f};
+	//	modeloJerarquico1
+	//	    .addCondition([](float) -> bool
+	//	                               {
+	//		                  MjRot_0 = -90;
+	//	                  })
+	//	    .prepare();
 }
 
 void updateFlippers()
@@ -237,23 +533,28 @@ void updateFlippers()
 		if (leftFlipperRotation > -20)
 			leftFlipperRotation -= 5;
 	}
-	//prueba animaciones
-	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_O).pressed)
+
+	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_M).pressed)
 	{
-		mainWindow.setStartAnimacionPico1TRUE();
+		if (upFlipperRotation < 20)
+			upFlipperRotation += 5;
 	}
-	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_I).pressed)
+	else
 	{
-		mainWindow.setStartAnimacionPico2TRUE();
+		if (upFlipperRotation > -20)
+			upFlipperRotation -= 5;
 	}
-	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_P).pressed)
-	{
-		mainWindow.setStartAnimacionPico3TRUE();
-	}
-	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_U).pressed)
-	{
-		mainWindow.setStartAnimacionCanicaTRUE();
-	}
+}
+
+void LoadAnimations()
+{
+	marbleKfAnim.loadFromFile(MARBLE_ANIM_FILE);
+}
+
+void exitProgram()
+{
+	for (auto &shader : shaders)
+		delete shader.second;
 }
 
 int main()
@@ -267,328 +568,72 @@ int main()
 	}
 
 	// Inicializar los componentes del programa
+	Audio::AudioDevice::GetInstance(); // inicializa el componente de audio
 	InitShaders();
 	InitKeymaps();
 	InitCameras();
 	InitModels();
 	InitLights();
+	InitAnimations();
+	LoadAnimations();
 
-	std::vector<std::string> skyboxFaces;
+	// region Skybox settings
+	// SKyBoxes Faces Day
+	std::vector<std::string> skbfDay;
+	// SKyBoxes Faces Night
+	std::vector<std::string> skbfNight;
 
-	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_rt.png");
-	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_lf.png");
-	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_dn.png");
-	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_up.png");
-	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_bk.png");
-	skyboxFaces.emplace_back("assets/Textures/Skybox/sp2_ft.png");
+	// Comando para rotar las texturas: Get-ChildItem -Recurse -Filter "*.png" | foreach { if ($_.Name -match '\wy.png') { magick.exe $_.Name -rotate 180 $_.Name  } }
+	// Pasar de panorama a cubica: https://jaxry.github.io/panorama-to-cubemap/
+	skbfDay.emplace_back("assets/Textures/Skybox/Day/nx.png");
+	skbfDay.emplace_back("assets/Textures/Skybox/Day/px.png");
+	skbfDay.emplace_back("assets/Textures/Skybox/Day/ny.png");
+	skbfDay.emplace_back("assets/Textures/Skybox/Day/py.png");
+	skbfDay.emplace_back("assets/Textures/Skybox/Day/nz.png");
+	skbfDay.emplace_back("assets/Textures/Skybox/Day/pz.png");
+	skyboxDay = Skybox(skbfDay);
 
-	skybox = Skybox(skyboxFaces);
+	skbfNight.emplace_back("assets/Textures/Skybox/Night/nx.png");
+	skbfNight.emplace_back("assets/Textures/Skybox/Night/px.png");
+	skbfNight.emplace_back("assets/Textures/Skybox/Night/ny.png");
+	skbfNight.emplace_back("assets/Textures/Skybox/Night/py.png");
+	skbfNight.emplace_back("assets/Textures/Skybox/Night/nz.png");
+	skbfNight.emplace_back("assets/Textures/Skybox/Night/pz.png");
+	skyboxNight = Skybox(skbfNight);
 
-	Audio::AudioDevice::GetInstance();
+	skyBoxCurrent = &skyboxDay;
+	// endregion
 
+	matMetal = Model::Material(256.0f, 256);
 	Material_brillante = Model::Material(4.0f, 256);
 	Material_opaco = Model::Material(0.3f, 4);
 
 	// Constantes para uniforms
 	GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess, uTexOffset, uColor;
-	glm::mat4 projection = glm::perspective(45.0f, (GLfloat) mainWindow.getBufferWidth() / (GLfloat) mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 
 	Utils::ModelMatrix handler(glm::mat4(1.0f));
 	glm::mat4 model(1.0f);
-	glm::mat4 aux(1.0f);
-	glm::mat4 modelaux(1.0);
-	glm::mat4 modelaux2(1.0);
-	glm::mat4 modelaux3(1.0);
+	glm::mat4 modelaux(1.0f);
+	glm::mat4 modelaux2(1.0f);
+	glm::mat4 modelaux3(1.0f);
 	glm::vec3 color(1.0f, 1.0f, 1.0f);
 	glm::vec2 toffset = glm::vec2(0.0f, 0.0f);
-	
-	//variables para animacion
-	float rotOffPico=3.5;
-	float escOffPico = .01;
-	float rotPico1=0;
-	float rotPicoZ1 = 0;
-	float escPico1 = 0;
-	float rotPico2 = 0;
-	float rotPicoZ2 = 0;
-	float escPico2 = 0;
-	float rotPico3 = 0;
-	float rotPicoZ3 = 0;
-	float escPico3 = 0;
-	
-	float movXCanica = 0;
-	float movYCanica = 0;
-	float movZCanica = 0;
-	float movXOffCanica = 0.4;
-	float movYOffCanica = 0.06;
-	float movZOffCanica = 0.2;
-	float movYImpulso = 0.0524;
-	float movXImpulso = 0.5;
-	float rotXCanica = 0.0;
-	float rotZCanica = 0.0;
-	float rotOffCanica = 1.5;
-	int BCan = 0;//bandera canica
 
-	float XN =0;
-	float YN =0; 
-	float ZN =0;
-	float ZA = 0;
-	float YA = 0;
-	float XA = 0;
-	float ZAn = 0;
-	float YAn = 0;
-	float XAn = 0;
-	float t = 0;
-	float i = 0;
 	// modelos
 	auto maquinaPinball = models[MODELS::MAQUINA_PINBALL];
+	auto cristal = models[MODELS::MAQUINA_CRISTAL];
 	auto flipper = models[MODELS::FLIPPER];
+	auto marbleKf = models[MODELS::MARBLE];
+	auto resorte = models[MODELS::RESORTE];
+	auto lever = models[MODELS::PALANCA];
+	auto triangle = models[MODELS::TRIANGLE];
 	auto Nora = models[MODELS::NORA];
-	auto Muneco = models[MODELS::MUNECO];
-	auto PicoP = models[MODELS::PICOP];
-	auto PicoM = models[MODELS::PICOM];
 	auto PicoG = models[MODELS::PICOG];
-	auto Canica = models[MODELS::CANICA];
-	auto Base = models[MODELS::BASE];//
+	auto PicoM = models[MODELS::PICOM];
+	auto Muneco = models[MODELS::MUNECO];
+
 	// Shaders
-	auto shaderLight = shaders[Shader::ShaderTypes::LIGHT_SHADER];
-
-	//animaciones
-	Animation CanicaAS;
-	CanicaAS
-	    .addCondition(//activar la palanca del resorte y dejar presionado
-	        [](float delta) -> bool
-	        { return mainWindow.getStartAnimacionCanica(); })
-	    .addCondition(
-	        [&movZCanica, &movZOffCanica, &rotXCanica, &rotOffCanica, &BCan](float delta) -> bool
-	        {
-				if (BCan==0) {
-					if (movZCanica < 29 )
-					{
-						movZCanica += movZOffCanica * delta;
-						rotXCanica += rotOffCanica * delta;
-						return false;
-			        }
-					else {
-				        BCan = 1;
-				        return false;
-					}
-				}
-			    else
-				    return true; })
-		.addCondition(//soltar palanca pendiente
-	        [](float delta) -> bool
-	        {return mainWindow.getStartAnimacionCanica(); })
-		.addCondition(//llega a la parte de arriba
-	        [&movZCanica, &movZOffCanica, &movXCanica, &movYCanica, &movXImpulso, &movYImpulso, &rotZCanica, &rotXCanica, &rotOffCanica, &BCan](float delta) -> bool
-			{
-				if (movXCanica < 100 && BCan==1)
-				{
-			        movXCanica += movXImpulso * delta;
-			        movYCanica += movYImpulso * delta;
-					rotZCanica += rotOffCanica *delta;
-			        movZOffCanica = 0.23;
-					return false;
-				}
-		        else if (movXCanica > 100 && movXCanica < 125 && movZCanica > 19 && BCan == 1)
-		        {
-			        movXCanica += movXImpulso * delta;
-			        movZCanica -= movZOffCanica * delta;
-			        movYCanica += movYImpulso * delta;
-			        rotZCanica += rotOffCanica * delta;
-			        return false;
-				}
-				else
-					BCan=2;
-					movZOffCanica = 0.38;
-					return true; })
-	    .addCondition(
-	        [&movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &rotXCanica, &rotZCanica, &rotOffCanica, &BCan](float delta) -> bool 
-			{
-				if (movZCanica > 12 && BCan==2) {
-			        movXCanica += 0.06 * delta;
-			        movZCanica -= movZOffCanica *.5 * delta;
-					if (movYCanica > 57) {
-						movYCanica -= 0.08 * delta;
-					}
-					rotXCanica += rotOffCanica * delta;
-		        }
-		        else if (movXCanica > 106 && BCan == 2)
-		        {
-					movXCanica -= movXOffCanica * delta;
-			        movZCanica -= movZOffCanica * delta;
-			        if (movYCanica > 11)
-			        {
-				        movYCanica -= 0.08 * delta;
-			        }
-			        rotZCanica += rotOffCanica * delta;
-				}
-				else
-			        BCan=3;
-					return true; })
-	    .addCondition(
-	        [&rotZCanica, &rotOffCanica, &movXCanica, &movXOffCanica, &movYCanica, &movYOffCanica, &movZCanica, &movZOffCanica, &BCan](float delta) -> bool
-	        {
-				movXOffCanica=0.7;
-				if (BCan==3) {
-					if (movYCanica > 10)
-			        {
-				        movYCanica -= 0.1 * delta;
-			        }
-					if (movXCanica > 95 ) {
-						movXCanica -= movXOffCanica * delta;
-						movZCanica -= movZOffCanica *.8 * delta;
-						rotZCanica -= rotOffCanica * delta;
-					}else if (movXCanica > 90 && movXCanica < 95) {
-				        movXOffCanica = 1.0;
-				        movXCanica -= movXOffCanica * delta;
-			        }
-			        else
-				        BCan = 4; 
-		        }
-				else
-					return true; })
-	    .addCondition( // activa pico
-	        [&i,&BCan](float delta) -> bool
-				{ 
-				if (BCan == 4) {
-					if (i<3){
-					i += 12.0 * delta;
-					printf("i es: %f \n", i);
-			        }
-					else {
-						i = 10;
-						mainWindow.setStartAnimacionPico3TRUE();
-						BCan = 5;
-				        printf("paso por A \n");
-					}
-				}
-		        else if (BCan==5)
-				{
-			        printf("paso por b \n");
-			        return true;
-				}
-				return mainWindow.getStartAnimacionCanica(); })
-	    .addCondition(
-	        [&XN, &YN, &ZN, &XA, &YA, &ZA, &XAn, &YAn, &ZAn, &BCan, &t](float delta) -> bool
-	        {
-		        if (BCan == 5)
-		        {
-			        printf("paso por c \n");
-					XN = 20.0;
-					YN = 56.0;
-				    ZN = -5.0;
-				    XAn = 12.0;
-				    YAn = 55.35;
-				    ZAn = 4;
-			        BCan = 6;
-				}
-		        else if (t < 1 &&BCan==6)
-		        {
-			        //i = 1;
-			        XA =  ((1 - t) * XAn + t * XN);//78.0
-					YA =  ((1 - t) * YAn + t * YN);//-45.5
-					ZA =  ((1 - t) * ZAn + t * ZN);//-7.5
-			        t += 0.1;
-			        printf("%f\n", t);
-			        printf("%f, %f, %f \n", XA,YA,ZA);
-				}
-		        else
-					return true;
-	        })
-		.prepare();
-
-	Animation PicoJerarquia1;
-	PicoJerarquia1
-		.addCondition(
-	     [](float delta) -> bool
-		 { return mainWindow.getStartAnimacionPico1(); })
-		.addCondition(
-	        [&rotOffPico, &rotPico1, &rotPicoZ1, &escOffPico, &escPico1](float delta) -> bool
-	        {
-				pointLights.toggleLight(1,true);//luces se prende
-				if (rotPico1 < 720)
-			    {
-			        if (rotPicoZ1 < 6 && rotPico1<70)
-			        {
-				        rotPicoZ1 +=10* escOffPico * delta;
-					}
-				    rotPico1 += rotOffPico * delta;
-					if (escPico1 < 2.2) {
-				        escPico1 += escOffPico * delta;
-					}
-			        if (rotPicoZ1 > 6 && rotPico1 > 650)
-			        {
-				        rotPicoZ1 -= 10 * escOffPico * delta;
-			        }
-
-				    return false;
-			    }
-			    else
-			        rotPicoZ1 = 0;
-				    return true;}
-		)
-		.prepare();
-	Animation PicoJerarquia2;
-	PicoJerarquia2
-	    .addCondition(
-	        [](float delta) -> bool
-	        { return mainWindow.getStartAnimacionPico2(); })
-	    .addCondition(
-	        [&rotOffPico, &rotPico2, &rotPicoZ2, &escOffPico, &escPico2](float delta) -> bool
-	        {
-				pointLights.toggleLight(2,true);//luces se prende
-				if (rotPico2 < 720)
-			    {
-			        if (rotPicoZ2 < 6 && rotPico2<70)
-			        {
-				        rotPicoZ2 +=10* escOffPico * delta;
-					}
-				    rotPico2 += rotOffPico * delta;
-					if (escPico2 < 2.2) {
-				        escPico2 += escOffPico * delta;
-					}
-			        if (rotPicoZ2 > 6 && rotPico2 > 650)
-			        {
-				        rotPicoZ2 -= 10 * escOffPico * delta;
-			        }
-
-				    return false;
-			    }
-			    else
-			        rotPicoZ2 = 0;
-				    return true; })
-	    .prepare();
-
-	Animation PicoJerarquia3;
-	PicoJerarquia3
-	    .addCondition(
-	        [](float delta) -> bool
-	        { return mainWindow.getStartAnimacionPico3(); })
-	    .addCondition(
-	        [&rotOffPico, &rotPico3, &rotPicoZ3, &escOffPico, &escPico3](float delta) -> bool
-	        {
-				pointLights.toggleLight(3,true);//luces se prende
-				if (rotPico3 < 720)
-			    {
-			        if (rotPicoZ3 < 6 && rotPico3<70)
-			        {
-				        rotPicoZ3 +=10* escOffPico * delta;
-					}
-				    rotPico3 += rotOffPico * delta;
-					if (escPico3 < 2.2) {
-				        escPico3 += escOffPico * delta;
-					}
-			        if (rotPicoZ3 > 6 && rotPico3 > 650)
-			        {
-				        rotPicoZ3 -= 10 * escOffPico * delta;
-			        }
-
-				    return false;
-			    }
-			    else
-			        rotPicoZ3 = 0;
-				    return true; })
-	    .prepare();
+	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
 
 	while (!mainWindow.shouldClose())
 	{
@@ -596,31 +641,45 @@ int main()
 		deltaTime = now - lastTime;
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
-		
+
 		glfwPollEvents();
 		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
 
 		updateFlippers();
-		if (mainWindow.getStartAnimacionPico1() == false) {
-			pointLights.toggleLight(1,false);//luces apagadas de los picos
-		}
-		if (mainWindow.getStartAnimacionPico2() == false)
-		{
-			pointLights.toggleLight(2, false); // luces apagadas de los picos
-		}
-		if (mainWindow.getStartAnimacionPico3() == false)
-		{
-			pointLights.toggleLight(3, false); // luces apagadas de los picos
-		}
+		marblePreLaunch.update(deltaTime);
 		PicoJerarquia1.update(deltaTime);
 		PicoJerarquia2.update(deltaTime);
 		PicoJerarquia3.update(deltaTime);
-		CanicaAS.update(deltaTime);
+		if (timer <= glfwGetTime())
+		{
+			if (ambLight == AMB_LIGHTS::DAY)
+			{
+				skyBoxCurrent = &skyboxNight;
+				ambLight = AMB_LIGHTS::NIGHT;
+			}
+			else
+			{
+				skyBoxCurrent = &skyboxDay;
+				ambLight = AMB_LIGHTS::DAY;
+			}
+			timer = (float) glfwGetTime() + 5;
+		}
 
+		if (captureMode)
+			marbleEntity.update(nullptr, deltaTime);
+		else
+		{
+			if (marbleKfAnim.isPlaying())
+				marbleKfAnim.play();
+			else
+				marbleKfAnim.resetAnimation();
+		}
+
+		// region Shader settings
 		// Configuración del shader
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		skybox.DrawSkybox(activeCamera->calculateViewMatrix(), projection);
+		skyBoxCurrent->DrawSkybox(activeCamera->calculateViewMatrix(), mainWindow.getProjectionMatrix());
 		shaderLight->useProgram();
 		uModel = shaderLight->getUniformModel();
 		uProjection = shaderLight->getUniformProjection();
@@ -632,30 +691,55 @@ int main()
 		uShininess = shaderLight->getUniformShininess();
 
 		// Camara
-		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(mainWindow.getProjectionMatrix()));
 		glUniformMatrix4fv((GLint) uView, 1, GL_FALSE, glm::value_ptr(activeCamera->calculateViewMatrix()));
 		auto camPos = activeCamera->getCameraPosition();
 		glUniform3f((GLint) uEyePosition, camPos.x, camPos.y, camPos.z);
 
 		// Iluminacion
 		shaderLight->SetDirectionalLight(&directionalLights[ambLight]);
-		shaderLight->SetSpotLights(nullptr, 0);
+		shaderLight->SetSpotLights(spotLights.getLightArray(), spotLights.getCurrentCount());
 		shaderLight->SetPointLights(pointLights.getLightArray(), pointLights.getCurrentCount());
-		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);
 
+		if (activarP1 == false)
+		{
+			pointLights.toggleLight(0, false); // luces apagadas de los picos
+		}
+		if (activarP2 == false)
+		{
+			pointLights.toggleLight(1, false); // luces apagadas de los picos
+		}
+		if (activarP3 == false)
+		{
+			pointLights.toggleLight(2, false);
+		}
 		toffset = {0.0f, 0.0f};
 		color = {1.0f, 1.0f, 1.0f};
+		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);
 
 		glUniform2fv((GLint) uTexOffset, 1, glm::value_ptr(toffset));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
-
+		// endregion Shader settings
+		
+		// Para tomar las coordenadas de Blender
+		// y <-> z
+		// z -> -z
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(0.0, -1.0, 0.0)
+		            .translate(0.0, 0.0, 0.0)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 		maquinaPinball.render();
 
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(leverPos)
+		            .rotateZ(110)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		lever.render();
+
+		// region Flippers
+		// Fliper izquierdo
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(-58, 48, 10)
 		            .rotateZ(6)
@@ -663,64 +747,55 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		flipper.render();
-		
+		// Flipper derecho
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(-58, 48, -19)
-		            .rotateZ(-6)
+		            .rotateZ(6)
 		            .rotateY(180 + leftFlipperRotation)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		flipper.render();
-
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		// Flipper superior
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(26, 61, 19)
-		            .scale(2.0)
-		            .rotateY(-90)
-		            .rotateX(6)
+		            .translate(1.637, 54, -13.314)
+		            .rotateZ(6)
+		            .rotateY(180 + upFlipperRotation)
+		            .scale(0.586)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		Nora.render();
-		glDisable(GL_BLEND);
+		flipper.render();
+		// endregion Flippers
 
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(8, 55, -26)
-		            .scale(0.4)
-		            .rotateZ(-6)
-		            .rotateY(180)
+		            .translate(-43.281, 51.479, -22.837)
+		            .rotateZ(6)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		Muneco.render();
+		triangle.render();
 
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(0, -90, 00)
-		            .scale(30.0)
+		            .translate(-43.281, 51.479, 14.002)
+		            .rotateZ(6)
+		            .scale(1.0f, 1.0f, -1.0f)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		Base.render();
+		triangle.render();
 
-		Material_brillante.UseMaterial(uSpecularIntensity, uShininess);
-		//canica animada simple
+		// region Modelo Jerarquico 1 (art 0-3)
+		// Para tomar las coordenadas de Blender
+		// y <-> z
+		// z -> -z
+		// 1er pico animado
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(-78.0 + movXCanica + XA, 45.5 + movYCanica+YA, 7.5 + movZCanica+ZA)
-		            .rotateX(rotXCanica)
-		            .rotateZ(6+rotZCanica)
-		            .getMatrix();
-		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		Canica.render();
-
-		//1er pico animado
-		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(15.5, 57.35, -10)
+		            .translate(15.5, 58.35, -10)
 		            .rotateY(rotPico1)
-		            .saveActualState(modelaux)// modelaux = model;   
+		            .saveActualState(modelaux) // modelaux = model;
 		            .scale(2.2)
 		            .rotateZ(6 - rotPicoZ1)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoG.render();
-		//1
+		// 1
 		model = handler.setMatrix(modelaux)
 		            .translate(-2.5, 1.55, 0)
 		            .scale(escPico1)
@@ -728,16 +803,16 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
-		//2
+		// 2
 		model = handler.setMatrix(modelaux)
 		            .translate(.5, 3.55, +2)
-					.rotateZ(-8)
+		            .rotateZ(-8)
 		            .rotateX(48)
 		            .scale(escPico1)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
-		//3
+		// 3
 		model = handler.setMatrix(modelaux)
 		            .translate(.5, 3.55, -2)
 		            .rotateZ(-8)
@@ -746,7 +821,7 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
-		//4
+		// 4
 		model = handler.setMatrix(modelaux)
 		            .translate(-0.7, 5.55, +.5)
 		            .scale(escPico1)
@@ -755,7 +830,7 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
-		//5
+		// 5
 		model = handler.setMatrix(modelaux)
 		            .translate(-0.5, 5.55, -.5)
 		            .scale(escPico1)
@@ -764,9 +839,9 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
-		//2do pico
+		// 2do pico
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(31, 61.1, -26)
+		            .translate(31, 62.1, -26)
 		            .rotateY(rotPico2)
 		            .saveActualState(modelaux2) // modelaux = model;
 		            .scale(2.2)
@@ -821,7 +896,7 @@ int main()
 
 		// 3do pico
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(6.5, 56.35, 6)
+		            .translate(6.5, 57.35, 6)
 		            .rotateY(rotPico3)
 		            .saveActualState(modelaux3) // modelaux = model;
 		            .scale(2.2)
@@ -873,12 +948,77 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
+		// endregion
+
+		// region Entity Marble
+		matMetal.UseMaterial(uSpecularIntensity, uShininess);
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(captureMode ? marbleEntity.getPosition() : marbleKfAnim.getPosition() + marbleKfAnim.getMovement())
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		marbleKf.render();
+		// endregion Entity Marble
+		//if ()
+		
+		// region Resorte
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(-83.614f, 45.123f, 36.931f)
+		            .rotateZ(-76)
+		            .scale(0.582)
+		            .scale(1.0f, expandeResorte, 1.0f)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		resorte.render();
+		// endregion Resorte
+		
+		//region muñeco de hielo
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(8, 55, -26)
+		            .scale(0.4)
+		            .rotateZ(-6)
+		            .rotateY(180)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		Muneco.render();
+		//endregion muñeco de nieve
+
+		// region ALPHA
+#ifdef AVATAR
+		shaders[ShaderTypes::BONE_SHADER]->useProgram();
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		avatar.render();
+#endif
+
+		// region Nora
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(26, 61, 19)
+		            .scale(2.0)
+		            .rotateY(-90)
+		            .rotateX(6)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		Nora.render();
+		glDisable(GL_BLEND);
+		// endregion
+		
+		// region Cristal
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		model = glm::mat4(1.0f);
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		cristal.render();
+		glDisable(GL_BLEND);
+		// endregion
 
 		glUseProgram(0);
 		mainWindow.swapBuffers();
 	}
-
 	Audio::AudioDevice::Terminate();
+	exitProgram();
 
 	return 0;
 }

@@ -3,6 +3,7 @@
 #include "GlobalConstants.h"
 #include "Shader.h"
 #include "model/Mesh.h"
+#include "Utils/ImageUtils.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>

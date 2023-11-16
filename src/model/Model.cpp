@@ -113,24 +113,29 @@ void Model::render()
 		meshList[i]->render();
 	}
 }
-void Model::clear()
-{
-	for (auto &mesh : meshList)
-	{
-		if (!mesh) continue;
-		delete mesh;
-		mesh = nullptr;
-	}
-
-	for (auto &texture : textureList)
-	{
-		if (!texture) continue;
-		delete texture;
-		texture = nullptr;
-	}
-}
+// void Model::clear()
+//{
+//	for (auto &mesh : meshList)
+//	{
+//		if (mesh) continue;
+//		delete mesh;
+//	}
+//
+//	for (auto &texture : textureList)
+//	{
+//		if (!texture) continue;
+//		delete texture;
+//		texture = nullptr;
+//	}
+// }
 Model::~Model()
 {
-	clear();
+#if DOUBLE_FREE_ERROR
+	for (auto mesh : meshList)
+		delete mesh;
+
+	for (auto texture : textureList)
+		delete texture;
+#endif
 }
 } // namespace Model

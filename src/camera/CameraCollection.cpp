@@ -29,4 +29,9 @@ Camera *CameraCollection::switchCamera()
 	          << "\t==== Pitch: " << activeCamera->getPitch() << " | Yaw: " << activeCamera->getYaw() << "\n";
 	return activeCamera;
 }
+CameraCollection::~CameraCollection()
+{
+	for (auto &cam : cameras)
+		delete cam;
+}
 } // namespace Camera
