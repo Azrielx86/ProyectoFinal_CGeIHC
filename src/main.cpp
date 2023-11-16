@@ -62,6 +62,7 @@ Model::Material Material_opaco;
 float timer = 0.0f;
 
 std::unordered_map<int, Shader *> shaders;
+Animation::Animation CanicaAS;
 Animation::Animation PicoJerarquia1;
 Animation::Animation PicoJerarquia2;
 Animation::Animation PicoJerarquia3;
@@ -97,6 +98,22 @@ float escPico2 = 0;
 float rotPico3 = 0;
 float rotPicoZ3 = 0;
 float escPico3 = 0;
+//para la anim de la caanica (reaciendo)
+bool activarCanicaSimple = false;
+float movXCanica = 0;
+float movYCanica = 0;
+float movZCanica = 0;
+float movXOffCanica = 0.4;
+float movYOffCanica = 0.06;
+float movZOffCanica = 0.2;
+float movYImpulso = 0.0524;
+float movXImpulso = 0.5;
+float rotXCanica = 0.0;
+float rotZCanica = 0.0;
+float rotOffCanica = 1.5;
+int BCan = 0; // bandera canica
+float t = 0;
+float i = 0;
 
 // #define MJ_BASE_ROT(n) glm::vec3 MjBaseRot##n = {0.0f, 0.0f, 0.0f};
 //  n = Numero de articulacion
@@ -112,10 +129,6 @@ MJ_POS(0)
 MJ_POS(1)
 MJ_POS(2)
 MJ_POS(3)
-
-// MJ_BASE_ROT(1)
-// MJ_BASE_ROT(2)
-
 // endregion
 
 void InitKeymaps()
@@ -142,18 +155,25 @@ void InitKeymaps()
 		        PicoJerarquia1.start();
 	        })
 	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_O,
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_U,
 	        []() -> void
 	        {
 		        activarP2 = true;
 		        PicoJerarquia2.start();
 	        })
 	    .addCallback(
+			KEYMAPS::FREE_CAMERA, GLFW_KEY_O,
+	        []() -> void
+	        {
+				activarP3 = true;
+				PicoJerarquia3.start();
+	        })
+	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_P,
 	        []() -> void
 	        {
-		        activarP3 = true;
-		        PicoJerarquia3.start();
+		        activarCanicaSimple = true;
+		        CanicaAS.start();
 	        })
 	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_T,
@@ -194,16 +214,6 @@ void InitKeymaps()
 	        {
 		        pointLights.toggleLight(1, !pointLights.getLightStatus(1));
 	        });
-	/*
-	Input::KeyboardInput::GetInstance()
-	    .createKeymap(KEYMAPS::KEYFRAME_CAPTURE)
-	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_R,
-	        []() -> void
-	        {
-		        activarP1 = 1;
-				//activeCamera = cameras.switchCamera();
-	        });*/
 
 	Input::KeyboardInput::GetInstance()
 	    .createKeymap(KEYMAPS::KEYFRAME_CAPTURE)
@@ -500,6 +510,125 @@ void InitAnimations()
 			        rotPicoZ3 = 0;
 				    return true; })
 	    .prepare();
+	//animacion canica simple (version anterior)
+	CanicaAS
+	    .addCondition( // resorte y dejar presionado [pendiente]
+	        [](float delta) -> bool
+	        { return activarCanicaSimple; })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+				if (BCan==0) {
+					if (movZCanica < 29 )
+					{
+						movZCanica += movZOffCanica * delta;
+						rotXCanica += rotOffCanica * delta;
+						return false;
+			        }
+					else {
+				        BCan = 1;
+				        return false;
+					}
+				}
+			    else
+				    return true; })
+	    .addCondition( // soltar palanca [pendiente]
+	        [](float delta) -> bool
+	        { return true; })
+	    .addCondition( // llega a la parte de arriba
+	        [](float delta) -> bool
+	        {
+				if (movXCanica < 100 && BCan==1)
+				{
+			        movXCanica += movXImpulso * delta;
+			        movYCanica += movYImpulso * delta;
+					rotZCanica += rotOffCanica *delta;
+			        movZOffCanica = 0.23;
+					return false;
+				}
+		        else if (movXCanica > 100 && movXCanica < 125 && movZCanica > 19 && BCan == 1)
+		        {
+			        movXCanica += movXImpulso * delta;
+			        movZCanica -= movZOffCanica * delta;
+			        movYCanica += movYImpulso * delta;
+			        rotZCanica += rotOffCanica * delta;
+			        return false;
+				}
+				else
+					BCan=2;
+					movZOffCanica = 0.38;
+					return true; })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+				if (movZCanica > 12 && BCan==2) {
+			        movXCanica += 0.06 * delta;
+			        movZCanica -= movZOffCanica *.5 * delta;
+					if (movYCanica > 57) {
+						movYCanica -= 0.08 * delta;
+					}
+					rotXCanica += rotOffCanica * delta;
+		        }
+		        else if (movXCanica > 106 && BCan == 2)
+		        {
+					movXCanica -= movXOffCanica * delta;
+			        movZCanica -= movZOffCanica * delta;
+			        if (movYCanica > 11)
+			        {
+				        movYCanica -= 0.08 * delta;
+			        }
+			        rotZCanica += rotOffCanica * delta;
+				}
+				else
+			        BCan=3;
+					return true; })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+				movXOffCanica=0.7;
+				if (BCan==3) {
+					if (movYCanica > 10)
+			        {
+				        movYCanica -= 0.1 * delta;
+			        }
+					if (movXCanica > 95 ) {
+						movXCanica -= movXOffCanica * delta;
+						movZCanica -= movZOffCanica *.8 * delta;
+						rotZCanica -= rotOffCanica * delta;
+					}else if (movXCanica > 90 && movXCanica < 95) {
+				        movXOffCanica = 1.0;
+				        movXCanica -= movXOffCanica * delta;
+			        }
+			        else
+				        BCan = 4; 
+		        }
+				else
+					return true; })
+	    .addCondition( // activa pico
+	        [](float delta) -> bool
+	        { 
+				if (BCan == 4) {
+					if (i<3){
+					i += 12.0 * delta;
+					printf("i es: %f \n", i);
+			        }
+					else {
+						i = 10;
+						activarP3 = true;
+						PicoJerarquia3.start();
+				    
+						BCan = 5;
+				        printf("paso por A \n");
+					}
+				}
+		        else if (BCan==5)
+				{
+			        printf("paso por b \n");
+			        return true;
+				}
+				//return mainWindow.getStartAnimacionCanica(); 
+			})
+	    .prepare();
 	//
 	MjPos_0 = {0.0f, 2.9f, -3.2f};
 	//	modeloJerarquico1
@@ -650,6 +779,7 @@ int main()
 		PicoJerarquia1.update(deltaTime);
 		PicoJerarquia2.update(deltaTime);
 		PicoJerarquia3.update(deltaTime);
+		CanicaAS.update(deltaTime);
 		if (timer <= glfwGetTime())
 		{
 			if (ambLight == AMB_LIGHTS::DAY)
@@ -954,6 +1084,15 @@ int main()
 		matMetal.UseMaterial(uSpecularIntensity, uShininess);
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(captureMode ? marbleEntity.getPosition() : marbleKfAnim.getPosition() + marbleKfAnim.getMovement())
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		marbleKf.render();
+
+		matMetal.UseMaterial(uSpecularIntensity, uShininess);
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(-78.0 + movXCanica, 45.5 + movYCanica, 7.5 + movZCanica) //+ XA+YA+ZA
+		            .rotateX(rotXCanica)
+		            .rotateZ(6 + rotZCanica)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		marbleKf.render();
