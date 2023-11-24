@@ -128,6 +128,10 @@ add_executable(ProyectoFinal_CGeIHC
         src/Entity/SimpleEntity.h
         src/Animation/KeyFrameAnimation.cpp
         src/Animation/Animation.cpp
+        src/model/Bone.cpp
+        src/model/Bone.h
+        src/Utils/Assimp2Glm.cpp
+        src/Utils/Assimp2Glm.h
 )
 
 message(STATUS "Copiando archivos de shader")
