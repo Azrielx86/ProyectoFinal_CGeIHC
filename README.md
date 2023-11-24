@@ -6,7 +6,7 @@ Facultad de Ingeniería - Semestre 2024-1
 
 # Configuración del entorno recomendado
 
-Estas herramientas son para Windows (y opcionalmente Linux).
+Estas herramientas son para Windows y Linux.
 
 - Compilador: <a href="https://github.com/llvm/llvm-project/releases/tag/llvmorg-17.0.3" href="_blank">Clang (LLVM 17)</a>
 - Herramienta de compilación: <a href="https://cmake.org/download/" target="_blank">CMake</a>
@@ -14,12 +14,12 @@ Estas herramientas son para Windows (y opcionalmente Linux).
 
 Instalación de paquetes de vcpkg (opcionalmente se pueden instalar las versiones x86)
 
-    vcpkg install assimp:x64-windows glew:x64-windows glfw3:x64-windows glm:x64-windows openal-soft:x64-windows freealut:x64-windows
+    vcpkg install assimp:x64-windows glew:x64-windows glfw3:x64-windows glm:x64-windows openal-soft:x64-windows freealut:x64-windows boost-format:x64-windows
     vcpkg integrate install
 
 Para las versiones x86
 
-    vcpkg install assimp:x86-windows glew:x86-windows glfw3:x86-windows glm:x86-windows openal-soft:x86-windows freealut:x86-windows
+    vcpkg install assimp:x86-windows glew:x86-windows glfw3:x86-windows glm:x86-windows openal-soft:x86-windows freealut:x86-windows boost-format:x86-windows
     vcpkg integrate install
 
 vcpkg también se puede integrar a Visual Studio para utilizarlo con MSVC.

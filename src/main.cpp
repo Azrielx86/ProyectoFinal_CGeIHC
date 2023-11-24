@@ -53,7 +53,10 @@ glm::vec3 leverPos = {-85.369f, 43.931f, 36.921f};
 const glm::vec3 leverEnd = {-90.089f, 42.213f, 36.921f};
 const glm::vec3 leverDirection = glm::normalize(leverEnd - leverPos);
 // const float movLeverDistance = glm::length(leverEnd - leverPos);
-Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/2b.obj"));
+Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/Walking.fbx"));
+
+// Constantes para uniforms
+GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess, uTexOffset, uColor;
 
 Model::Material matMetal;
 Model::Material Material_brillante;
@@ -273,9 +276,7 @@ void InitModels()
 	    .addModel(MODELS::POD, Utils::PathUtils::getModelsPath().append("/pod.obj"))
 	    .addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/ExtraModels/Building.obj"))
 	    .loadModels();
-#ifdef AVATAR
 	avatar.loadModel();
-#endif
 }
 
 void InitLights()
@@ -347,14 +348,14 @@ void InitAnimations()
 		                  leverPos = {-85.369f, 43.931f, 36.921f};
 		                  return true; })
 	    .prepare();
-//
+	//
 	MjPos_0 = {0.0f, 2.9f, -3.2f};
-//	modeloJerarquico1
-//	    .addCondition([](float) -> bool
-//	                               { 
-//		                  MjRot_0 = -90;
-//	                  })
-//	    .prepare();
+	//	modeloJerarquico1
+	//	    .addCondition([](float) -> bool
+	//	                               {
+	//		                  MjRot_0 = -90;
+	//	                  })
+	//	    .prepare();
 }
 
 void updateFlippers()
@@ -402,6 +403,19 @@ void exitProgram()
 {
 	for (auto &shader : shaders)
 		delete shader.second;
+}
+
+void ChangeShader(Shader *shader)
+{
+	shader->useProgram();
+	uModel = shader->getUniformModel();
+	uProjection = shader->getUniformProjection();
+	uView = shader->getUniformView();
+	uEyePosition = shader->getUniformEyePosition();
+	uColor = shader->getUniformColor();
+	uTexOffset = shader->getUniformTextureOffset();
+	uSpecularIntensity = shader->getUniformSpecularIntensity();
+	uShininess = shader->getUniformShininess();
 }
 
 int main()
@@ -455,9 +469,6 @@ int main()
 	Material_brillante = Model::Material(4.0f, 256);
 	Material_opaco = Model::Material(0.3f, 4);
 
-	// Constantes para uniforms
-	GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess, uTexOffset, uColor;
-
 	Utils::ModelMatrix handler(glm::mat4(1.0f));
 	glm::mat4 model(1.0f);
 	glm::mat4 modelaux(1.0f);
@@ -497,7 +508,7 @@ int main()
 
 		updateFlippers();
 		marblePreLaunch.update(deltaTime);
-		
+
 		if (timer <= glfwGetTime())
 		{
 			if (ambLight == AMB_LIGHTS::DAY)
@@ -528,15 +539,7 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		skyBoxCurrent->DrawSkybox(activeCamera->calculateViewMatrix(), mainWindow.getProjectionMatrix());
-		shaderLight->useProgram();
-		uModel = shaderLight->getUniformModel();
-		uProjection = shaderLight->getUniformProjection();
-		uView = shaderLight->getUniformView();
-		uEyePosition = shaderLight->getUniformEyePosition();
-		uColor = shaderLight->getUniformColor();
-		uTexOffset = shaderLight->getUniformTextureOffset();
-		uSpecularIntensity = shaderLight->getUniformSpecularIntensity();
-		uShininess = shaderLight->getUniformShininess();
+		ChangeShader(shaders[ShaderTypes::BONE_SHADER]);
 
 		// Camara
 		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(mainWindow.getProjectionMatrix()));
@@ -557,7 +560,7 @@ int main()
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 
 		// endregion Shader settings
-
+#ifdef NO_SCENARIO
 		// Para tomar las coordenadas de Blender
 		// y <-> z
 		// z -> -z
@@ -762,7 +765,8 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		robot.render();
-
+#endif
+//		ChangeShader(shaders[ShaderTypes::BONE_SHADER]);
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(6.4173, 66.183f + (float) (1.5f * sin(glfwGetTime())), -25.935)
 		            .rotateY(-131.41)
@@ -772,18 +776,21 @@ int main()
 		pod.render();
 
 		// region ALPHA
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-#ifdef AVATAR
-		shaders[ShaderTypes::BONE_SHADER]->useProgram();
+		// region AVATAR
+//		shaders[ShaderTypes::BONE_SHADER]->useProgram();
 		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(0, 60, 0)
+		            .scale(2)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		avatar.render();
-#endif
+//		ChangeShader(shaders[ShaderTypes::LIGHT_SHADER]);
+		// endregion
 
 		// region Cristal
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		model = glm::mat4(1.0f);
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		cristal.render();

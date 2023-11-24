@@ -7,6 +7,7 @@
 
 #include "../Utils/ImageUtils.h"
 #include "../Utils/PathUtils.h"
+#include <boost/format.hpp>
 #include "BoneMesh.h"
 #include "Texture.h"
 #include <assimp/Importer.hpp>
@@ -21,6 +22,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 
 namespace Model
 {
@@ -51,7 +53,7 @@ class BoneModel
 	static void SetVertexBoneData(Vertex& vertex, int boneID, float weight);
 	void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
 	
-	static inline glm::mat4 ConvertMatrixToGLMFormat(const aiMatrix4x4& from)
+	static inline glm::mat4 AssimpMat2GlmMat(const aiMatrix4x4& from)
 	{
 		glm::mat4 to;
 		//the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
