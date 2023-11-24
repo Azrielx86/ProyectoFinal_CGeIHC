@@ -568,7 +568,7 @@ int main()
 		glUniform2fv((GLint) uTexOffset, 1, glm::value_ptr(toffset));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 
-#ifdef IGNORE_BASE
+#ifndef IGNORE_BASE
 		// endregion Shader settings
 		// Para tomar las coordenadas de Blender
 		// y <-> z
@@ -795,7 +795,8 @@ int main()
 			shaderLight->setMat4((boost::format("finalBonesMatrices[%d]") % i).str(), transforms[i]);
 
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .scale(0.2)
+		            .translate(-21.7661, 50.5184, -10.7455)
+		            .scale(0.05)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		avatar.render();
