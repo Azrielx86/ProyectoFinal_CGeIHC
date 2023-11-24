@@ -61,8 +61,8 @@ void BoneModel::loadMesh(aiMesh *mesh, const aiScene *scene)
 		if (mesh->mTextureCoords[0])
 		{
 			vertex.TexCoords = {mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y};
-//			vertex.Tangent = {mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z};
-//			vertex.Bitangent = {mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z};
+			//			vertex.Tangent = {mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z};
+			//			vertex.Bitangent = {mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z};
 		}
 		else
 			vertex.TexCoords = {0.0f, 0.0f};
@@ -119,15 +119,16 @@ void BoneModel::loadMaterials(const aiScene *scene)
 		}
 	}
 }
-const std::unordered_map<std::string, BoneInfo> &BoneModel::getMBoneInfoMap() const
+std::unordered_map<std::string, BoneInfo> &BoneModel::getMBoneInfoMap()
 {
 	return m_BoneInfoMap;
 }
 
-int BoneModel::getMBoneCounter() const
+int &BoneModel::getMBoneCounter()
 {
 	return m_BoneCounter;
 }
+
 void BoneModel::setVertexBoneDataToDefault(Vertex &vtx)
 {
 	for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
@@ -140,7 +141,7 @@ void BoneModel::SetVertexBoneData(Vertex &vertex, int boneID, float weight)
 {
 	for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
 	{
-		if (vertex.m_Weights[i] > 0)
+		if (vertex.m_BoneIDs[i] < 0)
 		{
 			vertex.m_Weights[i] = weight;
 			vertex.m_BoneIDs[i] = boneID;
@@ -158,8 +159,7 @@ void BoneModel::ExtractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMe
 		{
 			BoneInfo newBoneInfo{};
 			newBoneInfo.id = m_BoneCounter;
-			newBoneInfo.offset = AssimpMat2GlmMat(
-			    mesh->mBones[boneIndex]->mOffsetMatrix);
+			newBoneInfo.offset = AssimpMat2GlmMat(mesh->mBones[boneIndex]->mOffsetMatrix);
 			m_BoneInfoMap[boneName] = newBoneInfo;
 			boneID = m_BoneCounter;
 			m_BoneCounter++;
@@ -171,12 +171,12 @@ void BoneModel::ExtractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMe
 		}
 		assert(boneID != -1);
 		auto weights = mesh->mBones[boneIndex]->mWeights;
-		int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+		auto numWeights = mesh->mBones[boneIndex]->mNumWeights;
 
 		for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
 		{
-			int vertexId = weights[weightIndex].mVertexId;
-			float weight = weights[weightIndex].mWeight;
+			auto vertexId = weights[weightIndex].mVertexId;
+			auto weight = weights[weightIndex].mWeight;
 			assert(vertexId <= vertices.size());
 			SetVertexBoneData(vertices[vertexId], boneID, weight);
 		}

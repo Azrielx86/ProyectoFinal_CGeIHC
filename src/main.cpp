@@ -16,6 +16,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Animation/Animation.h"
+#include "Animation/BoneAnimation.h"
+#include "Animation/BoneAnimator.h"
 #include "Animation/KeyFrameAnimation.h"
 #include "Audio/AudioDevice.h"
 #include "Entity/SimpleEntity.h"
@@ -31,6 +33,7 @@
 #include "model/BoneModel.h"
 #include "model/Material.h"
 #include "model/ModelCollection.h"
+#include <boost/format.hpp>
 
 // region Global Variables
 Window mainWindow;
@@ -53,10 +56,10 @@ glm::vec3 leverPos = {-85.369f, 43.931f, 36.921f};
 const glm::vec3 leverEnd = {-90.089f, 42.213f, 36.921f};
 const glm::vec3 leverDirection = glm::normalize(leverEnd - leverPos);
 // const float movLeverDistance = glm::length(leverEnd - leverPos);
-Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/Walking.fbx"));
+Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/2b_catwalk.fbx"));
 
 // Constantes para uniforms
-GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess, uTexOffset, uColor;
+GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess, uTexOffset, uColor, uBonesMatrices;
 
 Model::Material matMetal;
 Model::Material Material_brillante;
@@ -72,6 +75,7 @@ bool mJ1_trigger = false;
 // Posicion numeros: 60.3627, 115.599, -34.7832
 
 float deltaTime = 0.0f;
+float deltaTimeAnim = 0.0f;
 float lastTime = 0.0f;
 const float limitFPS = 1.0f / 60.0f;
 
@@ -493,18 +497,23 @@ int main()
 	auto triangle = models[MODELS::TRIANGLE];
 	auto pod = models[MODELS::POD];
 
+	Animation::BoneAnimation walkAnimation(Utils::PathUtils::getModelsPath().append("/2b_catwalk.fbx"), &avatar);
+	Animation::BoneAnimator avatarAnimator(&walkAnimation);
+
 	// Shaders
-	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
+	auto shaderLight = shaders[ShaderTypes::BONE_SHADER];
 
 	while (!mainWindow.shouldClose())
 	{
 		auto now = (float) glfwGetTime();
 		deltaTime = now - lastTime;
+		deltaTimeAnim = deltaTime;
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
 
 		glfwPollEvents();
 		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
+		avatarAnimator.UpdateAnimation(deltaTimeAnim);
 
 		updateFlippers();
 		marblePreLaunch.update(deltaTime);
@@ -559,8 +568,8 @@ int main()
 		glUniform2fv((GLint) uTexOffset, 1, glm::value_ptr(toffset));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 
+#ifdef IGNORE_BASE
 		// endregion Shader settings
-#ifdef NO_SCENARIO
 		// Para tomar las coordenadas de Blender
 		// y <-> z
 		// z -> -z
@@ -766,7 +775,7 @@ int main()
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		robot.render();
 #endif
-//		ChangeShader(shaders[ShaderTypes::BONE_SHADER]);
+		//		ChangeShader(shaders[ShaderTypes::BONE_SHADER]);
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(6.4173, 66.183f + (float) (1.5f * sin(glfwGetTime())), -25.935)
 		            .rotateY(-131.41)
@@ -780,14 +789,17 @@ int main()
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		// region AVATAR
-//		shaders[ShaderTypes::BONE_SHADER]->useProgram();
+		//		shaders[ShaderTypes::BONE_SHADER]->useProgram();
+		auto transforms = avatarAnimator.GetFinalBoneMatrices();
+		for (int i = 0; i < (int) transforms.size(); i++)
+			shaderLight->setMat4((boost::format("finalBonesMatrices[%d]") % i).str(), transforms[i]);
+
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(0, 60, 0)
-		            .scale(2)
+		            .scale(0.2)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		avatar.render();
-//		ChangeShader(shaders[ShaderTypes::LIGHT_SHADER]);
+		//		ChangeShader(shaders[ShaderTypes::LIGHT_SHADER]);
 		// endregion
 
 		// region Cristal

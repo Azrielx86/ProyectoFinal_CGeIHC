@@ -132,6 +132,10 @@ add_executable(ProyectoFinal_CGeIHC
         src/model/Bone.h
         src/Utils/Assimp2Glm.cpp
         src/Utils/Assimp2Glm.h
+        src/Animation/BoneAnimation.cpp
+        src/Animation/BoneAnimation.h
+        src/Animation/BoneAnimator.cpp
+        src/Animation/BoneAnimator.h
 )
 
 message(STATUS "Copiando archivos de shader")

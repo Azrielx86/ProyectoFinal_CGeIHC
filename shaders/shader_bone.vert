@@ -29,9 +29,9 @@ void main()
     vec4 totalPosition = vec4(0.0f);
     for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++)
     {
-        if(boneIds[i] == -1)
+        if(boneIds[i] == -1) 
             continue;
-        if(boneIds[i] >= MAX_BONES)
+        if(boneIds[i] >= MAX_BONES) 
         {
             totalPosition = vec4(pos,1.0f);
             break;
@@ -39,9 +39,9 @@ void main()
         vec4 localPosition = finalBonesMatrices[boneIds[i]] * vec4(pos,1.0f);
         totalPosition += localPosition * weights[i];
         vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * norm;
-    }
+   }
 
-    gl_Position = projection * view * model * vec4(pos, 1.0);
+    gl_Position = projection * view * model * totalPosition;
     vCol = vec4(0.0, 1.0, 0.0, 1.0f);
     vColor=vec4(color,1.0f);
     TexCoord = tex+toffset;

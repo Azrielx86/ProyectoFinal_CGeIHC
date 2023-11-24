@@ -7,8 +7,8 @@
 
 #include "../Utils/Assimp2Glm.h"
 #include <assimp/anim.h>
-#include <glm/detail/type_quat.hpp>
 #include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <string>
 #include <vector>
@@ -44,12 +44,12 @@ class Bone
 	int m_NumRotations;
 	int m_NumScalings;
 
-	glm::mat4 m_LocalTransform;
+	glm::mat4 m_LocalTransform = glm::mat4 (1.0f);
 	std::string m_Name;
 	int m_ID;
 
   public:
-	Bone(const std::string &name, int Id, const aiNodeAnim *channel);
+	Bone(std::string name, int Id, const aiNodeAnim *channel);
 	void Update(float time);
 	int GetPositionIndex(float time);
 	int GetRotationIndex(float time);
