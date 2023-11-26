@@ -63,6 +63,7 @@ float timer = 0.0f;
 
 std::unordered_map<int, Shader *> shaders;
 Animation::Animation CanicaAS;
+Animation::Animation CanicaAS2;
 Animation::Animation PicoJerarquia1;
 Animation::Animation PicoJerarquia2;
 Animation::Animation PicoJerarquia3;
@@ -85,8 +86,8 @@ float leftFlipperRotation = 0.0f;
 float upFlipperRotation = 0.0f;
 bool captureMode = false;
 float expandeResorte = 1.0f;
-
-bool activarP1 = false, activarP2 = false, activarP3 =false;
+bool CambioAnim = false;
+bool activarP1 = false, activarP2 = false, activarP3 =false;//nuevo
 float rotOffPico = 3.5;
 float escOffPico = .01;
 float rotPico1 = 0;
@@ -98,9 +99,33 @@ float escPico2 = 0;
 float rotPico3 = 0;
 float rotPicoZ3 = 0;
 float escPico3 = 0;
-//para la anim de la caanica (reaciendo)
+
 bool activarCanicaSimple = false;
-float movXCanica = 0;
+bool activarCanicaSimple2 = false;
+float Cx = -78.0,Cy=46.3,Cz= 7.5;// orig
+
+//float Cx = 11.1, Cy = 55.4, Cz =4.0; p1
+//float Cx = 25.1, Cy = 57.3, Cz = 1.0;
+//float Cx = 5.2, Cy = 55.1, Cz = -10.1;
+
+//float Cx = 26.3, Cy = 57.4, Cz = -23.5;// toca pico 
+//float Cx2 = 21.3, Cy2 = 56.9, Cz2 = -3.5;
+//float Cx2 = -40.3, Cy2 = 50.5, Cz2 = 9.9;
+//float Cx = -52.0, Cy = 49.25, Cz = -10.3;
+//float Cx2 = -32.3, Cy2 = 51.2, Cz2 = -5.5;
+//float Cx = -78.0, Cy = 46.3, Cz = -5.5;
+//float Cx2 = -78.0,Cy2=46.3,Cz2= 7.5;
+
+float AnteriorX, AnteriorY, AnteriorZ;
+float NuevoX, NuevoY, NuevoZ;
+float rotOffCanica = 0.6;
+float movOffCanica = 0.02;
+float rotXCanica = 0.0;
+float rotZCanica = 0.0;
+float t=0;
+int flagC = 0;
+glm::vec3 canicaASPos = {Cx,Cy,Cz};
+/* float movXCanica = 0;
 float movYCanica = 0;
 float movZCanica = 0;
 float movXOffCanica = 0.4;
@@ -108,12 +133,11 @@ float movYOffCanica = 0.06;
 float movZOffCanica = 0.2;
 float movYImpulso = 0.0524;
 float movXImpulso = 0.5;
-float rotXCanica = 0.0;
-float rotZCanica = 0.0;
+
 float rotOffCanica = 1.5;
 int BCan = 0; // bandera canica
 float t = 0;
-float i = 0;
+float i = 0;*/
 
 // #define MJ_BASE_ROT(n) glm::vec3 MjBaseRot##n = {0.0f, 0.0f, 0.0f};
 //  n = Numero de articulacion
@@ -148,7 +172,7 @@ void InitKeymaps()
 		        activeCamera = cameras.switchCamera();
 	        })
 	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_I,
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_I,///////////nuevo
 	        []() -> void
 	        {
 		        activarP1 = true;
@@ -169,7 +193,7 @@ void InitKeymaps()
 				PicoJerarquia3.start();
 	        })
 	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_P,
+	        KEYMAPS::FREE_CAMERA, GLFW_KEY_P,///////////////
 	        []() -> void
 	        {
 		        activarCanicaSimple = true;
@@ -271,8 +295,22 @@ void InitKeymaps()
 	        true,
 	        []() -> void
 	        {
-		        if (!captureMode)
+		        activarP1 = false, activarP2 = false, activarP3 = false; // nuevo
+			    rotPico1 = 0,rotPicoZ1 = 0,escPico1 = 0;
+			    rotPico2 = 0,rotPicoZ2 = 0,escPico2 = 0;
+			    rotPico3 = 0,rotPicoZ3 = 0,escPico3 = 0;
+				if (!captureMode && CambioAnim == false )
+		        {
+			        CambioAnim = true;
 			        marbleKfAnim.play();
+		        }
+		        if (flagC==1 && CambioAnim == true)
+		        {
+			        
+			        CambioAnim = false;
+			        activarCanicaSimple2 = true;
+			        CanicaAS2.start();
+		        }
 	        })
 	    .addMoveCallback(
 	        KEYMAPS::FREE_CAMERA,
@@ -315,23 +353,26 @@ void InitModels()
 	    .addModel(MODELS::FLIPPER, "assets/Models/FlipperH.obj")
 	    .addModel(MODELS::MARBLE, "assets/Models/canica.obj")
 	    .addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
+		.addModel(MODELS::MARBLE, Utils::PathUtils::getModelsPath().append("/canica.obj"))
+	    .addModel(MODELS::RESORTE, Utils::PathUtils::getModelsPath().append("/Resorte.obj"))
+	    .addModel(MODELS::PALANCA, Utils::PathUtils::getModelsPath().append("/Lever.obj"))
+		.addModel(MODELS::TRIANGLE, Utils::PathUtils::getModelsPath().append("/Triangle.obj"))
+
 	    .addModel(MODELS::JK_1, Utils::PathUtils::getModelsPath().append("/Marx/Base.obj"))
 	    .addModel(MODELS::JK_2, Utils::PathUtils::getModelsPath().append("/Marx/Body.obj"))
 	    .addModel(MODELS::JK_3, Utils::PathUtils::getModelsPath().append("/Marx/Brazo1.obj"))
 	    .addModel(MODELS::JK_4, Utils::PathUtils::getModelsPath().append("/Marx/Brazo2.obj"))
 	    .addModel(MODELS::JK_5, Utils::PathUtils::getModelsPath().append("/Marx/Brazo3.obj"))
 	    .addModel(MODELS::JK_6, Utils::PathUtils::getModelsPath().append("/Marx/Rotor.obj"))
-	    .addModel(MODELS::MARBLE, Utils::PathUtils::getModelsPath().append("/canica.obj"))
-	    .addModel(MODELS::RESORTE, Utils::PathUtils::getModelsPath().append("/Resorte.obj"))
-	    .addModel(MODELS::PALANCA, Utils::PathUtils::getModelsPath().append("/Lever.obj"))
+		.addModel(MODELS::POD, Utils::PathUtils::getModelsPath().append("/pod.obj"))
 	    .addModel(MODELS::ROBOT, Utils::PathUtils::getModelsPath().append("/sstubby.obj"))
-	    .addModel(MODELS::TRIANGLE, Utils::PathUtils::getModelsPath().append("/TriangleH.obj"))
-	    .addModel(MODELS::POD, Utils::PathUtils::getModelsPath().append("/pod.obj"))
+		.addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/ExtraModels/Building.obj"))
+	    
 		.addModel(MODELS::MUNECO,  Utils::PathUtils::getModelsPath().append("/muneco_Hielo.obj"))
 		.addModel(MODELS::NORA, Utils::PathUtils::getModelsPath().append( "/NoraF.obj"))
 		.addModel(MODELS::PICOG, Utils::PathUtils::getModelsPath().append( "/Pico_G.obj"))
 	    .addModel(MODELS::PICOM, Utils::PathUtils::getModelsPath().append("/Pico_M.obj"))
-	    //.addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/ExtraModels/Building.obj"))
+	    
 	    .loadModels();
 #ifdef AVATAR
 	avatar.loadModel();
@@ -350,7 +391,7 @@ void InitLights()
 	                                                           0.0f, -1.0f, 0.0f))
 	                        .build();
 
-	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(5);
+	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(5);//nuevo
 	pointLights = pointLightsBuilder
 	                  .addLight(Lights::PointLight(ToRGB(51), 1.0f, ToRGB(119),
 	                                               0.8f, 0.3f,
@@ -420,7 +461,7 @@ void InitAnimations()
 		                  return true; })
 	    .prepare();
 	
-	PicoJerarquia1
+	PicoJerarquia1/////////////////////////////nuevo
 	    .addCondition(
 	        [](float delta) -> bool
 	        { return activarP1; })
@@ -460,7 +501,6 @@ void InitAnimations()
 				pointLights.toggleLight(1,true);//luces se prende
 				if (rotPico2 < 720)
 			    {
-			        std::cout << "entra";
 					if (rotPicoZ2 < 6 && rotPico2<70)
 			        {
 				        rotPicoZ2 +=10* escOffPico * delta;
@@ -518,117 +558,438 @@ void InitAnimations()
 	    .addCondition(
 	        [](float delta) -> bool
 	        {
-				if (BCan==0) {
-					if (movZCanica < 29 )
-					{
-						movZCanica += movZOffCanica * delta;
-						rotXCanica += rotOffCanica * delta;
-						return false;
-			        }
-					else {
-				        BCan = 1;
+				if (flagC==0) {
+					if (t == 0) {
+						AnteriorX = -78.0, AnteriorY = 45.5, AnteriorZ = 7.5;
+						NuevoX = -77.3153076171875, NuevoY = 46.67758560180664, NuevoZ = 36.76131057739258;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.00005 * delta;
 				        return false;
 					}
-				}
-			    else
-				    return true; })
-	    .addCondition( // soltar palanca [pendiente]
-	        [](float delta) -> bool
-	        { return true; })
-	    .addCondition( // llega a la parte de arriba
-	        [](float delta) -> bool
-	        {
-				if (movXCanica < 100 && BCan==1)
-				{
-			        movXCanica += movXImpulso * delta;
-			        movYCanica += movYImpulso * delta;
-					rotZCanica += rotOffCanica *delta;
-			        movZOffCanica = 0.23;
-					return false;
-				}
-		        else if (movXCanica > 100 && movXCanica < 125 && movZCanica > 19 && BCan == 1)
-		        {
-			        movXCanica += movXImpulso * delta;
-			        movZCanica -= movZOffCanica * delta;
-			        movYCanica += movYImpulso * delta;
-			        rotZCanica += rotOffCanica * delta;
-			        return false;
-				}
-				else
-					BCan=2;
-					movZOffCanica = 0.38;
-					return true; })
-	    .addCondition(
-	        [](float delta) -> bool
-	        {
-				if (movZCanica > 12 && BCan==2) {
-			        movXCanica += 0.06 * delta;
-			        movZCanica -= movZOffCanica *.5 * delta;
-					if (movYCanica > 57) {
-						movYCanica -= 0.08 * delta;
+			        else if (t < 1 && t>0){
+					    Cx = ((1 - t) * AnteriorX + t * NuevoX);
+					    Cy = ((1 - t) * AnteriorY + t * NuevoY);
+					    Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.005 * delta;
+				        return false;
 					}
-					rotXCanica += rotOffCanica * delta;
-		        }
-		        else if (movXCanica > 106 && BCan == 2)
-		        {
-					movXCanica -= movXOffCanica * delta;
-			        movZCanica -= movZOffCanica * delta;
-			        if (movYCanica > 11)
-			        {
-				        movYCanica -= 0.08 * delta;
-			        }
-			        rotZCanica += rotOffCanica * delta;
+			        t = 0;
+			        flagC = 1;
+				    return true;
 				}
-				else
-			        BCan=3;
-					return true; })
-	    .addCondition(
-	        [](float delta) -> bool
-	        {
-				movXOffCanica=0.7;
-				if (BCan==3) {
-					if (movYCanica > 10)
-			        {
-				        movYCanica -= 0.1 * delta;
-			        }
-					if (movXCanica > 95 ) {
-						movXCanica -= movXOffCanica * delta;
-						movZCanica -= movZOffCanica *.8 * delta;
-						rotZCanica -= rotOffCanica * delta;
-					}else if (movXCanica > 90 && movXCanica < 95) {
-				        movXOffCanica = 1.0;
-				        movXCanica -= movXOffCanica * delta;
-			        }
-			        else
-				        BCan = 4; 
-		        }
-				else
-					return true; })
-	    .addCondition( // activa pico
-	        [](float delta) -> bool
-	        { 
-				if (BCan == 4) {
-					if (i<3){
-					i += 12.0 * delta;
-					printf("i es: %f \n", i);
-			        }
-					else {
-						i = 10;
-						activarP3 = true;
-						PicoJerarquia3.start();
-				    
-						BCan = 5;
-				        printf("paso por A \n");
-					}
-				}
-		        else if (BCan==5)
-				{
-			        printf("paso por b \n");
-			        return true;
-				}
-				//return mainWindow.getStartAnimacionCanica(); 
-			})
+			
+				     })
 	    .prepare();
+	CanicaAS2
+	    .addCondition(
+	        [](float delta) -> bool
+	        { return activarCanicaSimple2; })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 1)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = -77.3, AnteriorY = 46.6, AnteriorZ = 36.7;
+				        NuevoX = -41.0, NuevoY = 49.9, NuevoZ = 36.7;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 2;
+			        return true;
+		        }
+	        })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 2)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = -41.0, AnteriorY = 49.9, AnteriorZ = 36.7;
+				        NuevoX = 21.12, NuevoY = 56.79, NuevoZ = 36.7;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 3;
+			        return true;
+		        }
+	        })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 3)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = 21.12, AnteriorY = 56.79, AnteriorZ = 36.7;
+				        NuevoX = 42.8, NuevoY = 58.9, NuevoZ = 26.6;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 4;
+			        return true;
+		        }
+	        })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 4)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = 42.8, AnteriorY = 58.9, AnteriorZ = 26.6;
+				        NuevoX = 46.2, NuevoY = 58.9, NuevoZ = 16.3;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 5;
+			        return true;
+		        }
+	        })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 5)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = 46.2, AnteriorY = 58.9, AnteriorZ = 16.3;
+				        NuevoX = 11.1, NuevoY = 55.4, NuevoZ = 4.0;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.01 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.01 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 6;
+			        activarP3 = true;
+			        return true;
+		        }
+	        })
+	    .addCondition( 
+	        [](float delta) -> bool
+	        { PicoJerarquia3.start();
+				return activarP3; })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 6)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = 11.1, AnteriorY = 55.4, AnteriorZ =4.0 ;
+				        NuevoX = 25.1, NuevoY = 57.3, NuevoZ =1.0 ;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.01 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.01 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 7;
+			        return true;
+		        }
+	        })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 7)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = 25.1, AnteriorY = 57.3, AnteriorZ = 1.0;
+				        NuevoX = 5.0, NuevoY =55.0 , NuevoZ = -9.9;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.01 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.01 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 8;
+			        return true;
+		        }
+	        })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 8)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = 5.2, AnteriorY = 55.1, AnteriorZ = -10.1;
+				        NuevoX = 26.3, NuevoY = 57.4, NuevoZ = -23.5;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 9;
+			        activarP2 = true;
+			        return true;
+		        }
+	        })
+	    .addCondition(
+	        [](float delta) -> bool
+	        { PicoJerarquia2.start();
+				return activarP2; })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 9)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = 26.3, AnteriorY = 57.4, AnteriorZ =-23.5 ;
+				        NuevoX = 21.3, NuevoY = 56.9, NuevoZ = -3.5;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 10;
+			        return true;
+		        }
+	        })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 10)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX =21.3 , AnteriorY = 56.9, AnteriorZ = -3.5;
+				        NuevoX = -40.3, NuevoY = 50.5 , NuevoZ =9.9 ;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 11;
+			        return true;
+		        }
+	        })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 11)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = -40.3, AnteriorY = 50.5, AnteriorZ = 9.9;
+				        NuevoX = -52.0, NuevoY =49.25 , NuevoZ =-10.3 ;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 12;
+			        return true;
+		        }
+	        })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 12)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = -52.0, AnteriorY = 49.25, AnteriorZ = -10.3;
+				        NuevoX =-32.3 , NuevoY =51.2 , NuevoZ = -5.5;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 13;
+			        return true;
+		        }
+	        })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 13)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = -32.3, AnteriorY =51.2 , AnteriorZ = -5.5 ;
+				        NuevoX = -78.0 , NuevoY = 46.3, NuevoZ = -5.5;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 14;
+			        return true;
+		        }
+	        })
+	    .addCondition(
+	        [](float delta) -> bool
+	        {
+		        if (flagC == 14)
+		        {
+			        if (t == 0)
+			        {
+				        AnteriorX = -78.0, AnteriorY =46.3 , AnteriorZ = -5.5;
+				        NuevoX = -78.0, NuevoY = 46.3, NuevoZ =7.5 ;
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        else if (t < 1 && t > 0)
+			        {
+				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
+				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
+				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
+				        t += 0.02 * delta;
+				        return false;
+			        }
+			        t = 0;
+			        flagC = 15;
+			        activarCanicaSimple = false;
+			        return true;
+		        }
+	        })
+		.prepare();
 	//
 	MjPos_0 = {0.0f, 2.9f, -3.2f};
 	//	modeloJerarquico1
@@ -774,12 +1135,16 @@ int main()
 		glfwPollEvents();
 		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
 
+		//update anim
 		updateFlippers();
 		marblePreLaunch.update(deltaTime);
 		PicoJerarquia1.update(deltaTime);
 		PicoJerarquia2.update(deltaTime);
 		PicoJerarquia3.update(deltaTime);
 		CanicaAS.update(deltaTime);
+		CanicaAS2.update(deltaTime);
+		canicaASPos = {Cx, Cy, Cz};
+
 		if (timer <= glfwGetTime())
 		{
 			if (ambLight == AMB_LIGHTS::DAY)
@@ -830,7 +1195,7 @@ int main()
 		shaderLight->SetDirectionalLight(&directionalLights[ambLight]);
 		shaderLight->SetSpotLights(spotLights.getLightArray(), spotLights.getCurrentCount());
 		shaderLight->SetPointLights(pointLights.getLightArray(), pointLights.getCurrentCount());
-
+		
 		if (activarP1 == false)
 		{
 			pointLights.toggleLight(0, false); // luces apagadas de los picos
@@ -842,7 +1207,8 @@ int main()
 		if (activarP3 == false)
 		{
 			pointLights.toggleLight(2, false);
-		}
+		}/////////////////////////////
+
 		toffset = {0.0f, 0.0f};
 		color = {1.0f, 1.0f, 1.0f};
 		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);
@@ -1090,9 +1456,9 @@ int main()
 
 		matMetal.UseMaterial(uSpecularIntensity, uShininess);
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(-78.0 + movXCanica, 45.5 + movYCanica, 7.5 + movZCanica) //+ XA+YA+ZA
-		            .rotateX(rotXCanica)
-		            .rotateZ(6 + rotZCanica)
+		            .translate(canicaASPos)
+		            //.rotateX(rotXCanica)
+		            //.rotateZ(6 + rotZCanica)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		marbleKf.render();
