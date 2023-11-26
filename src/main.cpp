@@ -28,8 +28,10 @@
 #include "Skybox.h"
 #include "Utils/ModelMatrix.h"
 #include "Window.h"
-#include "camera/Camera.h"
 #include "camera/CameraCollection.h"
+#include "camera/FreeCamera.h"
+#include "camera/ICamera.h"
+#include "camera/StaticCamera.h"
 #include "input/KeyboardInput.h"
 #include "model/BoneModel.h"
 #include "model/Material.h"
@@ -38,8 +40,13 @@
 
 // region Global Variables
 Window mainWindow;
-Camera::CameraCollection cameras;
-Camera::Camera *activeCamera;
+// #warning "Old camera implementation"
+// Camera::OldCameraCollection oldCameras;
+// Camera::Camera *oldActiveCamera;
+
+Camera::CameraCollection<Camera::ICamera> cameras;
+Camera::ICamera *activeCamera;
+
 Model::ModelCollection models;
 Lights::LightCollection<Lights::DirectionalLight> directionalLights;
 Lights::LightCollection<Lights::PointLight> pointLights;
@@ -231,7 +238,7 @@ void InitKeymaps()
 	        KEYMAPS::FREE_CAMERA,
 	        [](float) -> void
 	        {
-		        activeCamera->mouseControl(Input::MouseInput::GetInstance());
+		        activeCamera->MouseControl(Input::MouseInput::GetInstance());
 	        });
 }
 
@@ -252,12 +259,12 @@ void InitShaders()
 
 void InitCameras()
 {
-	cameras.addCamera(new Camera::Camera(glm::vec3(0.0f, 60.0f, 20.0f),
-	                                     glm::vec3(0.0f, 1.0f, 0.0f),
-	                                     -60.0f, 0.0f, 0.5f, 0.5f));
-	cameras.addCamera(new Camera::Camera(glm::vec3(-134.618, 124.889, 4.39917),
-	                                     glm::vec3(0.0f, 1.0f, 0.0f),
-	                                     0.0f, -30.0f, 0.5f, 0.5f, true));
+	cameras.addCamera(new Camera::FreeCamera(glm::vec3(0.0f, 60.0f, 20.0f),
+	                                         glm::vec3(0.0f, 1.0f, 0.0f),
+	                                         -60.0f, 0.0f, 0.5f, 0.5f))
+	    .addCamera(new Camera::StaticCamera(glm::vec3(-134.618, 124.889, 4.39917),
+	                                        glm::vec3(0.0f, 1.0f, 0.0f),
+	                                        0.0f, -30.0f));
 	activeCamera = cameras.getAcviveCamera();
 }
 
@@ -525,17 +532,13 @@ int main()
 		lastTime = now;
 
 		glfwPollEvents();
-		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
+		activeCamera->KeyControl(Input::KeyboardInput::GetInstance());
 		avatarPlayer.Move();
 
 		if (avatarPlayer.isMoving())
-		{
 			avatarAnimator.PlayAnimation(&walkAnimation);
-		}
 		else
-		{
 			avatarAnimator.PlayAnimation(&idleAnimation);
-		}
 
 		avatarAnimator.UpdateAnimation(deltaTimeAnim);
 
@@ -554,7 +557,7 @@ int main()
 				skyBoxCurrent = &skyboxDay;
 				ambLight = AMB_LIGHTS::DAY;
 			}
-			timer = (float) glfwGetTime() + 5;
+			timer = (float) glfwGetTime() + 8;
 		}
 
 		if (captureMode)
@@ -798,7 +801,6 @@ int main()
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		robot.render();
 
-		//		ChangeShader(shaders[ShaderTypes::BONE_SHADER]);
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(6.4173, 66.183f + (float) (1.5f * sin(glfwGetTime())), -25.935)
 		            .rotateY(-131.41)
@@ -812,7 +814,7 @@ int main()
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		// region AVATAR
-		//		shaders[ShaderTypes::BONE_SHADER]->useProgram();
+		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);
 		auto transforms = avatarAnimator.GetFinalBoneMatrices();
 		for (int i = 0; i < (int) transforms.size(); i++)
 			shaderLight->setMat4((boost::format("finalBonesMatrices[%d]") % i).str(), transforms[i]);

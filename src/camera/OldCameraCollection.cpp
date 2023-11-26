@@ -2,12 +2,13 @@
 // Created by edgar on 11/2/2023.
 //
 
-#include "CameraCollection.h"
+#include "OldCameraCollection.h"
 
 namespace Camera
 {
-Camera *CameraCollection::getAcviveCamera() const { return activeCamera; }
-CameraCollection &CameraCollection::addCamera(Camera *camera)
+Camera *OldCameraCollection::getAcviveCamera() const { return activeCamera; }
+
+OldCameraCollection &OldCameraCollection::addCamera(Camera *camera)
 {
 	cameras.push_back(camera);
 	if (activeCamera == nullptr)
@@ -17,19 +18,20 @@ CameraCollection &CameraCollection::addCamera(Camera *camera)
 	}
 	return *this;
 }
-Camera *CameraCollection::switchCamera()
+Camera *OldCameraCollection::switchCamera()
 {
 	cameraIndex++;
 	if (cameraIndex >= (int) cameras.size())
 		cameraIndex = 0;
 	activeCamera = cameras.at(cameraIndex);
-	std::cout << "[ " << typeid(CameraCollection).name() << " ] Camera changed " << activeCamera << '\n';
+	std::cout << "[ " << typeid(OldCameraCollection).name() << " ] Camera changed " << activeCamera << '\n';
 	std::cout << "\t==== Camera Position: ("
 	          << activeCamera->getCameraPosition().x << ", " << activeCamera->getCameraPosition().y << ", " << activeCamera->getCameraPosition().z << ")\n"
 	          << "\t==== Pitch: " << activeCamera->getPitch() << " | Yaw: " << activeCamera->getYaw() << "\n";
 	return activeCamera;
 }
-CameraCollection::~CameraCollection()
+
+OldCameraCollection::~OldCameraCollection()
 {
 	for (auto &cam : cameras)
 		delete cam;
