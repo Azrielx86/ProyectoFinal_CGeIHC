@@ -14,6 +14,7 @@ BoneAnimator::BoneAnimator(BoneAnimation *animation)
 	for (int i = 0; i < 100; ++i)
 		m_FinalBoneMatrices.emplace_back(1.0f);
 }
+
 void BoneAnimator::UpdateAnimation(float dt)
 {
 	m_DeltaTime = dt;
@@ -24,11 +25,14 @@ void BoneAnimator::UpdateAnimation(float dt)
 		CalculateBoneTransform(&m_CurrentAnimation->GetRootNode(), glm::mat4(1.0f));
 	}
 }
+
 void BoneAnimator::PlayAnimation(BoneAnimation *pAnimation)
 {
+	if (m_CurrentAnimation == pAnimation) return;
 	m_CurrentAnimation = pAnimation;
 	m_CurrentTime = 0.0f;
 }
+
 void BoneAnimator::CalculateBoneTransform(const AssimpNodeData *node, glm::mat4 parentTransform)
 {
 	auto nodeName = node->name;

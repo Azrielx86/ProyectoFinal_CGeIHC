@@ -76,8 +76,6 @@ add_executable(ProyectoFinal_CGeIHC
         src/Window.cpp
         src/Shader.cpp
         src/Shader.cpp
-        src/model/BasicPrimitives.cpp
-        src/model/BasicMesh.cpp
         src/model/Mesh.cpp
         src/model/Model.cpp
         src/camera/Camera.cpp
@@ -136,6 +134,10 @@ add_executable(ProyectoFinal_CGeIHC
         src/Animation/BoneAnimation.h
         src/Animation/BoneAnimator.cpp
         src/Animation/BoneAnimator.h
+        src/Entity/Entity.cpp
+        src/Entity/Entity.h
+        src/Entity/Player.cpp
+        src/Entity/Player.h
 )
 
 message(STATUS "Copiando archivos de shader")

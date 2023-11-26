@@ -7,6 +7,9 @@
 
 #include "stb_image.h"
 
+const float TURN_SPEED = 6.0;
+const float MOVE_SPEED = 0.5;
+
 const int MAX_POINT_LIGHTS = 3;
 const int MAX_SPOT_LIGHTS = 3;
 

@@ -20,6 +20,7 @@
 #include "Animation/BoneAnimator.h"
 #include "Animation/KeyFrameAnimation.h"
 #include "Audio/AudioDevice.h"
+#include "Entity/Player.h"
 #include "Entity/SimpleEntity.h"
 #include "GlobalConstants.h"
 #include "Lights/DirectionalLight.h"
@@ -51,12 +52,13 @@ Animation::KeyFrameAnimation marbleKfAnim;
 Animation::Animation marbleAnimation;
 Animation::Animation marblePreLaunch;
 Animation::Animation marblePostLaunch;
+Entity::Player avatarPlayer(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
 glm::vec3 marblePos;
 glm::vec3 leverPos = {-85.369f, 43.931f, 36.921f};
 const glm::vec3 leverEnd = {-90.089f, 42.213f, 36.921f};
 const glm::vec3 leverDirection = glm::normalize(leverEnd - leverPos);
 // const float movLeverDistance = glm::length(leverEnd - leverPos);
-Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/2b_catwalk.fbx"));
+Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/2b_walk_static.fbx"));
 
 // Constantes para uniforms
 GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess, uTexOffset, uColor, uBonesMatrices;
@@ -362,6 +364,11 @@ void InitAnimations()
 	//	    .prepare();
 }
 
+void InitPlayers()
+{
+	avatarPlayer.setPosition({-21.7661, 50.5184, -10.7455});
+}
+
 void updateFlippers()
 {
 	if (Input::KeyboardInput::GetInstance().getCurrentKeymap()->at(GLFW_KEY_RIGHT_SHIFT).pressed)
@@ -439,6 +446,7 @@ int main()
 	InitCameras();
 	InitModels();
 	InitLights();
+	InitPlayers();
 	InitAnimations();
 	LoadAnimations();
 
@@ -497,11 +505,16 @@ int main()
 	auto triangle = models[MODELS::TRIANGLE];
 	auto pod = models[MODELS::POD];
 
-	Animation::BoneAnimation walkAnimation(Utils::PathUtils::getModelsPath().append("/2b_catwalk.fbx"), &avatar);
-	Animation::BoneAnimator avatarAnimator(&walkAnimation);
+	Animation::BoneAnimation walkAnimation(Utils::PathUtils::getModelsPath().append("/2b_walk_static.fbx"), &avatar);
+	Animation::BoneAnimation idleAnimation(Utils::PathUtils::getModelsPath().append("/2b_idle.fbx"), &avatar);
+	Animation::BoneAnimator avatarAnimator(&idleAnimation);
+	avatarAnimator.PlayAnimation(&walkAnimation);
 
 	// Shaders
 	auto shaderLight = shaders[ShaderTypes::BONE_SHADER];
+
+	// Control animaciones avatar
+	bool AnimationChanged = false;
 
 	while (!mainWindow.shouldClose())
 	{
@@ -513,6 +526,17 @@ int main()
 
 		glfwPollEvents();
 		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
+		avatarPlayer.Move();
+
+		if (avatarPlayer.isMoving())
+		{
+			avatarAnimator.PlayAnimation(&walkAnimation);
+		}
+		else
+		{
+			avatarAnimator.PlayAnimation(&idleAnimation);
+		}
+
 		avatarAnimator.UpdateAnimation(deltaTimeAnim);
 
 		updateFlippers();
@@ -568,7 +592,6 @@ int main()
 		glUniform2fv((GLint) uTexOffset, 1, glm::value_ptr(toffset));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 
-#ifndef IGNORE_BASE
 		// endregion Shader settings
 		// Para tomar las coordenadas de Blender
 		// y <-> z
@@ -774,7 +797,7 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		robot.render();
-#endif
+
 		//		ChangeShader(shaders[ShaderTypes::BONE_SHADER]);
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(6.4173, 66.183f + (float) (1.5f * sin(glfwGetTime())), -25.935)
@@ -795,7 +818,9 @@ int main()
 			shaderLight->setMat4((boost::format("finalBonesMatrices[%d]") % i).str(), transforms[i]);
 
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(-21.7661, 50.5184, -10.7455)
+		            //		            .translate(-21.7661, 50.5184, -10.7455)
+		            .translate(avatarPlayer.getPosition())
+		            .rotateY(avatarPlayer.getRotation().y)
 		            .scale(0.05)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -820,4 +845,5 @@ int main()
 
 	return 0;
 }
+
 #pragma clang diagnostic pop
