@@ -710,7 +710,7 @@ void InitAnimations()
 				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
 				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
 				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
-				        t += 0.01 * delta;
+				        t += 0.015 * delta;
 				        return false;
 			        }
 			        else if (t < 1 && t > 0)
@@ -718,7 +718,7 @@ void InitAnimations()
 				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
 				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
 				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
-				        t += 0.01 * delta;
+				        t += 0.015 * delta;
 				        return false;
 			        }
 			        t = 0;
@@ -743,7 +743,7 @@ void InitAnimations()
 				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
 				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
 				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
-				        t += 0.01 * delta;
+				        t += 0.02 * delta;
 				        return false;
 			        }
 			        else if (t < 1 && t > 0)
@@ -751,7 +751,7 @@ void InitAnimations()
 				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
 				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
 				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
-				        t += 0.01 * delta;
+				        t += 0.02 * delta;
 				        return false;
 			        }
 			        t = 0;
@@ -832,7 +832,7 @@ void InitAnimations()
 				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
 				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
 				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
-				        t += 0.02 * delta;
+				        t += 0.025 * delta;
 				        return false;
 			        }
 			        else if (t < 1 && t > 0)
@@ -840,7 +840,7 @@ void InitAnimations()
 				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
 				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
 				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
-				        t += 0.02 * delta;
+				        t += 0.025 * delta;
 				        return false;
 			        }
 			        t = 0;
@@ -860,7 +860,7 @@ void InitAnimations()
 				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
 				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
 				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
-				        t += 0.02 * delta;
+				        t += 0.015 * delta;
 				        return false;
 			        }
 			        else if (t < 1 && t > 0)
@@ -868,7 +868,7 @@ void InitAnimations()
 				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
 				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
 				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
-				        t += 0.02 * delta;
+				        t += 0.015 * delta;
 				        return false;
 			        }
 			        t = 0;
@@ -944,7 +944,7 @@ void InitAnimations()
 				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
 				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
 				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
-				        t += 0.02 * delta;
+				        t += 0.015 * delta;
 				        return false;
 			        }
 			        else if (t < 1 && t > 0)
@@ -952,7 +952,7 @@ void InitAnimations()
 				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
 				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
 				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
-				        t += 0.02 * delta;
+				        t += 0.015 * delta;
 				        return false;
 			        }
 			        t = 0;
@@ -972,7 +972,7 @@ void InitAnimations()
 				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
 				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
 				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
-				        t += 0.02 * delta;
+				        t += 0.01 * delta;
 				        return false;
 			        }
 			        else if (t < 1 && t > 0)
@@ -980,11 +980,11 @@ void InitAnimations()
 				        Cx = ((1 - t) * AnteriorX + t * NuevoX);
 				        Cy = ((1 - t) * AnteriorY + t * NuevoY);
 				        Cz = ((1 - t) * AnteriorZ + t * NuevoZ);
-				        t += 0.02 * delta;
+				        t += 0.01 * delta;
 				        return false;
 			        }
 			        t = 0;
-			        flagC = 15;
+			        flagC = 0;
 			        activarCanicaSimple = false;
 			        return true;
 		        }
