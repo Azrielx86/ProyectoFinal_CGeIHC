@@ -51,6 +51,11 @@ if (Stb_FOUND)
     message(STATUS "STB Found")
 endif ()
 
+find_package(Boost REQUIRED)
+if (Boost_FOUND)
+    message(STATUS "Boost found")
+endif ()
+
 find_package(nlohmann_json CONFIG REQUIRED)
 if (nlohmann_json_FOUND)
     message(STATUS "nlohmann_json Found")
@@ -71,8 +76,6 @@ add_executable(ProyectoFinal_CGeIHC
         src/Window.cpp
         src/Shader.cpp
         src/Shader.cpp
-        src/model/BasicPrimitives.cpp
-        src/model/BasicMesh.cpp
         src/model/Mesh.cpp
         src/model/Model.cpp
         src/camera/Camera.cpp
@@ -81,8 +84,8 @@ add_executable(ProyectoFinal_CGeIHC
         src/input/MouseInput.cpp
         src/input/MouseInput.h
         src/GlobalConstants.h
-        src/camera/CameraCollection.cpp
-        src/camera/CameraCollection.h
+        src/camera/OldCameraCollection.cpp
+        src/camera/OldCameraCollection.h
         src/Utils/ModelMatrix.cpp
         src/Utils/ModelMatrix.h
         src/Audio/AudioController.cpp
@@ -123,6 +126,26 @@ add_executable(ProyectoFinal_CGeIHC
         src/Entity/SimpleEntity.h
         src/Animation/KeyFrameAnimation.cpp
         src/Animation/Animation.cpp
+        src/model/Bone.cpp
+        src/model/Bone.h
+        src/Utils/Assimp2Glm.cpp
+        src/Utils/Assimp2Glm.h
+        src/Animation/BoneAnimation.cpp
+        src/Animation/BoneAnimation.h
+        src/Animation/BoneAnimator.cpp
+        src/Animation/BoneAnimator.h
+        src/Entity/Entity.cpp
+        src/Entity/Entity.h
+        src/Entity/Player.cpp
+        src/Entity/Player.h
+        src/camera/ICamera.h
+        src/camera/FreeCamera.cpp
+        src/camera/FreeCamera.h
+        src/camera/StaticCamera.cpp
+        src/camera/StaticCamera.h
+        src/camera/PlayerCamera.cpp
+        src/camera/PlayerCamera.h
+        src/camera/CameraCollection.h
 )
 
 message(STATUS "Copiando archivos de shader")
@@ -141,3 +164,4 @@ target_link_libraries(ProyectoFinal_CGeIHC PRIVATE assimp::assimp)
 target_link_libraries(ProyectoFinal_CGeIHC PRIVATE OpenAL::OpenAL)
 target_link_libraries(ProyectoFinal_CGeIHC PRIVATE glm::glm)
 target_link_libraries(ProyectoFinal_CGeIHC PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(ProyectoFinal_CGeIHC PRIVATE Boost::boost)

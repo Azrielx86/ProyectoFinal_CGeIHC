@@ -3,6 +3,7 @@
 //
 
 #include "Camera.h"
+
 namespace Camera
 {
 
@@ -25,7 +26,9 @@ Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLf
 }
 
 glm::vec3 Camera::getCameraPosition() { return this->position; }
+
 glm::vec3 Camera::getCameraDirection() { return glm::normalize(front); }
+
 glm::mat4 Camera::calculateViewMatrix() { return glm::lookAt(position, position + front, up); }
 
 void Camera::update()
@@ -67,10 +70,12 @@ void Camera::keyControl(Input::KeyboardInput &keyboard, GLfloat deltaTime)
 	if (keyboard.getCurrentKeymap()->at(GLFW_KEY_D).pressed)
 		position += right * velocity;
 }
+
 GLfloat Camera::getYaw() const
 {
 	return yaw;
 }
+
 GLfloat Camera::getPitch() const
 {
 	return pitch;

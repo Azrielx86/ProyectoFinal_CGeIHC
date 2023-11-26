@@ -16,8 +16,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Animation/Animation.h"
+#include "Animation/BoneAnimation.h"
+#include "Animation/BoneAnimator.h"
 #include "Animation/KeyFrameAnimation.h"
 #include "Audio/AudioDevice.h"
+#include "Entity/Player.h"
 #include "Entity/SimpleEntity.h"
 #include "GlobalConstants.h"
 #include "Lights/DirectionalLight.h"
@@ -25,17 +28,25 @@
 #include "Skybox.h"
 #include "Utils/ModelMatrix.h"
 #include "Window.h"
-#include "camera/Camera.h"
 #include "camera/CameraCollection.h"
+#include "camera/FreeCamera.h"
+#include "camera/ICamera.h"
+#include "camera/StaticCamera.h"
 #include "input/KeyboardInput.h"
 #include "model/BoneModel.h"
 #include "model/Material.h"
 #include "model/ModelCollection.h"
+#include <boost/format.hpp>
 
 // region Global Variables
 Window mainWindow;
-Camera::CameraCollection cameras;
-Camera::Camera *activeCamera;
+// #warning "Old camera implementation"
+// Camera::OldCameraCollection oldCameras;
+// Camera::Camera *oldActiveCamera;
+
+Camera::CameraCollection<Camera::ICamera> cameras;
+Camera::ICamera *activeCamera;
+
 Model::ModelCollection models;
 Lights::LightCollection<Lights::DirectionalLight> directionalLights;
 Lights::LightCollection<Lights::PointLight> pointLights;
@@ -48,12 +59,16 @@ Animation::KeyFrameAnimation marbleKfAnim;
 Animation::Animation marbleAnimation;
 Animation::Animation marblePreLaunch;
 Animation::Animation marblePostLaunch;
+Entity::Player avatarPlayer(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
 glm::vec3 marblePos;
 glm::vec3 leverPos = {-85.369f, 43.931f, 36.921f};
 const glm::vec3 leverEnd = {-90.089f, 42.213f, 36.921f};
 const glm::vec3 leverDirection = glm::normalize(leverEnd - leverPos);
 // const float movLeverDistance = glm::length(leverEnd - leverPos);
-Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/2b.obj"));
+Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/2b_walk_static.fbx"));
+
+// Constantes para uniforms
+GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess, uTexOffset, uColor, uBonesMatrices;
 
 Model::Material matMetal;
 Model::Material Material_brillante;
@@ -69,6 +84,7 @@ bool mJ1_trigger = false;
 // Posicion numeros: 60.3627, 115.599, -34.7832
 
 float deltaTime = 0.0f;
+float deltaTimeAnim = 0.0f;
 float lastTime = 0.0f;
 const float limitFPS = 1.0f / 60.0f;
 
@@ -222,7 +238,7 @@ void InitKeymaps()
 	        KEYMAPS::FREE_CAMERA,
 	        [](float) -> void
 	        {
-		        activeCamera->mouseControl(Input::MouseInput::GetInstance());
+		        activeCamera->MouseControl(Input::MouseInput::GetInstance());
 	        });
 }
 
@@ -243,12 +259,12 @@ void InitShaders()
 
 void InitCameras()
 {
-	cameras.addCamera(new Camera::Camera(glm::vec3(0.0f, 60.0f, 20.0f),
-	                                     glm::vec3(0.0f, 1.0f, 0.0f),
-	                                     -60.0f, 0.0f, 0.5f, 0.5f));
-	cameras.addCamera(new Camera::Camera(glm::vec3(-134.618, 124.889, 4.39917),
-	                                     glm::vec3(0.0f, 1.0f, 0.0f),
-	                                     0.0f, -30.0f, 0.5f, 0.5f, true));
+	cameras.addCamera(new Camera::FreeCamera(glm::vec3(0.0f, 60.0f, 20.0f),
+	                                         glm::vec3(0.0f, 1.0f, 0.0f),
+	                                         -60.0f, 0.0f, 0.5f, 0.5f))
+	    .addCamera(new Camera::StaticCamera(glm::vec3(-134.618, 124.889, 4.39917),
+	                                        glm::vec3(0.0f, 1.0f, 0.0f),
+	                                        0.0f, -30.0f));
 	activeCamera = cameras.getAcviveCamera();
 }
 
@@ -273,9 +289,7 @@ void InitModels()
 	    .addModel(MODELS::POD, Utils::PathUtils::getModelsPath().append("/pod.obj"))
 	    .addModel(MODELS::DESTROYED_BUILDING, Utils::PathUtils::getModelsPath().append("/ExtraModels/Building.obj"))
 	    .loadModels();
-#ifdef AVATAR
 	avatar.loadModel();
-#endif
 }
 
 void InitLights()
@@ -347,14 +361,19 @@ void InitAnimations()
 		                  leverPos = {-85.369f, 43.931f, 36.921f};
 		                  return true; })
 	    .prepare();
-//
+	//
 	MjPos_0 = {0.0f, 2.9f, -3.2f};
-//	modeloJerarquico1
-//	    .addCondition([](float) -> bool
-//	                               { 
-//		                  MjRot_0 = -90;
-//	                  })
-//	    .prepare();
+	//	modeloJerarquico1
+	//	    .addCondition([](float) -> bool
+	//	                               {
+	//		                  MjRot_0 = -90;
+	//	                  })
+	//	    .prepare();
+}
+
+void InitPlayers()
+{
+	avatarPlayer.setPosition({-21.7661, 50.5184, -10.7455});
 }
 
 void updateFlippers()
@@ -404,6 +423,19 @@ void exitProgram()
 		delete shader.second;
 }
 
+void ChangeShader(Shader *shader)
+{
+	shader->useProgram();
+	uModel = shader->getUniformModel();
+	uProjection = shader->getUniformProjection();
+	uView = shader->getUniformView();
+	uEyePosition = shader->getUniformEyePosition();
+	uColor = shader->getUniformColor();
+	uTexOffset = shader->getUniformTextureOffset();
+	uSpecularIntensity = shader->getUniformSpecularIntensity();
+	uShininess = shader->getUniformShininess();
+}
+
 int main()
 {
 	mainWindow = Window(1280, 720, "Proyecto Final \"Maquina de pinball\" - Semestre 2024-1");
@@ -421,6 +453,7 @@ int main()
 	InitCameras();
 	InitModels();
 	InitLights();
+	InitPlayers();
 	InitAnimations();
 	LoadAnimations();
 
@@ -455,9 +488,6 @@ int main()
 	Material_brillante = Model::Material(4.0f, 256);
 	Material_opaco = Model::Material(0.3f, 4);
 
-	// Constantes para uniforms
-	GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess, uTexOffset, uColor;
-
 	Utils::ModelMatrix handler(glm::mat4(1.0f));
 	glm::mat4 model(1.0f);
 	glm::mat4 modelaux(1.0f);
@@ -482,22 +512,39 @@ int main()
 	auto triangle = models[MODELS::TRIANGLE];
 	auto pod = models[MODELS::POD];
 
+	Animation::BoneAnimation walkAnimation(Utils::PathUtils::getModelsPath().append("/2b_walk_static.fbx"), &avatar);
+	Animation::BoneAnimation idleAnimation(Utils::PathUtils::getModelsPath().append("/2b_idle.fbx"), &avatar);
+	Animation::BoneAnimator avatarAnimator(&idleAnimation);
+	avatarAnimator.PlayAnimation(&walkAnimation);
+
 	// Shaders
-	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
+	auto shaderLight = shaders[ShaderTypes::BONE_SHADER];
+
+	// Control animaciones avatar
+	bool AnimationChanged = false;
 
 	while (!mainWindow.shouldClose())
 	{
 		auto now = (float) glfwGetTime();
 		deltaTime = now - lastTime;
+		deltaTimeAnim = deltaTime;
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
 
 		glfwPollEvents();
-		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
+		activeCamera->KeyControl(Input::KeyboardInput::GetInstance());
+		avatarPlayer.Move();
+
+		if (avatarPlayer.isMoving())
+			avatarAnimator.PlayAnimation(&walkAnimation);
+		else
+			avatarAnimator.PlayAnimation(&idleAnimation);
+
+		avatarAnimator.UpdateAnimation(deltaTimeAnim);
 
 		updateFlippers();
 		marblePreLaunch.update(deltaTime);
-		
+
 		if (timer <= glfwGetTime())
 		{
 			if (ambLight == AMB_LIGHTS::DAY)
@@ -510,7 +557,7 @@ int main()
 				skyBoxCurrent = &skyboxDay;
 				ambLight = AMB_LIGHTS::DAY;
 			}
-			timer = (float) glfwGetTime() + 5;
+			timer = (float) glfwGetTime() + 8;
 		}
 
 		if (captureMode)
@@ -528,15 +575,7 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		skyBoxCurrent->DrawSkybox(activeCamera->calculateViewMatrix(), mainWindow.getProjectionMatrix());
-		shaderLight->useProgram();
-		uModel = shaderLight->getUniformModel();
-		uProjection = shaderLight->getUniformProjection();
-		uView = shaderLight->getUniformView();
-		uEyePosition = shaderLight->getUniformEyePosition();
-		uColor = shaderLight->getUniformColor();
-		uTexOffset = shaderLight->getUniformTextureOffset();
-		uSpecularIntensity = shaderLight->getUniformSpecularIntensity();
-		uShininess = shaderLight->getUniformShininess();
+		ChangeShader(shaders[ShaderTypes::BONE_SHADER]);
 
 		// Camara
 		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(mainWindow.getProjectionMatrix()));
@@ -557,7 +596,6 @@ int main()
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 
 		// endregion Shader settings
-
 		// Para tomar las coordenadas de Blender
 		// y <-> z
 		// z -> -z
@@ -772,18 +810,27 @@ int main()
 		pod.render();
 
 		// region ALPHA
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-#ifdef AVATAR
-		shaders[ShaderTypes::BONE_SHADER]->useProgram();
+		// region AVATAR
+		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);
+		auto transforms = avatarAnimator.GetFinalBoneMatrices();
+		for (int i = 0; i < (int) transforms.size(); i++)
+			shaderLight->setMat4((boost::format("finalBonesMatrices[%d]") % i).str(), transforms[i]);
+
 		model = handler.setMatrix(glm::mat4(1.0f))
+		            //		            .translate(-21.7661, 50.5184, -10.7455)
+		            .translate(avatarPlayer.getPosition())
+		            .rotateY(avatarPlayer.getRotation().y)
+		            .scale(0.05)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		avatar.render();
-#endif
+		//		ChangeShader(shaders[ShaderTypes::LIGHT_SHADER]);
+		// endregion
 
 		// region Cristal
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		model = glm::mat4(1.0f);
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		cristal.render();
@@ -800,4 +847,5 @@ int main()
 
 	return 0;
 }
+
 #pragma clang diagnostic pop
