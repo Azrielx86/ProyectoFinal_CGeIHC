@@ -31,6 +31,7 @@
 #include "camera/CameraCollection.h"
 #include "camera/FreeCamera.h"
 #include "camera/ICamera.h"
+#include "camera/PlayerCamera.h"
 #include "camera/StaticCamera.h"
 #include "input/KeyboardInput.h"
 #include "model/BoneModel.h"
@@ -264,7 +265,8 @@ void InitCameras()
 	                                         -60.0f, 0.0f, 0.5f, 0.5f))
 	    .addCamera(new Camera::StaticCamera(glm::vec3(-134.618, 124.889, 4.39917),
 	                                        glm::vec3(0.0f, 1.0f, 0.0f),
-	                                        0.0f, -30.0f));
+	                                        0.0f, -30.0f))
+	    .addCamera(new Camera::PlayerCamera(&avatarPlayer));
 	activeCamera = cameras.getAcviveCamera();
 }
 
