@@ -135,6 +135,10 @@ void InitKeymaps()
 	        []() -> void
 	        {
 		        activeCamera = cameras.switchCamera();
+		        if (typeid(*activeCamera) == typeid(Camera::PlayerCamera))
+			        avatarPlayer.setEnableControls(true);
+		        else
+			        avatarPlayer.setEnableControls(false);
 	        })
 	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_T,
@@ -438,6 +442,32 @@ void ChangeShader(Shader *shader)
 	uShininess = shader->getUniformShininess();
 }
 
+float CalculateAvatarHeight()
+{
+	// Punto inferior -78.9389, 44.4252, 20.9459
+	// mov            54.7505, 44.4252, 20.9459
+	float avatarPosX = avatarPlayer.getPosition().x;
+	if (avatarPosX < -80) return 44.4252f;
+	auto cat = (float) std::abs(avatarPosX + 78.9389);
+	float alturaFinal = std::sin(glm::radians(6.0f)) * cat;
+	return 44.4252f + alturaFinal;
+}
+
+void CheckAvatarLimits()
+{
+	// limites inferiores = -79.7698, 46.4216, 38.4736
+	// limites superiores = 53.3977, 75.7373, -38.3946
+	auto avp = avatarPlayer.getPosition();
+	if (avp.x < -80)
+		avatarPlayer.setPosition({-80, avp.y, avp.z});
+	if (avp.x > 54)
+		avatarPlayer.setPosition({54, avp.y, avp.z});
+	if (avp.z < -38)
+		avatarPlayer.setPosition({avp.x, avp.y, -38});
+	if (avp.z > 38)
+		avatarPlayer.setPosition({avp.x, avp.y, 38});
+}
+
 int main()
 {
 	mainWindow = Window(1280, 720, "Proyecto Final \"Maquina de pinball\" - Semestre 2024-1");
@@ -518,12 +548,10 @@ int main()
 	Animation::BoneAnimation idleAnimation(Utils::PathUtils::getModelsPath().append("/2b_idle.fbx"), &avatar);
 	Animation::BoneAnimator avatarAnimator(&idleAnimation);
 	avatarAnimator.PlayAnimation(&walkAnimation);
+	avatarPlayer.setEnableControls(false); // La primer cámara es la libre, el avatar debe estar desactivado.
 
 	// Shaders
 	auto shaderLight = shaders[ShaderTypes::BONE_SHADER];
-
-	// Control animaciones avatar
-	bool AnimationChanged = false;
 
 	while (!mainWindow.shouldClose())
 	{
@@ -535,7 +563,12 @@ int main()
 
 		glfwPollEvents();
 		activeCamera->KeyControl(Input::KeyboardInput::GetInstance());
+		activeCamera->FixedUpdate();
+		
 		avatarPlayer.Move();
+		auto avPos = avatarPlayer.getPosition();
+		avatarPlayer.setPosition({avPos.x, CalculateAvatarHeight(), avPos.z});
+		CheckAvatarLimits();
 
 		if (avatarPlayer.isMoving())
 			avatarAnimator.PlayAnimation(&walkAnimation);
@@ -758,7 +791,6 @@ int main()
 		// endregion Modelo Jerarquico 2
 
 		// region Extra models
-		// region Destroyed Buildings
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(53.983, 71.612, -27.538)
 		            .rotateY(46.061)
@@ -773,7 +805,6 @@ int main()
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		destroyedBuilding.render();
 		// endregion
-		// endregion
 
 		// region Entity Marble
 		matMetal.UseMaterial(uSpecularIntensity, uShininess);
@@ -784,7 +815,6 @@ int main()
 		marbleKf.render();
 		// endregion Entity Marble
 
-		// region Resorte
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(-83.614f, 45.123f, 36.931f)
 		            .rotateZ(-76)
@@ -793,7 +823,6 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		resorte.render();
-		// endregion Resorte
 
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(44.797, 66.892, 0)
@@ -822,10 +851,9 @@ int main()
 			shaderLight->setMat4((boost::format("finalBonesMatrices[%d]") % i).str(), transforms[i]);
 
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            //		            .translate(-21.7661, 50.5184, -10.7455)
 		            .translate(avatarPlayer.getPosition())
 		            .rotateY(avatarPlayer.getRotation().y)
-		            .scale(0.05)
+		            .scale(0.03)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		avatar.render();

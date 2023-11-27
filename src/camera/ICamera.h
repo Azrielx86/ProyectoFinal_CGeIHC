@@ -29,6 +29,7 @@ class ICamera
 	virtual void MouseControl(Input::MouseInput &mouse) = 0;
 	virtual void KeyControl(Input::KeyboardInput &keyboard) = 0;
 	virtual void Update() = 0;
+	virtual void FixedUpdate() = 0;
 	virtual glm::vec3 getCameraPosition() = 0;
 	virtual glm::vec3 getCameraDirection() = 0;
 	virtual glm::mat4 calculateViewMatrix() = 0;

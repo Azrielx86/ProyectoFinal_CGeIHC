@@ -78,14 +78,11 @@ add_executable(ProyectoFinal_CGeIHC
         src/Shader.cpp
         src/model/Mesh.cpp
         src/model/Model.cpp
-        src/camera/Camera.cpp
         src/input/KeyboardInput.cpp
         src/input/KeyboardInput.h
         src/input/MouseInput.cpp
         src/input/MouseInput.h
         src/GlobalConstants.h
-        src/camera/OldCameraCollection.cpp
-        src/camera/OldCameraCollection.h
         src/Utils/ModelMatrix.cpp
         src/Utils/ModelMatrix.h
         src/Audio/AudioController.cpp

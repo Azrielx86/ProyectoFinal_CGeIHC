@@ -25,8 +25,8 @@ class CameraCollection
 
 	~CameraCollection()
 	{
-		for (auto &cam : cameras)
-			delete cam;
+//		for (auto &cam : cameras)
+//			delete cam;
 	};
 
 	CameraCollection &addCamera(T *camera)
@@ -46,8 +46,9 @@ class CameraCollection
 		if (cameraIndex >= (int) cameras.size())
 			cameraIndex = 0;
 		activeCamera = cameras.at(cameraIndex);
-		std::cout << "[ " << typeid(CameraCollection).name() << " ] Camera changed " << activeCamera << '\n';
-		std::cout << "\t==== Camera Position: ("
+		std::cout << "[ " << typeid(CameraCollection).name() << " ] Camera changed\n"
+		          << "\t==== Type: " << typeid(*activeCamera).name() << "\n"
+		          << "\t==== Position: ("
 		          << activeCamera->getCameraPosition().x << ", " << activeCamera->getCameraPosition().y << ", " << activeCamera->getCameraPosition().z << ")\n"
 		          << "\t==== Pitch: " << activeCamera->getPitch() << " | Yaw: " << activeCamera->getYaw() << "\n";
 		return activeCamera;

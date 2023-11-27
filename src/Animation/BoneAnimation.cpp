@@ -61,9 +61,9 @@ void BoneAnimation::ReadHeirarchyData(AssimpNodeData &dest, const aiNode *src) /
 	assert(src);
 	dest.name = src->mName.data;
 	dest.transformation = Utils::Assimp2Glm::ConvertMatrix(src->mTransformation);
-	dest.childrenCount = src->mNumChildren;
+	dest.childrenCount = (int)src->mNumChildren;
 
-	for (int i = 0; i < src->mNumChildren; ++i)
+	for (unsigned int i = 0; i < src->mNumChildren; ++i)
 	{
 		AssimpNodeData newData;
 		ReadHeirarchyData(newData, src->mChildren[i]);

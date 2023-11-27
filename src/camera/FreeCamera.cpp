@@ -16,6 +16,8 @@ FreeCamera::FreeCamera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat start
 
 	moveSpeed = startMoveSpeed;
 	turnSpeed = startTurnSpeed;
+	
+	FreeCamera::Update();
 }
 
 void FreeCamera::Update()

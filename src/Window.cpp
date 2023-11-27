@@ -21,6 +21,7 @@ Window::Window(GLuint windowWidth, GLuint windowHeight, const char *windowTitle)
 	//	for (bool &key : this->keys)
 	//		key = false;
 }
+
 bool Window::Init()
 {
 	if (!glfwInit())
@@ -84,6 +85,7 @@ void Window::bindCallbacks()
 	glfwSetKeyCallback(window, Window::handleKeyboard);
 	glfwSetCursorPosCallback(window, Window::handleMousePos);
 	glfwSetMouseButtonCallback(window, Window::handleMouseClick);
+	glfwSetScrollCallback(window, Window::handleMouseScroll);
 	glfwSetWindowSizeCallback(window, Window::windowResizeCallback);
 }
 
@@ -101,6 +103,12 @@ void Window::handleMouseClick([[maybe_unused]] GLFWwindow *window, int button, i
 {
 	Input::MouseInput::GetInstance().handleClick(button, action, mode);
 }
+
+void Window::handleMouseScroll([[maybe_unused]] GLFWwindow *window, double xoffset, double yoffset)
+{
+	Input::MouseInput::GetInstance().handleScroll(xoffset, yoffset);
+}
+
 void Window::toggleMouse()
 {
 	if (Input::MouseInput::GetInstance().isMouseEnabled())
@@ -116,6 +124,7 @@ void Window::windowResizeCallback(GLFWwindow *window, int width, int height)
 	glfwGetFramebufferSize(window, &pWindow->bufferWidth, &pWindow->bufferHeight);
 	pWindow->projection = glm::perspective(45.0f, (GLfloat) pWindow->bufferWidth / (GLfloat) pWindow->bufferHeight, 0.1f, 1000.0f);
 }
+
 glm::mat4 Window::getProjectionMatrix()
 {
 	return projection;

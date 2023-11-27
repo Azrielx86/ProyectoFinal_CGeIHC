@@ -5,9 +5,9 @@
 #ifndef PROYECTOFINAL_CGEIHC_FREECAMERA_H
 #define PROYECTOFINAL_CGEIHC_FREECAMERA_H
 
-#include "ICamera.h"
 #include "../input/KeyboardInput.h"
 #include "../input/MouseInput.h"
+#include "ICamera.h"
 
 extern float deltaTime;
 
@@ -21,9 +21,13 @@ class FreeCamera : public ICamera
 	void MouseControl(Input::MouseInput &mouse) override;
 	void KeyControl(Input::KeyboardInput &keyboard) override;
 	void Update() override;
+
+	void FixedUpdate() override {}
+
 	glm::vec3 getCameraPosition() override;
 	glm::vec3 getCameraDirection() override;
 	glm::mat4 calculateViewMatrix() override;
+
   private:
 	float moveSpeed;
 	float turnSpeed;

@@ -17,6 +17,9 @@ class StaticCamera : public ICamera
 	void MouseControl(Input::MouseInput &mouse) override;
 	void KeyControl(Input::KeyboardInput &keyboard) override;
 	void Update() override;
+
+	void FixedUpdate() override {}
+
 	glm::vec3 getCameraPosition() override;
 	glm::vec3 getCameraDirection() override;
 	glm::mat4 calculateViewMatrix() override;
