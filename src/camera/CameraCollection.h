@@ -4,6 +4,7 @@
 
 #ifndef PROYECTOFINAL_CGEIHC_CAMERACOLLECTION_H
 #define PROYECTOFINAL_CGEIHC_CAMERACOLLECTION_H
+
 #include "ICamera.h"
 #include <iostream>
 #include <type_traits>
