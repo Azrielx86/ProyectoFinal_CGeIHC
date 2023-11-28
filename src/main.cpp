@@ -32,6 +32,10 @@
 #include "model/Material.h"
 #include "model/ModelCollection.h"
 
+#include "model/MeshPrimitive.h"
+//#include "Window.h"
+//src/glew.h
+//src / Mesh.h src / Mesh_tn.cpp
 // region Global Variables
 Window mainWindow;
 Camera::CameraCollection cameras;
@@ -99,6 +103,8 @@ float escPico2 = 0;
 float rotPico3 = 0;
 float rotPicoZ3 = 0;
 float escPico3 = 0;
+
+std::vector<MeshPrimitive *> meshListPrimitive;
 
 bool activarCanicaSimple = false;
 bool activarCanicaSimple2 = false;
@@ -320,6 +326,73 @@ void InitKeymaps()
 	        });
 }
 
+void CrearDado()
+{
+	unsigned int cubo_indices[] = {
+	    // arriba
+	    0,
+	    1,
+	    2,
+	    3,
+	    4,
+	    5,
+	    6,
+	    7,
+	    8,
+	    9,
+	    10,
+	    11,
+	    // abajo
+	    12,
+	    13,
+	    14,
+	    15,
+	    16,
+	    17,
+	    18
+	};
+
+	GLfloat cubo_vertices[] = {
+	    // x		y		z		S		T			NX		NY		NZ
+	    // 1
+	    -0.0f, 1.0f, 0.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f, // 0
+	    1.0f, 0.0f, 1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,  // 1
+	    -1.0f, 0.0f, 1.0f, 0.75f, 0.5f, 0.0f, 0.0f, -1.0f, // 2
+	    // 2
+	    -0.0f, 1.0f, 0.0f, 0.75f, 0.5f, 0.0f, 0.0f, -1.0f,   // 0
+	    -1.0f, 0.0f, 1.0f, 0.5f, 0.25f, 0.0f, 0.0f, -1.0f,   // 2
+	    -1.0f, 0.0f, -1.0f, 0.99f, 0.25f, 0.0f, 0.0f, -1.0f, // 3
+	    // 3
+	    -0.0f, 1.0f, 0.0f, 0.75f, 0.99f, 0.0f, 0.0f, -1.0f, // 0
+	    -1.0f, 0.0f, -1.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f, // 3
+	    1.0f, 0.0f, -1.0f, 0.99f, 0.75f, 0.0f, 0.0f, -1.0f, // 4
+	    // 4
+	    -0.0f, 1.0f, 0.0f, 0.75f, 0.5f, 0.0f, 0.0f, -1.0f,  // 0
+	    1.0f, 0.0f, -1.0f, 0.99f, 0.75f, 0.0f, 0.0f, -1.0f, // 4
+	    1.0f, 0.0f, 1.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,   // 1
+	    // 5
+	    -0.0f, -1.0f, 0.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f, // 5
+	    1.0f, 0.0f, 1.0f, 0.01f, 0.25f, 0.0f, 0.0f, -1.0f,  // 1
+	    -1.0f, 0.0f, 1.0f, 0.5f, 0.25f, 0.0f, 0.0f, -1.0f,  // 2
+	    // 6
+	    -0.0f, -1.0f, 0.0f, 0.5f, 0.25f, 0.0f, 0.0f, -1.0f, // 5
+	    -1.0f, 0.0f, 1.0f, 0.75f, 0.5f, 0.0f, 0.0f, -1.0f,  // 2
+	    -1.0f, 0.0f, -1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f, // 3
+	    // 7
+	    -0.0f, -1.0f, 0.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,  // 5
+	    -1.0f, 0.0f, -1.0f, 0.01f, 0.75f, 0.0f, 0.0f, -1.0f, // 3
+	    1.0f, 0.0f, -1.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,   // 4
+	    // 8
+	    -0.0f, -1.0f, 0.0f, 0.25f, 0.01f, 0.0f, 0.0f, -1.0f, // 5
+	    1.0f, 0.0f, -1.0f, 0.01f, 0.25f, 0.0f, 0.0f, -1.0f,  // 4
+	    1.0f, 0.0f, 1.0f, 0.5f, 0.25f, 0.0f, 0.0f, -1.0f,    // 1
+	};
+
+	MeshPrimitive *dado = new MeshPrimitive();
+	dado->CreateMeshPrimitive(cubo_vertices, cubo_indices, 102, 201); //, 192, 36
+	meshListPrimitive.push_back(dado);
+}
+
 void InitShaders()
 {
 	auto shader = new Shader();
@@ -350,7 +423,8 @@ void InitModels()
 {
 	models
 	    .addModel(MODELS::MAQUINA_PINBALL, "assets/Models/pinballFRIO.obj")
-	    .addModel(MODELS::FLIPPER, "assets/Models/FlipperH.obj")
+	    .addModel(MODELS::FLIPPER, "assets/Models/Flipper.obj")
+	    .addModel(MODELS::FLIPPERH, "assets/Models/FlipperH.obj")
 	    .addModel(MODELS::MARBLE, "assets/Models/canica.obj")
 	    .addModel(MODELS::MAQUINA_CRISTAL, Utils::PathUtils::getModelsPath().append("/MaquinaCristal.obj"))
 		.addModel(MODELS::MARBLE, Utils::PathUtils::getModelsPath().append("/canica.obj"))
@@ -1049,6 +1123,7 @@ void exitProgram()
 
 int main()
 {
+	CrearDado();
 	mainWindow = Window(1280, 720, "Proyecto Final \"Maquina de pinball\" - Semestre 2024-1");
 
 	if (!mainWindow.Init())
@@ -1113,6 +1188,7 @@ int main()
 	auto maquinaPinball = models[MODELS::MAQUINA_PINBALL];
 	auto cristal = models[MODELS::MAQUINA_CRISTAL];
 	auto flipper = models[MODELS::FLIPPER];
+	auto flipperh = models[MODELS::FLIPPERH];
 	auto marbleKf = models[MODELS::MARBLE];
 	auto resorte = models[MODELS::RESORTE];
 	auto lever = models[MODELS::PALANCA];
@@ -1259,7 +1335,7 @@ int main()
 		            .scale(0.586)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		flipper.render();
+		flipperh.render();
 		// endregion Flippers
 
 		model = handler.setMatrix(glm::mat4(1.0f))
@@ -1486,6 +1562,19 @@ int main()
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		Muneco.render();
 		//endregion muñeco de nieve
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(8, 70, -26)
+		            //.scale(0.4)
+		            //.rotateZ(-6)
+		            //.rotateY(180)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		//dadoTexture.UseTexture();
+		meshListPrimitive[0]->RenderMeshPrimitive();
+		//a
+
+
 
 		// region ALPHA
 #ifdef AVATAR

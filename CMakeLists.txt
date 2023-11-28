@@ -111,6 +111,8 @@ add_executable(ProyectoFinal_CGeIHC
         src/model/Material.h
         src/model/Texture.cpp
         src/model/Texture.h
+        src/model/MeshPrimitive.h
+        src/model/MeshPrimitive.cpp
         src/Skybox.h
         src/Skybox.cpp
         src/Utils/ImageUtils.cpp
