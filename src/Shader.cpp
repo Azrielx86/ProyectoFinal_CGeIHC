@@ -96,8 +96,8 @@ void Shader::compileShader()
 	uniformEyePosition = glGetUniformLocation(shaderProgramId, "eyePosition");
 	uniformColor = glGetUniformLocation(shaderProgramId, "color");
 	uniformTextureOffset = glGetUniformLocation(shaderProgramId, "toffset");
-
 	uniformPointLightCount = glGetUniformLocation(shaderProgramId, "pointLightCount");
+	uniformBonesMatrices = glGetUniformLocation(shaderProgramId, "finalBonesMatrices");
 
 	for (size_t i = 0; i < MAX_POINT_LIGHTS; i++)
 	{

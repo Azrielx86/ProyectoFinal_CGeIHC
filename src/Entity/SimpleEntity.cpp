@@ -9,7 +9,7 @@ namespace Entity
 const glm::vec3 &SimpleEntity::getPosition() const { return position; }
 const glm::vec3 &SimpleEntity::getRotation() const { return rotation; }
 
-SimpleEntity &SimpleEntity::move(Entity::Axis axis, float mov)
+SimpleEntity &SimpleEntity::move(Axis axis, float mov)
 {
 	switch (axis)
 	{
@@ -26,7 +26,7 @@ SimpleEntity &SimpleEntity::move(Entity::Axis axis, float mov)
 	return *this;
 }
 
-SimpleEntity &SimpleEntity::rotate(Entity::Axis axis, float mov)
+SimpleEntity &SimpleEntity::rotate(Axis axis, float mov)
 {
 	switch (axis)
 	{

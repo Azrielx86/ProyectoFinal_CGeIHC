@@ -16,7 +16,9 @@ void KeyFrameAnimation::addKeyframe(const glm::vec3 &translations, const glm::ve
 	frames.push_back(frame);
 	if (currentFrame == nullptr)
 		currentFrame = frames.front();
+#ifdef PRINT_ANIM_DETAILS
 	printf("Actualmente hay %zu frames\n", frames.size());
+#endif
 }
 
 bool KeyFrameAnimation::play()

@@ -38,12 +38,14 @@ class MouseInput
 
 	void handlePosition(float xPos, float yPos);
 	void handleClick(int button, int action, int mode);
+	static void handleScroll(double xoffset, double yoffset);
 
 	void toggleMouseEnabled();
 	[[nodiscard]] bool isMouseEnabled() const;
 	[[nodiscard]] float getXChange() const;
 	[[nodiscard]] float getYChange() const;
-	
+	[[nodiscard]] static float getYScroll();
+
 	/**
 	 * @return Actual keymap.
 	 */
@@ -75,6 +77,7 @@ class MouseInput
 	float lastyPos = 0;
 	float xChange = 0;
 	float yChange = 0;
+	static float yScroll;
 
 	/*
 	 * Cada "Modo del mouse debe contener lo siguiente:

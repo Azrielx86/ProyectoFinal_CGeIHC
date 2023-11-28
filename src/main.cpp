@@ -16,8 +16,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Animation/Animation.h"
+#include "Animation/BoneAnimation.h"
+#include "Animation/BoneAnimator.h"
 #include "Animation/KeyFrameAnimation.h"
 #include "Audio/AudioDevice.h"
+#include "Entity/Player.h"
 #include "Entity/SimpleEntity.h"
 #include "GlobalConstants.h"
 #include "Lights/DirectionalLight.h"
@@ -25,12 +28,16 @@
 #include "Skybox.h"
 #include "Utils/ModelMatrix.h"
 #include "Window.h"
-#include "camera/Camera.h"
 #include "camera/CameraCollection.h"
+#include "camera/FreeCamera.h"
+#include "camera/ICamera.h"
+#include "camera/PlayerCamera.h"
+#include "camera/StaticCamera.h"
 #include "input/KeyboardInput.h"
 #include "model/BoneModel.h"
 #include "model/Material.h"
 #include "model/ModelCollection.h"
+#include <boost/format.hpp>
 
 #include "model/MeshPrimitive.h"
 //#include "Window.h"
@@ -38,8 +45,13 @@
 //src / Mesh.h src / Mesh_tn.cpp
 // region Global Variables
 Window mainWindow;
-Camera::CameraCollection cameras;
-Camera::Camera *activeCamera;
+// #warning "Old camera implementation"
+// Camera::OldCameraCollection oldCameras;
+// Camera::Camera *oldActiveCamera;
+
+Camera::CameraCollection<Camera::ICamera> cameras;
+Camera::ICamera *activeCamera;
+
 Model::ModelCollection models;
 Lights::LightCollection<Lights::DirectionalLight> directionalLights;
 Lights::LightCollection<Lights::PointLight> pointLights;
@@ -52,12 +64,16 @@ Animation::KeyFrameAnimation marbleKfAnim;
 Animation::Animation marbleAnimation;
 Animation::Animation marblePreLaunch;
 Animation::Animation marblePostLaunch;
+Entity::Player avatarPlayer(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
 glm::vec3 marblePos;
 glm::vec3 leverPos = {-85.369f, 43.931f, 36.921f};
 const glm::vec3 leverEnd = {-90.089f, 42.213f, 36.921f};
 const glm::vec3 leverDirection = glm::normalize(leverEnd - leverPos);
 // const float movLeverDistance = glm::length(leverEnd - leverPos);
-Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/2b.obj"));
+Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/2b_walk_static.fbx"));
+
+// Constantes para uniforms
+GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess, uTexOffset, uColor, uBonesMatrices;
 
 Model::Material matMetal;
 Model::Material Material_brillante;
@@ -77,6 +93,7 @@ bool mJ1_trigger = false;
 // Posicion numeros: 60.3627, 115.599, -34.7832
 
 float deltaTime = 0.0f;
+float deltaTimeAnim = 0.0f;
 float lastTime = 0.0f;
 const float limitFPS = 1.0f / 60.0f;
 
@@ -176,6 +193,10 @@ void InitKeymaps()
 	        []() -> void
 	        {
 		        activeCamera = cameras.switchCamera();
+		        if (typeid(*activeCamera) == typeid(Camera::PlayerCamera))
+			        avatarPlayer.setEnableControls(true);
+		        else
+			        avatarPlayer.setEnableControls(false);
 	        })
 	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_I,///////////nuevo
@@ -322,7 +343,7 @@ void InitKeymaps()
 	        KEYMAPS::FREE_CAMERA,
 	        [](float) -> void
 	        {
-		        activeCamera->mouseControl(Input::MouseInput::GetInstance());
+		        activeCamera->MouseControl(Input::MouseInput::GetInstance());
 	        });
 }
 
@@ -410,12 +431,13 @@ void InitShaders()
 
 void InitCameras()
 {
-	cameras.addCamera(new Camera::Camera(glm::vec3(0.0f, 60.0f, 20.0f),
-	                                     glm::vec3(0.0f, 1.0f, 0.0f),
-	                                     -60.0f, 0.0f, 0.5f, 0.5f));
-	cameras.addCamera(new Camera::Camera(glm::vec3(-134.618, 124.889, 4.39917),
-	                                     glm::vec3(0.0f, 1.0f, 0.0f),
-	                                     0.0f, -30.0f, 0.5f, 0.5f, true));
+	cameras.addCamera(new Camera::FreeCamera(glm::vec3(0.0f, 60.0f, 20.0f),
+	                                         glm::vec3(0.0f, 1.0f, 0.0f),
+	                                         -60.0f, 0.0f, 0.5f, 0.5f))
+	    .addCamera(new Camera::StaticCamera(glm::vec3(-134.618, 124.889, 4.39917),
+	                                        glm::vec3(0.0f, 1.0f, 0.0f),
+	                                        0.0f, -30.0f))
+	    .addCamera(new Camera::PlayerCamera(&avatarPlayer));
 	activeCamera = cameras.getAcviveCamera();
 }
 
@@ -448,9 +470,7 @@ void InitModels()
 	    .addModel(MODELS::PICOM, Utils::PathUtils::getModelsPath().append("/Pico_M.obj"))
 	    
 	    .loadModels();
-#ifdef AVATAR
 	avatar.loadModel();
-#endif
 }
 
 void InitLights()
@@ -1064,6 +1084,7 @@ void InitAnimations()
 		        }
 	        })
 		.prepare();
+
 	//
 	MjPos_0 = {0.0f, 2.9f, -3.2f};
 	//	modeloJerarquico1
@@ -1072,6 +1093,11 @@ void InitAnimations()
 	//		                  MjRot_0 = -90;
 	//	                  })
 	//	    .prepare();
+}
+
+void InitPlayers()
+{
+	avatarPlayer.setPosition({-21.7661, 50.5184, -10.7455});
 }
 
 void updateFlippers()
@@ -1121,6 +1147,45 @@ void exitProgram()
 		delete shader.second;
 }
 
+void ChangeShader(Shader *shader)
+{
+	shader->useProgram();
+	uModel = shader->getUniformModel();
+	uProjection = shader->getUniformProjection();
+	uView = shader->getUniformView();
+	uEyePosition = shader->getUniformEyePosition();
+	uColor = shader->getUniformColor();
+	uTexOffset = shader->getUniformTextureOffset();
+	uSpecularIntensity = shader->getUniformSpecularIntensity();
+	uShininess = shader->getUniformShininess();
+}
+
+float CalculateAvatarHeight()
+{
+	// Punto inferior -78.9389, 44.4252, 20.9459
+	// mov            54.7505, 44.4252, 20.9459
+	float avatarPosX = avatarPlayer.getPosition().x;
+	if (avatarPosX < -80) return 44.4252f;
+	auto cat = (float) std::abs(avatarPosX + 78.9389);
+	float alturaFinal = std::sin(glm::radians(6.0f)) * cat;
+	return 44.4252f + alturaFinal;
+}
+
+void CheckAvatarLimits()
+{
+	// limites inferiores = -79.7698, 46.4216, 38.4736
+	// limites superiores = 53.3977, 75.7373, -38.3946
+	auto avp = avatarPlayer.getPosition();
+	if (avp.x < -80)
+		avatarPlayer.setPosition({-80, avp.y, avp.z});
+	if (avp.x > 54)
+		avatarPlayer.setPosition({54, avp.y, avp.z});
+	if (avp.z < -38)
+		avatarPlayer.setPosition({avp.x, avp.y, -38});
+	if (avp.z > 38)
+		avatarPlayer.setPosition({avp.x, avp.y, 38});
+}
+
 int main()
 {
 	CrearDado();
@@ -1139,6 +1204,7 @@ int main()
 	InitCameras();
 	InitModels();
 	InitLights();
+	InitPlayers();
 	InitAnimations();
 	LoadAnimations();
 
@@ -1173,9 +1239,6 @@ int main()
 	Material_brillante = Model::Material(4.0f, 256);
 	Material_opaco = Model::Material(0.3f, 4);
 
-	// Constantes para uniforms
-	GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess, uTexOffset, uColor;
-
 	Utils::ModelMatrix handler(glm::mat4(1.0f));
 	glm::mat4 model(1.0f);
 	glm::mat4 modelaux(1.0f);
@@ -1198,28 +1261,50 @@ int main()
 	auto PicoM = models[MODELS::PICOM];
 	auto Muneco = models[MODELS::MUNECO];
 
+	Animation::BoneAnimation walkAnimation(Utils::PathUtils::getModelsPath().append("/2b_walk_static.fbx"), &avatar);
+	Animation::BoneAnimation idleAnimation(Utils::PathUtils::getModelsPath().append("/2b_idle.fbx"), &avatar);
+	Animation::BoneAnimator avatarAnimator(&idleAnimation);
+	avatarAnimator.PlayAnimation(&walkAnimation);
+	avatarPlayer.setEnableControls(false); // La primer cámara es la libre, el avatar debe estar desactivado.
+
 	// Shaders
-	auto shaderLight = shaders[ShaderTypes::LIGHT_SHADER];
+	auto shaderLight = shaders[ShaderTypes::BONE_SHADER];
 
 	while (!mainWindow.shouldClose())
 	{
 		auto now = (float) glfwGetTime();
 		deltaTime = now - lastTime;
+		deltaTimeAnim = deltaTime;
 		deltaTime += (now - lastTime) / limitFPS;
 		lastTime = now;
 
 		glfwPollEvents();
-		activeCamera->keyControl(Input::KeyboardInput::GetInstance(), deltaTime);
+		activeCamera->KeyControl(Input::KeyboardInput::GetInstance());
+		activeCamera->FixedUpdate();
+		
+		avatarPlayer.Move();
+		auto avPos = avatarPlayer.getPosition();
+		avatarPlayer.setPosition({avPos.x, CalculateAvatarHeight(), avPos.z});
+		CheckAvatarLimits();
+
+		if (avatarPlayer.isMoving())
+			avatarAnimator.PlayAnimation(&walkAnimation);
+		else
+			avatarAnimator.PlayAnimation(&idleAnimation);
+
+		avatarAnimator.UpdateAnimation(deltaTimeAnim);
 
 		//update anim
 		updateFlippers();
 		marblePreLaunch.update(deltaTime);
+
 		PicoJerarquia1.update(deltaTime);
 		PicoJerarquia2.update(deltaTime);
 		PicoJerarquia3.update(deltaTime);
 		CanicaAS.update(deltaTime);
 		CanicaAS2.update(deltaTime);
 		canicaASPos = {Cx, Cy, Cz};
+
 
 		if (timer <= glfwGetTime())
 		{
@@ -1233,7 +1318,7 @@ int main()
 				skyBoxCurrent = &skyboxDay;
 				ambLight = AMB_LIGHTS::DAY;
 			}
-			timer = (float) glfwGetTime() + 5;
+			timer = (float) glfwGetTime() + 8;
 		}
 
 		if (captureMode)
@@ -1251,15 +1336,7 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		skyBoxCurrent->DrawSkybox(activeCamera->calculateViewMatrix(), mainWindow.getProjectionMatrix());
-		shaderLight->useProgram();
-		uModel = shaderLight->getUniformModel();
-		uProjection = shaderLight->getUniformProjection();
-		uView = shaderLight->getUniformView();
-		uEyePosition = shaderLight->getUniformEyePosition();
-		uColor = shaderLight->getUniformColor();
-		uTexOffset = shaderLight->getUniformTextureOffset();
-		uSpecularIntensity = shaderLight->getUniformSpecularIntensity();
-		uShininess = shaderLight->getUniformShininess();
+		ChangeShader(shaders[ShaderTypes::BONE_SHADER]);
 
 		// Camara
 		glUniformMatrix4fv((GLint) uProjection, 1, GL_FALSE, glm::value_ptr(mainWindow.getProjectionMatrix()));
@@ -1292,7 +1369,7 @@ int main()
 		glUniform2fv((GLint) uTexOffset, 1, glm::value_ptr(toffset));
 		glUniform3fv((GLint) uColor, 1, glm::value_ptr(color));
 		// endregion Shader settings
-		
+
 		// Para tomar las coordenadas de Blender
 		// y <-> z
 		// z -> -z
@@ -1466,7 +1543,10 @@ int main()
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
 
+
 		// 3do pico
+		// region Extra models
+
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(6.5, 57.35, 6)
 		            .rotateY(rotPico3)
@@ -1483,6 +1563,7 @@ int main()
 		            .rotateZ(44.39)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+
 		PicoM.render();
 		// 2
 		model = handler.setMatrix(modelaux3)
@@ -1520,6 +1601,9 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
+
+		destroyedBuilding.render();
+
 		// endregion
 
 		// region Entity Marble
@@ -1529,6 +1613,7 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		marbleKf.render();
+
 
 		matMetal.UseMaterial(uSpecularIntensity, uShininess);
 		model = handler.setMatrix(glm::mat4(1.0f))
@@ -1542,6 +1627,7 @@ int main()
 		//if ()
 		
 		// region Resorte
+
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(-83.614f, 45.123f, 36.931f)
 		            .rotateZ(-76)
@@ -1550,9 +1636,11 @@ int main()
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		resorte.render();
+
 		// endregion Resorte
-		
+
 		//region muñeco de hielo
+
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(8, 55, -26)
 		            .scale(0.4)
@@ -1574,16 +1662,25 @@ int main()
 		meshListPrimitive[0]->RenderMeshPrimitive();
 		//a
 
-
-
 		// region ALPHA
-#ifdef AVATAR
-		shaders[ShaderTypes::BONE_SHADER]->useProgram();
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// region AVATAR
+		Material_opaco.UseMaterial(uSpecularIntensity, uShininess);
+		auto transforms = avatarAnimator.GetFinalBoneMatrices();
+		for (int i = 0; i < (int) transforms.size(); i++)
+			shaderLight->setMat4((boost::format("finalBonesMatrices[%d]") % i).str(), transforms[i]);
+
 		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(avatarPlayer.getPosition())
+		            .rotateY(avatarPlayer.getRotation().y)
+		            .scale(0.03)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		avatar.render();
-#endif
+		//		ChangeShader(shaders[ShaderTypes::LIGHT_SHADER]);
+		// endregion
 
 		// region Nora
 		glEnable(GL_BLEND);
@@ -1600,8 +1697,6 @@ int main()
 		// endregion
 		
 		// region Cristal
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		model = glm::mat4(1.0f);
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		cristal.render();
@@ -1616,4 +1711,5 @@ int main()
 
 	return 0;
 }
+
 #pragma clang diagnostic pop

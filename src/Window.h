@@ -34,6 +34,7 @@ class Window
 	static void handleKeyboard([[maybe_unused]] GLFWwindow *window, int key, int code, int action, int mode);
 	static void handleMousePos(GLFWwindow *window, double xPos, double yPos);
 	static void handleMouseClick(GLFWwindow* window, int button, int action, int mode);
+	static void handleMouseScroll(GLFWwindow* window, double xoffset, double yoffset);
 	static void windowResizeCallback(GLFWwindow* window, int width, int height);
 
   private:

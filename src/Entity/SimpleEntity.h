@@ -14,19 +14,20 @@
 
 namespace Entity
 {
-enum Axis
-{
-	X,
-	Y,
-	Z
-};
 class SimpleEntity
 {
+	enum Axis
+	{
+		X,
+		Y,
+		Z
+	};
+
   public:
 	[[nodiscard]] const glm::vec3 &getPosition() const;
 	[[nodiscard]] const glm::vec3 &getRotation() const;
-	SimpleEntity &move(Entity::Axis axis, float mov);
-	SimpleEntity &rotate(Entity::Axis axis, float mov);
+	SimpleEntity &move(Axis axis, float mov);
+	SimpleEntity &rotate(Axis axis, float mov);
 	//	SimpleEntity &moveX(float mov);
 	//	SimpleEntity &moveY(float mov);
 	//	SimpleEntity &moveZ(float mov);
