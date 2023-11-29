@@ -37,6 +37,7 @@
 #include "model/BoneModel.h"
 #include "model/Material.h"
 #include "model/ModelCollection.h"
+#include "model/Texture.h"
 #include <boost/format.hpp>
 
 #include "Audio/AudioController.h"
@@ -83,6 +84,7 @@ GLuint uProjection, uModel, uView, uEyePosition, uSpecularIntensity, uShininess,
 Model::Material matMetal;
 Model::Material Material_brillante;
 Model::Material Material_opaco;
+Model::Texture primitiva;
 
 float timer = 0.0f;
 
@@ -353,7 +355,7 @@ void InitKeymaps()
 	        });
 }
 
-void CrearDado()
+void CrearPrimitiva()
 {
 	unsigned int cubo_indices[] = {
 	    // arriba
@@ -379,11 +381,12 @@ void CrearDado()
 	    18};
 
 	GLfloat cubo_vertices[] = {
-	    // x		y		z		S		T			NX		NY		NZ
+	    // x	y		z		S		T			NX		NY		NZ
 	    // 1
-	    -0.0f, 1.0f, 0.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f, // 0
+	    -0.0f,	1.0f,	0.0f,	0.5f,	0.75f,		0.0f,	0.0f,	-1.0f, // 0
+
 	    1.0f, 0.0f, 1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,  // 1
-	    -1.0f, 0.0f, 1.0f, 0.75f, 0.5f, 0.0f, 0.0f, -1.0f, // 2
+	    -0.0f, 1.0f, 0.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f, // 0
 	    // 2
 	    -0.0f, 1.0f, 0.0f, 0.75f, 0.5f, 0.0f, 0.0f, -1.0f,   // 0
 	    -1.0f, 0.0f, 1.0f, 0.5f, 0.25f, 0.0f, 0.0f, -1.0f,   // 2
@@ -562,8 +565,7 @@ void InitAnimations()
 		                  leverPos = {-85.369f, 43.931f, 36.921f};
 		                  return true; })
 	    .prepare();
-
-	PicoJerarquia1 /////////////////////////////nuevo
+	PicoJerarquia1
 	    .addCondition(
 	        [](float) -> bool
 	        { return activarP1; })
@@ -1100,16 +1102,9 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .prepare();
+		.prepare();
 
-	//
 	MjPos_0 = {0.0f, 2.9f, -3.2f};
-	//	modeloJerarquico1
-	//	    .addCondition([](float) -> bool
-	//	                               {
-	//		                  MjRot_0 = -90;
-	//	                  })
-	//	    .prepare();
 }
 
 #pragma clang diagnostic pop
@@ -1221,7 +1216,7 @@ int main(int argc, char **argv)
 		std::cerr << "No se pudo iniciar la ventana\n";
 		return 1;
 	}
-
+CrearPrimitiva();
 	// Inicializar los componentes del programa
 	Audio::AudioDevice::GetInstance(); // inicializa el componente de audio
 	Audio::AudioDevice::InitAlut(&argc, argv);
@@ -1235,6 +1230,9 @@ int main(int argc, char **argv)
 	LoadAnimations();
 	InitAudios();
 	CrearDado();
+
+	//primitiva = Model::Texture("Textures/dado_ocho.tga");
+	//primitiva.LoadTexture();
 
 	// region Skybox settings
 	// SKyBoxes Faces Day
@@ -1399,6 +1397,16 @@ int main(int argc, char **argv)
 		shaderLight->SetDirectionalLight(&directionalLights[ambLight]);
 		shaderLight->SetSpotLights(spotLights.getLightArray(), spotLights.getCurrentCount());
 		shaderLight->SetPointLights(pointLights.getLightArray(), pointLights.getCurrentCount());
+		
+		if (marbleKfAnim.Returnindex() > 6) {
+			activarP3 = true;
+			PicoJerarquia3.start();
+		}
+		if (marbleKfAnim.Returnindex() > 12)
+		{
+			activarP1 = true;
+			PicoJerarquia1.start();
+		}
 
 		if (!activarP1)
 		{
@@ -1412,6 +1420,7 @@ int main(int argc, char **argv)
 		{
 			pointLights.toggleLight(2, false);
 		} /////////////////////////////
+
 
 		toffset = {0.0f, 0.0f};
 		color = {1.0f, 1.0f, 1.0f};
@@ -1706,7 +1715,7 @@ int main(int argc, char **argv)
 		            //.rotateY(180)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		// dadoTexture.UseTexture();
+		//prismaTexture.UseTexture();
 		meshListPrimitive[0]->RenderMeshPrimitive();
 		// a
 

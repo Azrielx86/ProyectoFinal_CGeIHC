@@ -21,6 +21,11 @@ void KeyFrameAnimation::addKeyframe(const glm::vec3 &translations, const glm::ve
 #endif
 }
 
+int KeyFrameAnimation::Returnindex() 
+{
+	return playIndex;
+}
+
 bool KeyFrameAnimation::play()
 {
 	if (frames.size() < 2)
