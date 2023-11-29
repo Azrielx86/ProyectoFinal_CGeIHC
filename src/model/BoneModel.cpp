@@ -37,9 +37,10 @@ void BoneModel::loadModel()
 
 	loadNode(scene->mRootNode, scene);
 	loadMaterials(scene);
-	std::cout << "[ " << typeid(BoneModel).name() << " ] Modelo cargado " << modelPath << "\n";
+	std::cout << boost::format("\x1B[32m[ %s ] Modelo (Bone Rig) cargado (%s) con %d huesos.\x1B[0m\n") % typeid(BoneModel).name() % modelPath % m_BoneCounter;
 }
-void BoneModel::loadNode(aiNode *node, const aiScene *scene)
+
+void BoneModel::loadNode(aiNode *node, const aiScene *scene) // NOLINT(*-no-recursion)
 {
 	for (uint i = 0; i < node->mNumMeshes; i++)
 		loadMesh(scene->mMeshes[node->mMeshes[i]], scene);
@@ -60,19 +61,21 @@ void BoneModel::loadMesh(aiMesh *mesh, const aiScene *scene)
 		if (mesh->mTextureCoords[0])
 		{
 			vertex.TexCoords = {mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y};
+			//			vertex.Tangent = {mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z};
+			//			vertex.Bitangent = {mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z};
 		}
 		else
 			vertex.TexCoords = {0.0f, 0.0f};
 		vertices.push_back(vertex);
 	}
-	
+
 	for (uint i = 0; i < mesh->mNumFaces; ++i)
 	{
 		aiFace face = mesh->mFaces[i];
 		for (uint j = 0; j < face.mNumIndices; ++j)
 			indices.push_back(face.mIndices[j]);
 	}
-	
+
 	ExtractBoneWeightForVertices(vertices, mesh, scene);
 	meshList.push_back(new BoneMesh(vertices, indices));
 	meshesToTexturize.push_back(mesh->mMaterialIndex);
@@ -99,7 +102,7 @@ void BoneModel::loadMaterials(const aiScene *scene)
 					{
 						if (!textureList[i]->LoadTexture(type == Utils::ImageUtils::CHANNEL_TYPE::RGBA))
 						{
-							std::cerr << "Failed to load texture: " << file;
+							std::cerr << boost::format("[ %s ] Failed to load texture: %s") % typeid(BoneModel).name() % file;
 							delete textureList[i];
 							textureList[i] = nullptr;
 						}
@@ -107,7 +110,7 @@ void BoneModel::loadMaterials(const aiScene *scene)
 				}
 			}
 		}
-		
+
 		if (!textureList[i])
 		{
 			auto texturePath = Utils::PathUtils::getTexturesPath() + "/plain.png";
@@ -116,15 +119,16 @@ void BoneModel::loadMaterials(const aiScene *scene)
 		}
 	}
 }
-const std::unordered_map<std::string, BoneInfo> &BoneModel::getMBoneInfoMap() const
+std::unordered_map<std::string, BoneInfo> &BoneModel::getMBoneInfoMap()
 {
 	return m_BoneInfoMap;
 }
 
-int BoneModel::getMBoneCounter() const
+int &BoneModel::getMBoneCounter()
 {
 	return m_BoneCounter;
 }
+
 void BoneModel::setVertexBoneDataToDefault(Vertex &vtx)
 {
 	for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
@@ -137,7 +141,7 @@ void BoneModel::SetVertexBoneData(Vertex &vertex, int boneID, float weight)
 {
 	for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
 	{
-		if(vertex.m_Weights[i] < 0)
+		if (vertex.m_BoneIDs[i] < 0)
 		{
 			vertex.m_Weights[i] = weight;
 			vertex.m_BoneIDs[i] = boneID;
@@ -145,7 +149,7 @@ void BoneModel::SetVertexBoneData(Vertex &vertex, int boneID, float weight)
 		}
 	}
 }
-void BoneModel::ExtractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *mesh, const aiScene *scene)
+void BoneModel::ExtractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *mesh, [[maybe_unused]] const aiScene *scene)
 {
 	for (uint boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
 	{
@@ -155,11 +159,11 @@ void BoneModel::ExtractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMe
 		{
 			BoneInfo newBoneInfo{};
 			newBoneInfo.id = m_BoneCounter;
-			newBoneInfo.offset = ConvertMatrixToGLMFormat(
-			    mesh->mBones[boneIndex]->mOffsetMatrix);
+			newBoneInfo.offset = AssimpMat2GlmMat(mesh->mBones[boneIndex]->mOffsetMatrix);
 			m_BoneInfoMap[boneName] = newBoneInfo;
 			boneID = m_BoneCounter;
 			m_BoneCounter++;
+			std::cout << boost::format("[ %s ] Bone found: %s (%d)\n") % typeid(BoneModel).name() % boneName % m_BoneCounter;
 		}
 		else
 		{
@@ -167,12 +171,12 @@ void BoneModel::ExtractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMe
 		}
 		assert(boneID != -1);
 		auto weights = mesh->mBones[boneIndex]->mWeights;
-		int numWeights = mesh->mBones[boneIndex]->mNumWeights;
-		
-		for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+		auto numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+		for (unsigned int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
 		{
-			int vertexId = weights[weightIndex].mVertexId;
-			float weight = weights[weightIndex].mWeight;
+			auto vertexId = weights[weightIndex].mVertexId;
+			auto weight = weights[weightIndex].mWeight;
 			assert(vertexId <= vertices.size());
 			SetVertexBoneData(vertices[vertexId], boneID, weight);
 		}

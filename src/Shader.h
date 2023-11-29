@@ -6,10 +6,10 @@
 #define PROYECTOFINAL_CGEIHC_SHADER_H
 
 #include "GlobalConstants.h"
+#include <GL/glew.h>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
-#include <GL/glew.h>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -45,6 +45,7 @@ class Shader
 	void SetPointLights(Lights::PointLight *pLight, unsigned int lightCount);
 	void SetSpotLights(Lights::SpotLight *sLight, unsigned int lightCount);
 	void useProgram() const;
+	void setMat4(const std::string &name, const glm::mat4 &mat) const { glUniformMatrix4fv(glGetUniformLocation(shaderProgramId, name.c_str()), 1, GL_FALSE, &mat[0][0]); }
 
   private:
 	struct
@@ -90,7 +91,7 @@ class Shader
 	[[maybe_unused]] int pointLightCount = 0;
 	[[maybe_unused]] int spotLightCount = 0;
 	GLuint shaderProgramId, uniformProjection, uniformModel, uniformColor, uniformView, uniformEyePosition,
-	    uniformSpecularIntensity, uniformShininess, uniformTextureOffset;
+	    uniformSpecularIntensity, uniformShininess, uniformTextureOffset, uniformBonesMatrices;
 	const char *vertexCode;
 	const char *fragmentCode;
 	void compileShader();
