@@ -41,10 +41,6 @@ class Window
 	GLFWwindow *window;
 	GLuint width;
 	GLuint height;
-	GLboolean StartAnimacionPico1=false;
-	GLboolean StartAnimacionPico2 = false;
-	GLboolean StartAnimacionPico3 = false;
-	GLboolean StartAnimacionCanica = false;
 	int bufferWidth;
 	int bufferHeight;
 	const char *title;
