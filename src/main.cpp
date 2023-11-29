@@ -31,7 +31,7 @@
 #include "model/BoneModel.h"
 #include "model/Material.h"
 #include "model/ModelCollection.h"
-
+#include "model/Texture.h"
 #include "model/MeshPrimitive.h"
 //#include "Window.h"
 //src/glew.h
@@ -62,6 +62,7 @@ Model::BoneModel avatar(Utils::PathUtils::getModelsPath().append("/2b.obj"));
 Model::Material matMetal;
 Model::Material Material_brillante;
 Model::Material Material_opaco;
+Model::Texture primitiva;
 
 float timer = 0.0f;
 
@@ -326,7 +327,7 @@ void InitKeymaps()
 	        });
 }
 
-void CrearDado()
+void CrearPrimitiva()
 {
 	unsigned int cubo_indices[] = {
 	    // arriba
@@ -353,11 +354,12 @@ void CrearDado()
 	};
 
 	GLfloat cubo_vertices[] = {
-	    // x		y		z		S		T			NX		NY		NZ
+	    // x	y		z		S		T			NX		NY		NZ
 	    // 1
-	    -0.0f, 1.0f, 0.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f, // 0
+	    -0.0f,	1.0f,	0.0f,	0.5f,	0.75f,		0.0f,	0.0f,	-1.0f, // 0
+
 	    1.0f, 0.0f, 1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,  // 1
-	    -1.0f, 0.0f, 1.0f, 0.75f, 0.5f, 0.0f, 0.0f, -1.0f, // 2
+	    -0.0f, 1.0f, 0.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f, // 0
 	    // 2
 	    -0.0f, 1.0f, 0.0f, 0.75f, 0.5f, 0.0f, 0.0f, -1.0f,   // 0
 	    -1.0f, 0.0f, 1.0f, 0.5f, 0.25f, 0.0f, 0.0f, -1.0f,   // 2
@@ -535,7 +537,7 @@ void InitAnimations()
 		                  return true; })
 	    .prepare();
 	
-	PicoJerarquia1/////////////////////////////nuevo
+	PicoJerarquia1
 	    .addCondition(
 	        [](float delta) -> bool
 	        { return activarP1; })
@@ -1064,14 +1066,7 @@ void InitAnimations()
 		        }
 	        })
 		.prepare();
-	//
 	MjPos_0 = {0.0f, 2.9f, -3.2f};
-	//	modeloJerarquico1
-	//	    .addCondition([](float) -> bool
-	//	                               {
-	//		                  MjRot_0 = -90;
-	//	                  })
-	//	    .prepare();
 }
 
 void updateFlippers()
@@ -1123,7 +1118,7 @@ void exitProgram()
 
 int main()
 {
-	CrearDado();
+	
 	mainWindow = Window(1280, 720, "Proyecto Final \"Maquina de pinball\" - Semestre 2024-1");
 
 	if (!mainWindow.Init())
@@ -1131,7 +1126,7 @@ int main()
 		std::cerr << "No se pudo iniciar la ventana\n";
 		return 1;
 	}
-
+CrearPrimitiva();
 	// Inicializar los componentes del programa
 	Audio::AudioDevice::GetInstance(); // inicializa el componente de audio
 	InitShaders();
@@ -1141,6 +1136,9 @@ int main()
 	InitLights();
 	InitAnimations();
 	LoadAnimations();
+
+	//primitiva = Model::Texture("Textures/dado_ocho.tga");
+	//primitiva.LoadTexture();
 
 	// region Skybox settings
 	// SKyBoxes Faces Day
@@ -1272,6 +1270,16 @@ int main()
 		shaderLight->SetSpotLights(spotLights.getLightArray(), spotLights.getCurrentCount());
 		shaderLight->SetPointLights(pointLights.getLightArray(), pointLights.getCurrentCount());
 		
+		if (marbleKfAnim.Returnindex() > 6) {
+			activarP3 = true;
+			PicoJerarquia3.start();
+		}
+		if (marbleKfAnim.Returnindex() > 12)
+		{
+			activarP1 = true;
+			PicoJerarquia1.start();
+		}
+
 		if (activarP1 == false)
 		{
 			pointLights.toggleLight(0, false); // luces apagadas de los picos
@@ -1283,7 +1291,8 @@ int main()
 		if (activarP3 == false)
 		{
 			pointLights.toggleLight(2, false);
-		}/////////////////////////////
+		}
+		//marbleKfAnim.Returnindex();
 
 		toffset = {0.0f, 0.0f};
 		color = {1.0f, 1.0f, 1.0f};
@@ -1570,7 +1579,7 @@ int main()
 		            //.rotateY(180)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		//dadoTexture.UseTexture();
+		//prismaTexture.UseTexture();
 		meshListPrimitive[0]->RenderMeshPrimitive();
 		//a
 

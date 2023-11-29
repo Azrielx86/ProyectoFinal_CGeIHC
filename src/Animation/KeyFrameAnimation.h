@@ -83,6 +83,11 @@ class KeyFrameAnimation
 	void resetAnimation();
 
 	/**
+	 * Returns index of animation.
+	 */
+	int Returnindex();
+
+	/**
 	 * Plays the animation and calculate the interpolations if it's necessary.
 	 */
 	bool play();
