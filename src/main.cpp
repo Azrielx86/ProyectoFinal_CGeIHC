@@ -371,7 +371,7 @@ void CrearPrimitiva()
 	GLfloat cubo_vertices[] = {
 	    // x	y		z		S		T			NX		NY		NZ
 	    // 1
-	    -0.0f,	1.0f,	0.0f,	0.5f,	0.75f,		0.0f,	0.0f,	-1.0f, // 0
+	    -0.0f, 1.0f, 0.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f, // 0
 
 	    1.0f, 0.0f, 1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,  // 1
 	    -0.0f, 1.0f, 0.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f, // 0
@@ -1078,7 +1078,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-		.prepare();
+	    .prepare();
 
 	MjPos_0 = {0.0f, 2.9f, -3.2f};
 }
@@ -1192,7 +1192,7 @@ int main(int argc, char **argv)
 		std::cerr << "No se pudo iniciar la ventana\n";
 		return 1;
 	}
-CrearPrimitiva();
+	CrearPrimitiva();
 	// Inicializar los componentes del programa
 	Audio::AudioDevice::GetInstance(); // inicializa el componente de audio
 	Audio::AudioDevice::InitAlut(&argc, argv);
@@ -1206,8 +1206,8 @@ CrearPrimitiva();
 	LoadAnimations();
 	InitAudios();
 
-	//primitiva = Model::Texture("Textures/dado_ocho.tga");
-	//primitiva.LoadTexture();
+	// primitiva = Model::Texture("Textures/dado_ocho.tga");
+	// primitiva.LoadTexture();
 
 	// region Skybox settings
 	// SKyBoxes Faces Day
@@ -1262,6 +1262,8 @@ CrearPrimitiva();
 	auto PicoM = models[MODELS::PICOM];
 	auto Muneco = models[MODELS::MUNECO];
 	auto destroyedBuilding = models[MODELS::DESTROYED_BUILDING];
+	auto robot = models[MODELS::ROBOT];
+	auto pod = models[MODELS::POD];
 
 	Animation::BoneAnimation walkAnimation(Utils::PathUtils::getModelsPath().append("/2b_walk_static.fbx"), &avatar);
 	Animation::BoneAnimation idleAnimation(Utils::PathUtils::getModelsPath().append("/2b_idle.fbx"), &avatar);
@@ -1372,8 +1374,9 @@ CrearPrimitiva();
 		shaderLight->SetDirectionalLight(&directionalLights[ambLight]);
 		shaderLight->SetSpotLights(spotLights.getLightArray(), spotLights.getCurrentCount());
 		shaderLight->SetPointLights(pointLights.getLightArray(), pointLights.getCurrentCount());
-		
-		if (marbleKfAnim.Returnindex() > 6) {
+
+		if (marbleKfAnim.Returnindex() > 6)
+		{
 			activarP3 = true;
 			PicoJerarquia3.start();
 		}
@@ -1395,7 +1398,6 @@ CrearPrimitiva();
 		{
 			pointLights.toggleLight(2, false);
 		} /////////////////////////////
-
 
 		toffset = {0.0f, 0.0f};
 		color = {1.0f, 1.0f, 1.0f};
@@ -1636,7 +1638,38 @@ CrearPrimitiva();
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
+		// endregion
 
+		// region MODELOS_NIER
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(53.983, 71.612, -27.538)
+		            .rotateY(46.061)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		destroyedBuilding.render();
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(56.002, 71.377, 35.124)
+		            .rotateY(-416.5)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		destroyedBuilding.render();
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(44.797, 66.892, 0)
+		            .rotateY(180)
+		            .scale(11.492)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		robot.render();
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(-1.48956, 66.183f + (float) (1.5f * sin(glfwGetTime())), 19.9368)
+		            .rotateY(131.41)
+		            .scale(2)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		pod.render();
 		// endregion
 
 		// region Entity Marble
@@ -1656,7 +1689,6 @@ CrearPrimitiva();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		marbleKf.render();
 		// endregion Entity Marble
-		// if ()
 
 		// region Resorte
 
@@ -1672,7 +1704,6 @@ CrearPrimitiva();
 		// endregion Resorte
 
 		// region muñeco de hielo
-
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(8, 55, -26)
 		            .scale(0.4)
@@ -1690,9 +1721,8 @@ CrearPrimitiva();
 		            //.rotateY(180)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		//prismaTexture.UseTexture();
+		// prismaTexture.UseTexture();
 		meshListPrimitive[0]->RenderMeshPrimitive();
-		// a
 
 		// region ALPHA
 		glEnable(GL_BLEND);
