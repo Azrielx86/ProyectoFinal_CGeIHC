@@ -10,8 +10,8 @@
 const float TURN_SPEED = 4.0;
 const float MOVE_SPEED = 0.4;
 
-const int MAX_POINT_LIGHTS = 3;
-const int MAX_SPOT_LIGHTS = 3;
+const int MAX_POINT_LIGHTS = 6;
+const int MAX_SPOT_LIGHTS = 2;
 
 enum KEYMAPS
 {

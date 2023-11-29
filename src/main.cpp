@@ -253,25 +253,13 @@ void InitKeymaps()
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_1,
 	        []() -> void
 	        {
-		        spotLights.toggleLight(1, !spotLights.getLightStatus(1));
+		        pointLights.toggleLight(3, !pointLights.getLightStatus(3));
 	        })
 	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_2,
 	        []() -> void
 	        {
-		        spotLights.toggleLight(2, !spotLights.getLightStatus(2));
-	        })
-	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_3,
-	        []() -> void
-	        {
-		        pointLights.toggleLight(0, !pointLights.getLightStatus(0));
-	        })
-	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_4,
-	        []() -> void
-	        {
-		        pointLights.toggleLight(1, !pointLights.getLightStatus(1));
+		        pointLights.toggleLight(4, !pointLights.getLightStatus(4));
 	        });
 
 	Input::KeyboardInput::GetInstance()
@@ -491,7 +479,7 @@ void InitLights()
 	                                                           0.0f, -1.0f, 0.0f))
 	                        .build();
 
-	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(5); // nuevo
+	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(MAX_POINT_LIGHTS); // nuevo
 	pointLights = pointLightsBuilder
 	                  .addLight(Lights::PointLight(ToRGB(51), 1.0f, ToRGB(119),
 	                                               0.8f, 0.3f,
@@ -514,7 +502,7 @@ void InitLights()
 	                                               -58.6934, 51.8151, -9.73,
 	                                               1.0f, 0.05f, 0.008f))
 	                  .build();
-	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(3);
+	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(MAX_SPOT_LIGHTS);
 	spotLights = spotLightBuilder
 	                 .addLight(Lights::SpotLight(1.0f, 1.0f, 1.0f,
 	                                             0.8f, 0.3f,
@@ -522,18 +510,6 @@ void InitLights()
 	                                             0.0f, -1.0f, 0.0f,
 	                                             1.0f, 0.008f, 0.001f,
 	                                             50.0f))
-	                 /*.addLight(Lights::SpotLight(ToRGB(199), 1.0f, ToRGB(51),
-	                                             0.8f, 0.3f,
-	                                             47.6584, 84.0895, 36.4503,
-	                                             -2.0f, -2.0f, -2.0f,
-	                                             1.0f, 0.005f, 0.0008f,
-	                                             20.0f))
-	                 .addLight(Lights::SpotLight(1.0f, ToRGB(221), ToRGB(51),
-	                                             0.8f, 0.3f,
-	                                             47.6584, 84.0895, -36.4503,
-	                                             -2.0f, -2.0f, 2.0f,
-	                                             1.0f, 0.005f, 0.0008f,
-	                                             20.0f))*/
 	                 .build();
 }
 
@@ -1229,7 +1205,6 @@ CrearPrimitiva();
 	InitAnimations();
 	LoadAnimations();
 	InitAudios();
-	CrearDado();
 
 	//primitiva = Model::Texture("Textures/dado_ocho.tga");
 	//primitiva.LoadTexture();
