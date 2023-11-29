@@ -42,6 +42,14 @@ Compilación
 
     cmake --build .
 
+# Capturas del programa
+
+![](docs/Screenshot1.png)
+
+![](docs/Screenshot2.png)
+
+![](docs/Screenshot3.png)
+
 # Roadmap
 ## Fase 1 - Base del programa
 - [x] Manejo de ventanas
@@ -53,7 +61,6 @@ Compilación
 ## Fase 2 - Modelos
 - [x] Carga de modelos por `Assimp`
 - [x] Optimizado de la carga de modelos
-- [ ] Sistema de jerarquías y transformaciones
 
 ## Fase 3 - Shading y texturizado
 - [x] Sistema de carga / búsqueda de texturas
@@ -63,11 +70,27 @@ Compilación
 ## Fase 4 - Iluminación
 - [x] Skyboxes
 - [x] Sistema de iluminación (Colecciones de luces)
-- [ ] (De ser necesario) light baking
 
 ## Fase 5 - Animación
-- [ ] Animación de los elementos en el tablero
-- [ ] Animación del avatar
+- [x] Animación de los elementos en el tablero
+- [x] Animación del avatar
 
 ## Fase 6 - Audio
-- [ ] Integración de OpenAL
+- [x] Integración de OpenAL
+
+[//]: # (Quería poner esto en BoneModel.cpp o alguno de esos)
+
+[//]: # (archivos, pero causaría conflicos &#40;carácteres incompatibles)
+[//]: # (con C++&#41;)
+[//]: # (&#40;Consideremos esto un pequeño easter egg en el repositorio&#41;)
+[//]: # (⠄⠄⠄⠄⢠⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣿⣿⣯⢻⣿⣿⣿⣿⣆⠄⠄⠄)
+[//]: # (⠄⠄⣼⢀⣿⣿⣿⣿⣏⡏⠄⠹⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⣿⣿⣿⣿⡆⠄⠄)
+[//]: # (⠄⠄⡟⣼⣿⣿⣿⣿⣿⠄⠄⠄⠈⠻⣿⣿⣿⣿⣿⣿⣿⣇⢻⣿⣿⣿⣿⠄⠄)
+[//]: # (⠄⢰⠃⣿⣿⠿⣿⣿⣿⠄⠄⠄⠄⠄⠄⠙⠿⣿⣿⣿⣿⣿⠄⢿⣿⣿⣿⡄⠄)
+[//]: # (⠄⢸⢠⣿⣿⣧⡙⣿⣿⡆⠄⠄⠄⠄⠄⠄⠄⠈⠛⢿⣿⣿⡇⠸⣿⡿⣸⡇⠄)
+[//]: # (⠄⠈⡆⣿⣿⣿⣿⣦⡙⠳⠄⠄⠄⠄⠄⠄⢀⣠⣤⣀⣈⠙⠃⠄⠿⢇⣿⡇⠄)
+[//]: # (⠄⠄⡇⢿⣿⣿⣿⣿⡇⠄⠄⠄⠄⠄⣠⣶⣿⣿⣿⣿⣿⣿⣷⣆⡀⣼⣿⡇⠄)
+[//]: # (⠄⠄⢹⡘⣿⣿⣿⢿⣷⡀⠄⢀⣴⣾⣟⠉⠉⠉⠉⣽⣿⣿⣿⣿⠇⢹⣿⠃⠄)
+[//]: # (⠄⠄⠄⢷⡘⢿⣿⣎⢻⣷⠰⣿⣿⣿⣿⣦⣀⣀⣴⣿⣿⣿⠟⢫⡾⢸⡟⠄.)
+[//]: # (⠄⠄⠄⠄⠻⣦⡙⠿⣧⠙⢷⠙⠻⠿⢿⡿⠿⠿⠛⠋⠉⠄⠂⠘⠁⠞⠄⠄⠄)
+[//]: # (⠄⠄⠄⠄⠄⠈⠙⠑⣠⣤⣴⡖⠄⠿⣋⣉⣉⡁⠄⢾⣦⠄⠄⠄⠄⠄⠄⠄⠄)

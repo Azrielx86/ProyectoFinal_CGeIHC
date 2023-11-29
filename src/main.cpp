@@ -253,25 +253,13 @@ void InitKeymaps()
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_1,
 	        []() -> void
 	        {
-		        spotLights.toggleLight(1, !spotLights.getLightStatus(1));
+		        pointLights.toggleLight(3, !pointLights.getLightStatus(3));
 	        })
 	    .addCallback(
 	        KEYMAPS::FREE_CAMERA, GLFW_KEY_2,
 	        []() -> void
 	        {
-		        spotLights.toggleLight(2, !spotLights.getLightStatus(2));
-	        })
-	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_3,
-	        []() -> void
-	        {
-		        pointLights.toggleLight(0, !pointLights.getLightStatus(0));
-	        })
-	    .addCallback(
-	        KEYMAPS::FREE_CAMERA, GLFW_KEY_4,
-	        []() -> void
-	        {
-		        pointLights.toggleLight(1, !pointLights.getLightStatus(1));
+		        pointLights.toggleLight(4, !pointLights.getLightStatus(4));
 	        });
 
 	Input::KeyboardInput::GetInstance()
@@ -407,7 +395,6 @@ void CrearPrimitiva()
 
 	GLfloat cubo_vertices[] = {
 	    // x	y		z		S		T			NX		NY		NZ
-
 		///lados
 		-4.0f, 1.0f, 0.0f,		0.0f, 1.0f,		0.0f, 0.0f, -1.0f,
 	    -2.0f, 0.0f, 1.0f,		1.0f, 0.0f,		0.0f, 0.0f, -1.0f,
@@ -639,7 +626,7 @@ void InitLights()
 	                                                           0.0f, -1.0f, 0.0f))
 	                        .build();
 
-	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(5); // nuevo
+	Lights::LightCollectionBuilder<Lights::PointLight> pointLightsBuilder(MAX_POINT_LIGHTS); // nuevo
 	pointLights = pointLightsBuilder
 	                  .addLight(Lights::PointLight(ToRGB(51), 1.0f, ToRGB(119),
 	                                               0.8f, 0.3f,
@@ -662,7 +649,7 @@ void InitLights()
 	                                               -58.6934, 51.8151, -9.73,
 	                                               1.0f, 0.05f, 0.008f))
 	                  .build();
-	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(3);
+	Lights::LightCollectionBuilder<Lights::SpotLight> spotLightBuilder(MAX_SPOT_LIGHTS);
 	spotLights = spotLightBuilder
 	                 .addLight(Lights::SpotLight(1.0f, 1.0f, 1.0f,
 	                                             0.8f, 0.3f,
@@ -670,18 +657,6 @@ void InitLights()
 	                                             0.0f, -1.0f, 0.0f,
 	                                             1.0f, 0.008f, 0.001f,
 	                                             50.0f))
-	                 /*.addLight(Lights::SpotLight(ToRGB(199), 1.0f, ToRGB(51),
-	                                             0.8f, 0.3f,
-	                                             47.6584, 84.0895, 36.4503,
-	                                             -2.0f, -2.0f, -2.0f,
-	                                             1.0f, 0.005f, 0.0008f,
-	                                             20.0f))
-	                 .addLight(Lights::SpotLight(1.0f, ToRGB(221), ToRGB(51),
-	                                             0.8f, 0.3f,
-	                                             47.6584, 84.0895, -36.4503,
-	                                             -2.0f, -2.0f, 2.0f,
-	                                             1.0f, 0.005f, 0.0008f,
-	                                             20.0f))*/
 	                 .build();
 }
 
@@ -1225,7 +1200,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-		.prepare();
+	    .prepare();
 
 	MjPos_0 = {0.0f, 2.9f, -3.2f};
 }
@@ -1339,7 +1314,7 @@ int main(int argc, char **argv)
 		std::cerr << "No se pudo iniciar la ventana\n";
 		return 1;
 	}
-CrearPrimitiva();
+	CrearPrimitiva();
 	// Inicializar los componentes del programa
 	Audio::AudioDevice::GetInstance(); // inicializa el componente de audio
 	Audio::AudioDevice::InitAlut(&argc, argv);
@@ -1352,10 +1327,9 @@ CrearPrimitiva();
 	InitAnimations();
 	LoadAnimations();
 	InitAudios();
-	//CrearDado();
-
 	primitiva = Model::Texture("assets/Textures/Hielo3.png");
 	primitiva.LoadTexture();
+
 
 	// region Skybox settings
 	// SKyBoxes Faces Day
@@ -1410,6 +1384,8 @@ CrearPrimitiva();
 	auto PicoM = models[MODELS::PICOM];
 	auto Muneco = models[MODELS::MUNECO];
 	auto destroyedBuilding = models[MODELS::DESTROYED_BUILDING];
+	auto robot = models[MODELS::ROBOT];
+	auto pod = models[MODELS::POD];
 
 	Animation::BoneAnimation walkAnimation(Utils::PathUtils::getModelsPath().append("/2b_walk_static.fbx"), &avatar);
 	Animation::BoneAnimation idleAnimation(Utils::PathUtils::getModelsPath().append("/2b_idle.fbx"), &avatar);
@@ -1520,8 +1496,9 @@ CrearPrimitiva();
 		shaderLight->SetDirectionalLight(&directionalLights[ambLight]);
 		shaderLight->SetSpotLights(spotLights.getLightArray(), spotLights.getCurrentCount());
 		shaderLight->SetPointLights(pointLights.getLightArray(), pointLights.getCurrentCount());
-		
-		if (marbleKfAnim.Returnindex() > 6) {
+
+		if (marbleKfAnim.Returnindex() > 6)
+		{
 			activarP3 = true;
 			PicoJerarquia3.start();
 		}
@@ -1543,7 +1520,6 @@ CrearPrimitiva();
 		{
 			pointLights.toggleLight(2, false);
 		} /////////////////////////////
-
 
 		toffset = {0.0f, 0.0f};
 		color = {1.0f, 1.0f, 1.0f};
@@ -1784,9 +1760,38 @@ CrearPrimitiva();
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		PicoM.render();
+		// endregion
 
-		//destroyedBuilding.render();
+		// region MODELOS_NIER
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(53.983, 71.612, -27.538)
+		            .rotateY(46.061)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		destroyedBuilding.render();
 
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(56.002, 71.377, 35.124)
+		            .rotateY(-416.5)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		destroyedBuilding.render();
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(44.797, 66.892, 0)
+		            .rotateY(180)
+		            .scale(11.492)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		robot.render();
+
+		model = handler.setMatrix(glm::mat4(1.0f))
+		            .translate(-1.48956, 66.183f + (float) (1.5f * sin(glfwGetTime())), 19.9368)
+		            .rotateY(131.41)
+		            .scale(2)
+		            .getMatrix();
+		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
+		pod.render();
 		// endregion
 
 		// region Entity Marble
@@ -1806,7 +1811,6 @@ CrearPrimitiva();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		marbleKf.render();
 		// endregion Entity Marble
-		// if ()
 
 		// region Resorte
 
@@ -1822,7 +1826,6 @@ CrearPrimitiva();
 		// endregion Resorte
 
 		// region muñeco de hielo
-
 		model = handler.setMatrix(glm::mat4(1.0f))
 		            .translate(8, 55, -26)
 		            .scale(0.4)
@@ -1842,7 +1845,6 @@ CrearPrimitiva();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
 		primitiva.UseTexture();
 		meshListPrimitive[0]->RenderMeshPrimitive();
-		// a
 
 		// region ALPHA
 		glEnable(GL_BLEND);
