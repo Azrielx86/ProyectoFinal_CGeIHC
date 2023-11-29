@@ -31,6 +31,7 @@ AudioDevice::AudioDevice()
 	std::cout << "[ " << typeid(AudioDevice).name()
 	          << " ] Audio device created succesfully!. "
 	          << "Using: " << deviceName << "\n";
+	alListener3f(AL_POSITION, 0.0f, 0.0f, 0.0f);
 }
 
 AudioDevice &AudioDevice::GetInstance()
@@ -57,8 +58,14 @@ AudioDevice::~AudioDevice()
 
 void AudioDevice::Terminate()
 {
+	alutExit();
 	delete instance;
 	std::cout << "[ " << typeid(AudioDevice).name()
 	          << " ] Audio device closed.\n";
+}
+
+void AudioDevice::InitAlut(int *argc, char **argv)
+{
+	alutInit(argc, argv);
 }
 } // namespace Audio

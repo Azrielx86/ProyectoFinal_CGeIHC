@@ -12,17 +12,28 @@ namespace Audio
  */
 bool AudioController::Init()
 {
-	initialized = true;
-	return initialized;
+	return true;
 }
 
-void AudioController::PlaySource(std::string source)
+void AudioController::AddSource(int audioSource, Audio::AudioSource *source)
 {
-	ALsizei size, freq;
-	ALenum format;
-	ALvoid *data;
-	ALboolean loop = AL_FALSE;
-	
-	
+	sources[audioSource] = source;
 }
+
+void AudioController::PlaySource(int id)
+{
+	sources[id]->Play();
+}
+
+void AudioController::UpdateListenerPosition(glm::vec3 position)
+{
+	alListener3f(AL_POSITION, position.x, position.y, position.z);
+}
+
+void AudioController::UpdateListenerOrientation(glm::vec3 orientation, glm::vec3 up)
+{
+	ALfloat value[] = {orientation.x, orientation.y, orientation.z, up.x, up.y, up.z};
+	alListenerfv(AL_ORIENTATION, value);
+}
+
 } // namespace Audio

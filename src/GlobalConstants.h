@@ -47,6 +47,12 @@ enum MODELS
 	AVATAR
 };
 
+enum AUDIOS
+{
+	MARBLE_ROLLING,
+	WALKING
+};
+
 enum AMB_LIGHTS
 {
 	DAY = 0,
