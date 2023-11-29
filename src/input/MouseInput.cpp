@@ -1,6 +1,10 @@
 #include "MouseInput.h"
+
 namespace Input
 {
+
+float MouseInput::yScroll = 0;
+
 MouseInput *MouseInput::instance = nullptr;
 
 MouseInput &MouseInput::GetInstance()
@@ -9,6 +13,7 @@ MouseInput &MouseInput::GetInstance()
 		instance = new MouseInput();
 	return *instance;
 }
+
 void MouseInput::toggleMouseEnabled()
 {
 	lastxPos = 0;
@@ -33,7 +38,7 @@ void MouseInput::handleClick(int button, int action, [[maybe_unused]] int mode) 
 	btn->pressed = action != GLFW_RELEASE;
 	for (const auto &k : *currentKeymap)
 	{
-//		if (k.action == GLFW_PRESS || (k.action == GLFW_REPEAT && k.repeat))
+		//		if (k.action == GLFW_PRESS || (k.action == GLFW_REPEAT && k.repeat))
 		if (k.action == GLFW_PRESS || (k.pressed && k.repeat))
 			if (k.callback != nullptr)
 				k.callback();
@@ -89,6 +94,7 @@ MouseInput &MouseInput::createKeymap(int keymap)
 		currentMoveFunction = &moveMappings[keymap];
 	return *this;
 }
+
 MouseInput &MouseInput::addClickCallback(int keymap, int key, const std::function<void()> &callback, bool repeat, const std::function<void()> &releaseCallback)
 {
 	keymaps[keymap].at(key).callback = callback;
@@ -96,9 +102,23 @@ MouseInput &MouseInput::addClickCallback(int keymap, int key, const std::functio
 	keymaps[keymap].at(key).releaseCallback = releaseCallback;
 	return *this;
 }
+
 MouseInput &MouseInput::addMoveCallback(int keymap, const std::function<void(float)> &callback)
 {
 	moveMappings[keymap] = callback;
 	return *this;
 }
+
+void MouseInput::handleScroll([[maybe_unused]] double xoffset, double yoffset)
+{
+	yScroll = (float) yoffset;
+}
+
+float MouseInput::getYScroll()
+{
+	float value = yScroll;
+	yScroll = 0.0f;
+	return value;
+}
+
 } // namespace Input

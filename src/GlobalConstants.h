@@ -7,8 +7,8 @@
 
 #include "stb_image.h"
 
-const float TURN_SPEED = 6.0;
-const float MOVE_SPEED = 0.5;
+const float TURN_SPEED = 4.0;
+const float MOVE_SPEED = 0.4;
 
 const int MAX_POINT_LIGHTS = 3;
 const int MAX_SPOT_LIGHTS = 3;
@@ -25,10 +25,10 @@ enum MODELS
 	MAQUINA_PINBALL,
 	MAQUINA_CRISTAL,
 	FLIPPER,
+	FLIPPERH,
 	MARBLE,
 	PALANCA,
 	RESORTE,
-	AVATAR,
 	JK_1,
 	JK_2,
 	JK_3,
@@ -39,7 +39,18 @@ enum MODELS
 	TRIANGLE,
 	DESTROYED_BUILDING,
 	POD,
-	SMALL_STUBBY
+	SMALL_STUBBY,
+	NORA,
+	MUNECO,
+	PICOG,
+	PICOM,
+	AVATAR
+};
+
+enum AUDIOS
+{
+	MARBLE_ROLLING,
+	WALKING
 };
 
 enum AMB_LIGHTS

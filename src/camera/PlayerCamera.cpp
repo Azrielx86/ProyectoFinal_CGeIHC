@@ -13,7 +13,7 @@ PlayerCamera::PlayerCamera(Entity::Player *target)
 	yaw = 0;
 	pitch = 15;
 	front = glm::vec3(0.0f, 0.0f, -1.0f);
-	distanceFromTarget = 20;
+	distanceFromTarget = 10;
 }
 
 void PlayerCamera::MouseControl(Input::MouseInput &mouse)
@@ -28,10 +28,10 @@ void PlayerCamera::MouseControl(Input::MouseInput &mouse)
 	Update();
 }
 
-void PlayerCamera::KeyControl(Input::KeyboardInput &keyboard)
+void PlayerCamera::KeyControl([[maybe_unused]] Input::KeyboardInput &keyboard)
 {
 	yaw = 180 - target->getRotation().y + angleAroundTarget;
-	
+
 	// Calcular distancia
 	float hdist = distanceFromTarget * std::cos(glm::radians(pitch));
 	float vdist = distanceFromTarget * std::sin(glm::radians(pitch));
@@ -41,18 +41,12 @@ void PlayerCamera::KeyControl(Input::KeyboardInput &keyboard)
 	float offsetX = hdist * std::sin(glm::radians(theta));
 	float offsetZ = hdist * std::cos(glm::radians(theta));
 	position.x = target->getPosition().x - offsetX;
-	position.y = target->getPosition().y + vdist + 2;
+	position.y = target->getPosition().y + vdist + 6;
 	position.z = target->getPosition().z - offsetZ;
 }
 
 void PlayerCamera::Update()
 {
-	//	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	//	front.y = sin(glm::radians(pitch));
-	//	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	//	front = glm::normalize(front);
-	//	right = glm::normalize(glm::cross(front, worldUp));
-	//	up = glm::normalize(glm::cross(right, front));
 }
 
 glm::vec3 PlayerCamera::getCameraPosition() { return this->position; }
@@ -67,6 +61,11 @@ glm::mat4 PlayerCamera::calculateViewMatrix()
 	glm::vec3 negPos = {-position.x, -position.y, -position.z};
 	vm = glm::translate(vm, negPos);
 	return vm;
+}
+
+void PlayerCamera::FixedUpdate()
+{
+	distanceFromTarget -= Input::MouseInput::getYScroll();
 }
 
 } // namespace Camera

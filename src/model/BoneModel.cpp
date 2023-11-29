@@ -149,7 +149,7 @@ void BoneModel::SetVertexBoneData(Vertex &vertex, int boneID, float weight)
 		}
 	}
 }
-void BoneModel::ExtractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *mesh, const aiScene *scene)
+void BoneModel::ExtractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *mesh, [[maybe_unused]] const aiScene *scene)
 {
 	for (uint boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
 	{
@@ -173,7 +173,7 @@ void BoneModel::ExtractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMe
 		auto weights = mesh->mBones[boneIndex]->mWeights;
 		auto numWeights = mesh->mBones[boneIndex]->mNumWeights;
 
-		for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+		for (unsigned int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
 		{
 			auto vertexId = weights[weightIndex].mVertexId;
 			auto weight = weights[weightIndex].mWeight;

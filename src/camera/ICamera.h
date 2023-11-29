@@ -29,13 +29,16 @@ class ICamera
 	virtual void MouseControl(Input::MouseInput &mouse) = 0;
 	virtual void KeyControl(Input::KeyboardInput &keyboard) = 0;
 	virtual void Update() = 0;
+	virtual void FixedUpdate() = 0;
 	virtual glm::vec3 getCameraPosition() = 0;
 	virtual glm::vec3 getCameraDirection() = 0;
 	virtual glm::mat4 calculateViewMatrix() = 0;
 
-	float getYaw() const { return yaw; };
+	[[nodiscard]] float getYaw() const { return yaw; };
 
-	float getPitch() const { return pitch; };
+	[[nodiscard]] float getPitch() const { return pitch; };
+
+	[[nodiscard]] glm::vec3 getUp() const { return up; };
 };
 
 } // namespace Camera

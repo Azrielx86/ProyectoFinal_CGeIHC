@@ -82,13 +82,17 @@ ImageUtils::CHANNEL_TYPE ImageUtils::GetPngChannel(const std::string &path)
 		 */
 		if (ihdr[9] == 2)
 		{
+#ifdef PRINT_IMAGE_RESULT
 			std::cout << "[ " << typeid(ImageUtils).name() << " ] PNG image have RGB channel...\n";
+#endif
 			file.close();
 			return CHANNEL_TYPE::RGB;
 		}
 		else if (ihdr[9] == 6)
 		{
+#ifdef PRINT_IMAGE_RESULT
 			std::cout << "[ " << typeid(ImageUtils).name() << " ] PNG image have RGBA channel.\n";
+#endif
 			file.close();
 			return CHANNEL_TYPE::RGBA;
 		}

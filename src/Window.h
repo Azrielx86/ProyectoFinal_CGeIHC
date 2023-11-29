@@ -34,12 +34,17 @@ class Window
 	static void handleKeyboard([[maybe_unused]] GLFWwindow *window, int key, int code, int action, int mode);
 	static void handleMousePos(GLFWwindow *window, double xPos, double yPos);
 	static void handleMouseClick(GLFWwindow* window, int button, int action, int mode);
+	static void handleMouseScroll(GLFWwindow* window, double xoffset, double yoffset);
 	static void windowResizeCallback(GLFWwindow* window, int width, int height);
 
   private:
 	GLFWwindow *window;
 	GLuint width;
 	GLuint height;
+	GLboolean StartAnimacionPico1=false;
+	GLboolean StartAnimacionPico2 = false;
+	GLboolean StartAnimacionPico3 = false;
+	GLboolean StartAnimacionCanica = false;
 	int bufferWidth;
 	int bufferHeight;
 	const char *title;
@@ -47,3 +52,10 @@ class Window
 };
 
 #endif // PROYECTOFINAL_CGEIHC_WINDOW_H
+       
+/*	   
+*	//0. X=-78.000000, Y=45.500000, Z=7.500000
+    //1. X=-78.000000, Y=45.500000, Z=36.531509
+
+	//3. X=21.989304, Y=55.978912, Z=36.531509
+*/

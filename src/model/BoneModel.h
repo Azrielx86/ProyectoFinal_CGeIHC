@@ -50,7 +50,7 @@ class BoneModel
 	static void setVertexBoneDataToDefault(Vertex &vtx);
 
 	static void SetVertexBoneData(Vertex &vertex, int boneID, float weight);
-	void ExtractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *mesh, const aiScene *scene);
+	void ExtractBoneWeightForVertices(std::vector<Vertex> &vertices, aiMesh *mesh, [[maybe_unused]] const aiScene *scene);
 
 	static inline glm::mat4 AssimpMat2GlmMat(const aiMatrix4x4 &from)
 	{

@@ -14,15 +14,16 @@ namespace Camera
 class PlayerCamera: public ICamera
 {
   public:
-	PlayerCamera(Entity::Player* target);
+	explicit PlayerCamera(Entity::Player* target);
 	void MouseControl(Input::MouseInput &mouse) override;
 	void KeyControl(Input::KeyboardInput &keyboard) override;
 	void Update() override;
+	void FixedUpdate() override;
 	glm::vec3 getCameraPosition() override;
 	glm::vec3 getCameraDirection() override;
 	glm::mat4 calculateViewMatrix() override;
   private:
-	float distanceFromTarget = 50;
+	float distanceFromTarget = 10;
 	float angleAroundTarget = 0;
 	// El pitch es el ángulo vertical para el objetivo
 	Entity::Player* target;

@@ -9,6 +9,7 @@
 
 #define MODELS_PATH "assets/Models"
 #define TEXTURES_PATH "assets/Textures"
+#define AUDIO_PATH "assets/Audios"
 
 namespace Utils
 {
@@ -18,6 +19,7 @@ class PathUtils
 	PathUtils() = delete;
 	static std::string getTexturesPath() { return TEXTURES_PATH; }
 	static std::string getModelsPath() { return MODELS_PATH; }
+	static std::string getAudioPath() { return AUDIO_PATH; }
 };
 } // namespace Utils
 
