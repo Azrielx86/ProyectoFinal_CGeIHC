@@ -346,67 +346,214 @@ void InitKeymaps()
 void CrearPrimitiva()
 {
 	unsigned int cubo_indices[] = {
-	    // arriba
-	    0,
-	    1,
-	    2,
-	    3,
-	    4,
-	    5,
-	    6,
-	    7,
-	    8,
-	    9,
-	    10,
-	    11,
-	    // abajo
-	    12,
-	    13,
-	    14,
-	    15,
-	    16,
-	    17,
-	    18};
+	    0,1,2,
+	    3,4,5,
+		6,7,8,
+		9,10,11,
+	    12,13,14,
+
+	    15,16,17,
+		18,19,20,
+		21,21,23,
+		24,25,26,
+		27,28,29,
+	    
+		30,31,32,
+		33,34,35,
+		36,37,38,
+		39,40,41,
+		42,43,44,
+
+		45,46,47,
+		48,49,50,
+		51,52,53,
+		54,55,56,
+		57,58,59,
+		
+		60,61,62,
+		63,64,65,
+		66,67,68,
+		69,70,71,
+		72,73,74,
+
+		75,76,77,
+		78,79,80,
+		81,82,83,
+		84,85,86,
+		87,88,89,
+
+		90,91,92,
+		93,94,95,
+		96,97,98,
+		99,100,101,
+		102,103,104,
+
+		105,106,107,
+		108,109,110,
+		111,112,113,
+	};
 
 	GLfloat cubo_vertices[] = {
 	    // x	y		z		S		T			NX		NY		NZ
-	    // 1
-	    -0.0f, 1.0f, 0.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f, // 0
+		///lados
+		-4.0f, 1.0f, 0.0f,		0.0f, 1.0f,		0.0f, 0.0f, -1.0f,
+	    -2.0f, 0.0f, 1.0f,		1.0f, 0.0f,		0.0f, 0.0f, -1.0f,
+	    -2.0f, 1.0f, 1.0f,		1.0f, 1.0f,		0.0f, 0.0f, -1.0f,
 
-	    1.0f, 0.0f, 1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,  // 1
-	    -0.0f, 1.0f, 0.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f, // 0
-	    // 2
-	    -0.0f, 1.0f, 0.0f, 0.75f, 0.5f, 0.0f, 0.0f, -1.0f,   // 0
-	    -1.0f, 0.0f, 1.0f, 0.5f, 0.25f, 0.0f, 0.0f, -1.0f,   // 2
-	    -1.0f, 0.0f, -1.0f, 0.99f, 0.25f, 0.0f, 0.0f, -1.0f, // 3
-	    // 3
-	    -0.0f, 1.0f, 0.0f, 0.75f, 0.99f, 0.0f, 0.0f, -1.0f, // 0
-	    -1.0f, 0.0f, -1.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f, // 3
-	    1.0f, 0.0f, -1.0f, 0.99f, 0.75f, 0.0f, 0.0f, -1.0f, // 4
-	    // 4
-	    -0.0f, 1.0f, 0.0f, 0.75f, 0.5f, 0.0f, 0.0f, -1.0f,  // 0
-	    1.0f, 0.0f, -1.0f, 0.99f, 0.75f, 0.0f, 0.0f, -1.0f, // 4
-	    1.0f, 0.0f, 1.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,   // 1
-	    // 5
-	    -0.0f, -1.0f, 0.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f, // 5
-	    1.0f, 0.0f, 1.0f, 0.01f, 0.25f, 0.0f, 0.0f, -1.0f,  // 1
-	    -1.0f, 0.0f, 1.0f, 0.5f, 0.25f, 0.0f, 0.0f, -1.0f,  // 2
-	    // 6
-	    -0.0f, -1.0f, 0.0f, 0.5f, 0.25f, 0.0f, 0.0f, -1.0f, // 5
-	    -1.0f, 0.0f, 1.0f, 0.75f, 0.5f, 0.0f, 0.0f, -1.0f,  // 2
-	    -1.0f, 0.0f, -1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f, // 3
-	    // 7
-	    -0.0f, -1.0f, 0.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,  // 5
-	    -1.0f, 0.0f, -1.0f, 0.01f, 0.75f, 0.0f, 0.0f, -1.0f, // 3
-	    1.0f, 0.0f, -1.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,   // 4
-	    // 8
-	    -0.0f, -1.0f, 0.0f, 0.25f, 0.01f, 0.0f, 0.0f, -1.0f, // 5
-	    1.0f, 0.0f, -1.0f, 0.01f, 0.25f, 0.0f, 0.0f, -1.0f,  // 4
-	    1.0f, 0.0f, 1.0f, 0.5f, 0.25f, 0.0f, 0.0f, -1.0f,    // 1
+	    -4.0f, 0.0f, 0.0f,		0.0f, 0.0f,		0.0f, 0.0f, -1.0f,
+	    -2.0f, 0.0f, 1.0f,		0.1f, 0.0f,		0.0f, 0.0f, -1.0f,
+	    -4.0f, 1.0f, 0.0f,		0.0f, 1.0f,		0.0f, 0.0f, -1.0f,
+
+		-2.0f, 1.0f, 1.0f,		1.0f, 1.00f, 0.0f, 0.0f, -1.0f,
+	    -2.0f, 0.0f, 3.5f,		0.00f, 0.0f, 0.0f, 0.0f, -1.0f,
+	    -2.0f, 1.0f, 3.5f,		0.00f, 1.0f, 0.0f, 0.0f, -1.0f,
+
+	    -2.0f, 1.0f, 1.0f,		0.0f, 1.00f, 0.0f, 0.0f, -1.0f,
+	    -2.0f, 0.0f, 1.0f,		1.0f, 0.00f, 0.0f, 0.0f, -1.0f,
+	    -2.0f, 0.0f, 3.5f,		1.00f, 0.0f, 0.0f, 0.0f, -1.0f,
+		//////
+		-2.0f, 1.0f, 3.5f,		0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	     0.0f, 0.0f, 2.0f,		0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	    -2.0f, 0.0f, 3.5f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+		 0.0f, 0.0f, 2.0f,		0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	     0.0f, 1.0f, 2.0f,		0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	    -2.0f, 1.0f, 3.5f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+		-2.0f, 1.0f, 3.5f,		0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	     0.0f, 0.0f, 2.0f,		0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	    -2.0f, 0.0f, 3.5f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+		 0.0f, 0.0f, 2.0f,		0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	     0.0f, 1.0f, 2.0f,		0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	    -2.0f, 1.0f, 3.5f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+
+		 0.0f, 1.0f, 2.0f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 0.0f, 0.0f, 2.0f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 2.0f, 0.0f, 3.5f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+		 2.0f, 0.0f, 3.5f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 2.0f, 1.0f, 3.5f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 0.0f, 1.0f, 2.0f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+		 2.0f, 0.0f, 3.5f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 2.0f, 1.0f, 3.5f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 2.0f, 1.0f, 1.0f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+		 2.0f, 1.0f, 1.0f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 2.0f, 0.0f, 1.0f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 2.0f, 0.0f, 3.5f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 //
+		 2.0f, 1.0f, 1.0f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 2.0f, 0.0f, 1.0f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 4.0f, 1.0f, 0.0f,		0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+		 4.0f, 0.0f, 0.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 4.0f, 1.0f, 0.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 2.0f, 0.0f, 1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+	    //
+		 4.0f, 1.0f, 0.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	     2.0f, 0.0f, -1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+	     2.0f, 1.0f, -1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+	     4.0f, 0.0f, 0.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	     2.0f, 0.0f, -1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+	     4.0f, 1.0f, 0.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+
+		2.0f, 1.0f, -1.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	    2.0f, 0.0f, -3.5f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+	    2.0f, 1.0f, -3.5f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+	    2.0f, 1.0f, -1.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	    2.0f, 0.0f, -1.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	    2.0f, 0.0f, -3.5f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		//
+		2.0f, 1.0f, -3.5f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	    0.0f, 0.0f, -2.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	    2.0f, 0.0f, -3.5f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+		 0.0f, 0.0f, -2.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	     0.0f, 1.0f, -2.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	     2.0f, 1.0f, -3.5f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+		 -2.0f, 1.0f, -3.5f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	     0.0f, 0.0f, -2.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	     -2.0f, 0.0f, -3.5f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+		 0.0f, 0.0f, -2.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	     0.0f, 1.0f, -2.0f, 0.5f, 0.75f, 0.0f, 0.0f, -1.0f,
+	     -2.0f, 1.0f, -3.5f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 //
+		 -2.0f, 0.0f, -3.5f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 -2.0f, 1.0f, -3.5f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 -2.0f, 1.0f, -1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+		 -2.0f, 1.0f, -1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 -2.0f, 0.0f, -1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 -2.0f, 0.0f, -3.5f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 
+		 -2.0f, 1.0f, -1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 -2.0f, 0.0f, -1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 -4.0f, 1.0f, 0.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+
+		 -4.0f, 0.0f, 0.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 -4.0f, 1.0f, 0.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+		 -2.0f, 0.0f, -1.0f, 0.25f, 0.5f, 0.0f, 0.0f, -1.0f,
+	    //triangulos base arriba
+
+		-4.0f, 1.0f, 0.0f,	 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,
+		 0.0f, 1.0f, 2.0f,	 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+		 0.0f, 1.0f, -2.0f,	 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+
+		 4.0f, 1.0f, 0.0f,	 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,
+		 0.0f, 1.0f, 2.0f,	 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+		 0.0f, 1.0f, -2.0f,	 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+
+		-2.0f, 1.0f, -3.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,
+	    -2.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+	    0.0f, 1.0f, -2.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+	    
+		2.0f, 1.0f, -3.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,
+	    2.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+	    0.0f, 1.0f, -2.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+
+		-2.0f, 1.0f, 3.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,
+	    -2.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+	    0.0f, 1.0f, 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+
+	    2.0f, 1.0f, 3.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,
+	    2.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+	    0.0f, 1.0f, 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+
+		//base abajo
+		-4.0f, 0.0f, 0.0f,	 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,
+		 0.0f, 0.0f, 2.0f,	 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+		 0.0f, 0.0f, -2.0f,	 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+
+		 4.0f, 0.0f, 0.0f,	 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,
+		 0.0f, 0.0f, 2.0f,	 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+		 0.0f, 0.0f, -2.0f,	 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+
+		-2.0f, 0.0f, -3.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,
+	    -2.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+	    0.0f, 0.0f, -2.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+	    
+		2.0f, 0.0f, -3.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,
+	    2.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+	    0.0f, 0.0f, -2.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+
+		-2.0f, 0.0f, 3.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,
+	    -2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+	    0.0f, 0.0f, 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+
+	    2.0f, 0.0f, 3.5f, 0.5f, 1.0f, 0.0f, 0.0f, -1.0f,
+	    2.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
+	    0.0f, 0.0f, 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
 	};
 
-	auto dado = new MeshPrimitive();
-	dado->CreateMeshPrimitive(cubo_vertices, cubo_indices, 102, 201); //, 192, 36
+	MeshPrimitive *dado = new MeshPrimitive();//3*8* reng(38)     //3*reng (38)
+	dado->CreateMeshPrimitive(cubo_vertices, cubo_indices, 912, 114);
 	meshListPrimitive.push_back(dado);
 }
 
@@ -542,11 +689,9 @@ void InitAnimations()
 		                  return true; })
 	    .prepare();
 	PicoJerarquia1
-	    .addCondition(
-	        [](float) -> bool
+	    .addCondition([](float delta) -> bool
 	        { return activarP1; })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 				pointLights.toggleLight(0,true);//luces se prende
 		        if (rotPico1 < 720)
@@ -575,11 +720,9 @@ void InitAnimations()
 	    .prepare();
 
 	PicoJerarquia2
-	    .addCondition(
-	        [](float) -> bool
+	    .addCondition([](float delta) -> bool
 	        { return activarP2; })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 				pointLights.toggleLight(1,true);//luces se prende
 		        if (rotPico2 < 720)
@@ -608,11 +751,9 @@ void InitAnimations()
 	    .prepare();
 
 	PicoJerarquia3
-	    .addCondition(
-	        [](float) -> bool
-	        { return activarP3; })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
+	        {return activarP3;	})
+	    .addCondition([](float delta) -> bool
 	        {
 				pointLights.toggleLight(2,true);//luces se prende
 		        if (rotPico3 < 720)
@@ -641,11 +782,9 @@ void InitAnimations()
 	    .prepare();
 	// animacion canica simple (version anterior)
 	CanicaAS
-	    .addCondition( // resorte y dejar presionado [pendiente]
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        { return activarCanicaSimple; })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC != 0) return false;
 		        if (t == 0)
@@ -672,11 +811,9 @@ void InitAnimations()
 	        })
 	    .prepare();
 	CanicaAS2
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        { return activarCanicaSimple2; })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 1)
 		        {
@@ -703,8 +840,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 2)
 		        {
@@ -731,8 +867,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 3)
 		        {
@@ -759,8 +894,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 4)
 		        {
@@ -787,8 +921,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 5)
 		        {
@@ -816,12 +949,10 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        { PicoJerarquia3.start();
 				return activarP3; })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 6)
 		        {
@@ -848,8 +979,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 7)
 		        {
@@ -876,8 +1006,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 8)
 		        {
@@ -905,12 +1034,10 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        { PicoJerarquia2.start();
 				return activarP2; })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 9)
 		        {
@@ -937,8 +1064,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 10)
 		        {
@@ -965,8 +1091,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 11)
 		        {
@@ -993,8 +1118,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 12)
 		        {
@@ -1021,8 +1145,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 13)
 		        {
@@ -1049,8 +1172,7 @@ void InitAnimations()
 			        return true;
 		        }
 	        })
-	    .addCondition(
-	        [](float delta) -> bool
+	    .addCondition([](float delta) -> bool
 	        {
 		        if (flagC == 14)
 		        {
@@ -1205,9 +1327,9 @@ int main(int argc, char **argv)
 	InitAnimations();
 	LoadAnimations();
 	InitAudios();
+	primitiva = Model::Texture("assets/Textures/Hielo3.png");
+	primitiva.LoadTexture();
 
-	// primitiva = Model::Texture("Textures/dado_ocho.tga");
-	// primitiva.LoadTexture();
 
 	// region Skybox settings
 	// SKyBoxes Faces Day
@@ -1715,13 +1837,13 @@ int main(int argc, char **argv)
 		// endregion muñeco de nieve
 
 		model = handler.setMatrix(glm::mat4(1.0f))
-		            .translate(8, 70, -26)
-		            //.scale(0.4)
+		            .translate(0, -80, 0)
+		            .scale(60,10,60)
 		            //.rotateZ(-6)
 		            //.rotateY(180)
 		            .getMatrix();
 		glUniformMatrix4fv((GLint) uModel, 1, GL_FALSE, glm::value_ptr(model));
-		// prismaTexture.UseTexture();
+		primitiva.UseTexture();
 		meshListPrimitive[0]->RenderMeshPrimitive();
 
 		// region ALPHA
