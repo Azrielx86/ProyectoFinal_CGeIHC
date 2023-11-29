@@ -37,6 +37,7 @@
 #include "model/BoneModel.h"
 #include "model/Material.h"
 #include "model/ModelCollection.h"
+#include "model/Texture.h"
 #include <boost/format.hpp>
 
 #include "model/MeshPrimitive.h"
