@@ -5,8 +5,10 @@
 #ifndef PROYECTOFINAL_CGEIHC_AUDIOCONTROLLER_H
 #define PROYECTOFINAL_CGEIHC_AUDIOCONTROLLER_H
 
+#include "AudioSource.h"
 #include <AL/al.h>
 #include <AL/alc.h>
+#include <glm/glm.hpp>
 #include <iostream>
 #include <sstream>
 
@@ -14,16 +16,15 @@ namespace Audio
 {
 class AudioController
 {
-  private:
-	ALCdevice *device;
-	ALCcontext *context;
-	ALuint source;
-	ALuint buffer;
-	bool initialized = false;
-
   public:
 	bool Init();
-	void PlaySource(std::string source);
+	void AddSource(int audioSource, Audio::AudioSource *source);
+	void PlaySource(int id);
+	static void UpdateListenerPosition(glm::vec3 position);
+	static void UpdateListenerOrientation(glm::vec3 orientation, glm::vec3 up);
+
+  private:
+	std::unordered_map<int, Audio::AudioSource *> sources;
 };
 
 } // namespace Audio

@@ -112,11 +112,10 @@ class KeyFrameAnimation
 	[[nodiscard]] bool isPlaying() const;
 
   private:
-	int MaxSteps = 90;
+	int MaxSteps = 30;
 	int CurrSteps = 0;
 	int playIndex = 0;
 	bool playing = false;
-	bool reset = false;
 	glm::vec3 position = {0, 0, 0};
 	glm::vec3 movement = {0, 0, 0};
 	glm::vec3 rotation = {0, 0, 0};

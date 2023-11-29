@@ -42,6 +42,7 @@ if (assimp_FOUND)
 endif ()
 
 find_package(OpenAL CONFIG REQUIRED)
+find_package(FreeALUT CONFIG REQUIRED)
 if (OpenAL_FOUND)
     message(STATUS "OpenAL Found")
 endif ()
@@ -147,6 +148,8 @@ add_executable(ProyectoFinal_CGeIHC
         src/camera/PlayerCamera.cpp
         src/camera/PlayerCamera.h
         src/camera/CameraCollection.h
+        src/Audio/AudioSource.cpp
+        src/Audio/AudioSource.h
 )
 
 message(STATUS "Copiando archivos de shader")
@@ -157,6 +160,8 @@ message(STATUS "Copiando archivos de texturas")
 file(COPY assets/Textures DESTINATION ${CMAKE_BINARY_DIR}/assets)
 message(STATUS "Copiando las animaciones")
 file(COPY Animations DESTINATION ${CMAKE_BINARY_DIR})
+message(STATUS "Copiando archivos de audio")
+file(COPY assets/Audios DESTINATION ${CMAKE_BINARY_DIR}/assets)
 
 target_include_directories(ProyectoFinal_CGeIHC PRIVATE ${Stb_INCLUDE_DIR})
 target_link_libraries(ProyectoFinal_CGeIHC PRIVATE GLEW::GLEW)
@@ -166,3 +171,4 @@ target_link_libraries(ProyectoFinal_CGeIHC PRIVATE OpenAL::OpenAL)
 target_link_libraries(ProyectoFinal_CGeIHC PRIVATE glm::glm)
 target_link_libraries(ProyectoFinal_CGeIHC PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(ProyectoFinal_CGeIHC PRIVATE Boost::boost)
+target_link_libraries(ProyectoFinal_CGeIHC PRIVATE FreeALUT::alut)

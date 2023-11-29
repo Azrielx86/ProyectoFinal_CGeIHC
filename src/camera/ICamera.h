@@ -34,9 +34,11 @@ class ICamera
 	virtual glm::vec3 getCameraDirection() = 0;
 	virtual glm::mat4 calculateViewMatrix() = 0;
 
-	float getYaw() const { return yaw; };
+	[[nodiscard]] float getYaw() const { return yaw; };
 
-	float getPitch() const { return pitch; };
+	[[nodiscard]] float getPitch() const { return pitch; };
+
+	[[nodiscard]] glm::vec3 getUp() const { return up; };
 };
 
 } // namespace Camera
