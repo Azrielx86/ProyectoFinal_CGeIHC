@@ -42,7 +42,7 @@ SimpleEntity &SimpleEntity::rotate(Axis axis, float mov)
 	}
 	return *this;
 }
-void SimpleEntity::update(const bool *keys, float dt)
+void SimpleEntity::update([[maybe_unused]] const bool *keys, float dt)
 {
 	auto kmp = Input::KeyboardInput::GetInstance().getCurrentKeymap();
 	if (kmp->at(GLFW_KEY_UP).pressed)

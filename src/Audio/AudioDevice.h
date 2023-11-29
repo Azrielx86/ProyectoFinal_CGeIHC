@@ -7,6 +7,7 @@
 
 #include <AL/al.h>
 #include <AL/alc.h>
+#include <AL/alut.h>
 #include <iostream>
 #include <sstream>
 
@@ -19,6 +20,7 @@ class AudioDevice
 	static AudioDevice &GetInstance();
 	AudioDevice(AudioDevice &) = delete;
 	void operator=(const AudioDevice &) = delete;
+	static void InitAlut(int *argc, char **argv);
 	static void Terminate();
 
   private:

@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreturn-type"
 namespace Model
 {
 Bone::Bone(std::string name, int Id, const aiNodeAnim *channel)
@@ -133,3 +135,4 @@ void Bone::Update(float time)
 }
 
 } // namespace Model
+#pragma clang diagnostic pop
